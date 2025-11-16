@@ -48,19 +48,24 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build --no-daemon --stacktrace
 
+      - name: Get project version
+        id: get_version
+        run: echo "version=$(grep '^version = ' build.gradle.kts | sed 's/version = "//' | sed 's/"//')" >> $GITHUB_OUTPUT
+
       - name: Verify build artifacts
         run: |
-          echo "Verifying build artifacts..."
+          VERSION=${{ steps.get_version.outputs.version }}
+          echo "Verifying build artifacts for version $VERSION..."
           ls -lh build/libs/
-          if [ ! -f build/libs/chzzk4j-0.0.12.jar ]; then
+          if [ ! -f build/libs/chzzk4j_new-$VERSION.jar ]; then
             echo "Main JAR not found!"
             exit 1
           fi
-          if [ ! -f build/libs/chzzk4j-0.0.12-sources.jar ]; then
+          if [ ! -f build/libs/chzzk4j_new-$VERSION-sources.jar ]; then
             echo "Sources JAR not found!"
             exit 1
           fi
-          if [ ! -f build/libs/chzzk4j-0.0.12-javadoc.jar ]; then
+          if [ ! -f build/libs/chzzk4j_new-$VERSION-javadoc.jar ]; then
             echo "Javadoc JAR not found!"
             exit 1
           fi

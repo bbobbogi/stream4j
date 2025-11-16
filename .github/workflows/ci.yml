@@ -39,7 +39,6 @@ jobs:
 
       - name: Run tests with coverage
         run: ./gradlew test jacocoTestReport --no-daemon --stacktrace
-        continue-on-error: true
 
       - name: Verify build artifacts
         run: |

@@ -5,7 +5,7 @@ plugins {
     jacoco
 }
 
-group = "io.github.R2turnTrue"
+group = "io.github.bbobbogi"
 version = "0.0.12"
 
 // Helper function to get property from environment
@@ -40,29 +40,29 @@ java {
 publishing {
     publications {
         create<MavenPublication>("maven") {
-            artifactId = "chzzk4j"
-            groupId = "io.github.R2turnTrue"
+            artifactId = "chzzk4j_new"
+            groupId = "io.github.bbobbogi"
             version = "0.0.12"
 
             from(components["java"])
 
             pom {
-                name = "chzzk4j"
+                name = "chzzk4j_new"
                 description = "Unofficial Java API library of CHZZK (치지직, the video streaming service of Naver)"
-                url = "https://github.com/R2turnTrue/chzzk4j"
+                url = "https://github.com/bbobbogi/chzzk4j_new"
 
                 developers {
                     developer {
-                        name = "R2turnTrue"
-                        email = "r3turntrue@gmail.com"
-                        url = "https://github.com/R2turnTrue"
+                        name = "bbobbogi"
+                        email = ""
+                        url = "https://github.com/bbobbogi"
                     }
                 }
 
                 scm {
-                    connection = "scm:git:git://github.com/R2turnTrue/chzzk4j.git"
-                    developerConnection = "scm:git:ssh://github.com:R2turnTrue/chzzk4j.git"
-                    url = "https://github.com/R2turnTrue/chzzk4j/tree/master"
+                    connection = "scm:git:git://github.com/bbobbogi/chzzk4j_new.git"
+                    developerConnection = "scm:git:ssh://github.com:bbobbogi/chzzk4j_new.git"
+                    url = "https://github.com/bbobbogi/chzzk4j_new/tree/master"
                 }
 
                 licenses {
@@ -78,7 +78,7 @@ publishing {
     repositories {
         maven {
             name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/R2turnTrue/chzzk4j")
+            url = uri("https://maven.pkg.github.com/bbobbogi/chzzk4j_new")
             credentials {
                 username = getEnvOrProperty("GITHUB_ACTOR")
                 password = getEnvOrProperty("GITHUB_TOKEN")
