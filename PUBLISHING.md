@@ -173,6 +173,45 @@ dependencies {
 version = "0.0.13"
 ```
 
+## 자동 의존성 업데이트 (Dependabot)
+
+이 프로젝트는 Dependabot을 사용하여 의존성을 자동으로 관리합니다.
+
+### 설정 내용
+
+**Gradle 의존성:**
+- 매주 월요일 오전 9시 (KST)에 체크
+- Production/Development 의존성을 그룹으로 관리
+- 최대 10개의 PR 동시 생성 가능
+- 자동 라벨: `dependencies`, `gradle`
+
+**GitHub Actions:**
+- 매주 월요일 오전 9시 (KST)에 체크
+- 최대 5개의 PR 동시 생성 가능
+- 자동 라벨: `dependencies`, `github-actions`
+
+### Dependabot PR 처리
+
+Dependabot이 생성한 PR은:
+1. 자동으로 리뷰어 및 담당자 할당
+2. CI workflow가 자동 실행되어 테스트
+3. Dependency Review로 보안 검사
+4. 모든 검증 통과 시 병합 가능
+
+### Dependabot 명령어
+
+PR 코멘트에서 사용 가능한 명령어:
+- `@dependabot rebase` - PR 리베이스
+- `@dependabot recreate` - PR 재생성
+- `@dependabot merge` - PR 병합
+- `@dependabot squash and merge` - Squash 후 병합
+- `@dependabot cancel merge` - 병합 취소
+- `@dependabot reopen` - 닫힌 PR 재오픈
+- `@dependabot close` - PR 닫기
+- `@dependabot ignore this dependency` - 이 의존성 무시
+- `@dependabot ignore this major version` - 이 major 버전 무시
+- `@dependabot ignore this minor version` - 이 minor 버전 무시
+
 ## JitPack 지원
 
 이 프로젝트는 JitPack도 지원합니다. `jitpack.yml` 파일이 설정되어 있어 JitPack을 통해서도 패키지를 사용할 수 있습니다.
