@@ -10,6 +10,7 @@ import xyz.r2turntrue.chzzk4j.exception.ChatFailedConnectException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
