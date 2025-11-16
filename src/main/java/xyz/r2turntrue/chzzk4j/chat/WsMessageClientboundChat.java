@@ -14,22 +14,27 @@ class WsMessageClientboundChat extends WsMessageBase {
         public String uid;
         public String msg;
         public int msgTypeCode;
+        public long msgTime;
         public long ctime;
         public String extras;
         public String profile;
         public String msgStatusType;
+        public int mbrCnt;
 
-        public <T extends ChatMessage> T toChatMessage(Class<T> clazz) throws InvocationTargetException, InstantiationException, IllegalAccessException {
+        public <T extends ChatMessage> T toChatMessage(Class<T> clazz, String rawJson) throws InvocationTargetException, InstantiationException, IllegalAccessException {
             var msg = (T) clazz.getConstructors()[0].newInstance();
 
-            msg.rawJson = new Gson().toJson(this);
+            msg.rawJson = rawJson;
 
             msg.content = this.msg;
             msg.msgTypeCode = msgTypeCode;
+            msg.messageTime =new Date(msgTime);
             msg.createTime = new Date(ctime);
+            msg.msgStatusType = msgStatusType;
+            msg.memberCount = mbrCnt;
             msg.extras = new Gson().fromJson(extras, ChatMessage.Extras.class);
             msg.profile = new Gson().fromJson(profile, ChatMessage.Profile.class);
-            msg.userId = uid;
+            msg.userIdHash = uid;
             return msg;
         }
     }

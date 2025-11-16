@@ -8,4 +8,8 @@ public class SubscriptionMessage extends ChatMessage {
     public String getSubscriptionTierName() {
         return extras.tierName;
     }
+
+    public boolean isAnonymous() {
+        return extras != null && extras.isAnonymous;
+    }
 }

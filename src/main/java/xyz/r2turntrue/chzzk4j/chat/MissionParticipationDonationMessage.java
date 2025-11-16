@@ -1,38 +1,33 @@
 package xyz.r2turntrue.chzzk4j.chat;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-
 /**
- * 미션 후원 메시지
+ * 미션 참여 후원 메시지
  *
- * 미션 후원을 시작한 사람(미션 개설자)의 정보를 담고 있습니다.
+ * 미션에 참여(후원)하는 사람의 정보를 담고 있습니다.
  *
  * 두 가지 방식으로 전송됩니다:
  * 1. CHAT/DONATION 명령(cmd: 93101/93102)으로 채팅 메시지 형태
- *    - donationType: "MISSION"
+ *    - donationType: "MISSION_PARTICIPATION"
  * 2. EVENT 명령(cmd: 93006)으로 이벤트 형태
- *    - type: "DONATION_MISSION_IN_PROGRESS" (미션 진행 상태 업데이트)
+ *    - type: "DONATION_MISSION_PARTICIPATION" (미션 참여 이벤트)
  *
  * 이벤트 전송 순서 (미션 라이프사이클):
  * 1. MissionDonationMessage (미션 생성) - status: PENDING
  *    - EVENT로 전송 + CHAT/DONATION으로도 전송
  * 2. MissionDonationMessage (미션 승인/거절) - status: APPROVED 또는 REJECTED
  *    - EVENT로 전송
- * 3. MissionParticipationDonationMessage (참여자 후원) - 참여자마다 반복 (APPROVED인 경우만)
+ * 3. MissionParticipationDonationMessage (참여자 후원) - 참여자마다 반복 ← 현재 클래스 (APPROVED인 경우만)
  *    - EVENT로 전송 + CHAT/DONATION으로도 전송
  * 4. MissionDonationMessage (미션 완료/만료) - status: COMPLETED/EXPIRED
  *    - EVENT로 전송
  *
- * missionDonationType: ALONE(혼자 미션) / GROUP(그룹 미션)
- * status: PENDING(대기) / APPROVED(승인) / REJECTED(거부) / COMPLETED(완료) / EXPIRED(만료)
+ * relatedMissionDonationId를 통해 어떤 미션에 참여했는지 확인할 수 있습니다.
+ * missionDonationType: PARTICIPATION (미션 참여)
  */
-public class MissionDonationMessage extends DonationMessage {
-    private static final DateTimeFormatter MISSION_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+public class MissionParticipationDonationMessage extends DonationMessage {
 
-
-    public int getDurationTime() {
-        return extras.durationTime;
+    public String getRelatedMissionDonationId() {
+        return extras.relatedMissionDonationId;
     }
 
     public String getMissionDonationId() {
@@ -45,30 +40,6 @@ public class MissionDonationMessage extends DonationMessage {
 
     public MissionDonationType getMissionDonationType() {
         return MissionDonationType.fromString(extras.missionDonationType);
-    }
-
-    public String getMissionCreatedTimeRaw() {
-        return extras.missionCreatedTime;
-    }
-
-    public LocalDateTime getMissionCreatedTime() {
-        return extras.missionCreatedTime != null ? LocalDateTime.parse(extras.missionCreatedTime, MISSION_TIME_FORMATTER) : null;
-    }
-
-    public String getMissionStartTimeRaw() {
-        return extras.missionStartTime;
-    }
-
-    public LocalDateTime getMissionStartTime() {
-        return extras.missionStartTime != null ? LocalDateTime.parse(extras.missionStartTime, MISSION_TIME_FORMATTER) : null;
-    }
-
-    public String getMissionEndTimeRaw() {
-        return extras.missionEndTime;
-    }
-
-    public LocalDateTime getMissionEndTime() {
-        return extras.missionEndTime != null ? LocalDateTime.parse(extras.missionEndTime, MISSION_TIME_FORMATTER) : null;
     }
 
     public String getMissionText() {
@@ -106,17 +77,6 @@ public class MissionDonationMessage extends DonationMessage {
     }
 
     /**
-     * 사용자 ID 해시 (익명일 경우 null)
-     * EVENT 형태: 상속받은 userIdHash 필드 사용
-     * CHAT/DONATION 형태: extras 내부 또는 userIdHash 필드
-     */
-    @Override
-    public String getUserIdHash() {
-        if (super.getUserIdHash() != null) return super.getUserIdHash();
-        return extras != null ? extras.userIdHash : null;
-    }
-
-    /**
      * 인증 마크 여부
      * EVENT 형태: 상속받은 profile 내부
      * CHAT/DONATION 형태: extras 내부 또는 profile 내부
@@ -151,6 +111,17 @@ public class MissionDonationMessage extends DonationMessage {
      */
     public String getDonationId() {
         return extras != null ? extras.donationId : null;
+    }
+
+    /**
+     * 사용자 ID 해시
+     * EVENT 형태: 상속받은 userIdHash 필드 사용
+     * CHAT/DONATION 형태: extras 내부 또는 userIdHash 필드
+     */
+    @Override
+    public String getUserIdHash() {
+        if (super.getUserIdHash() != null) return super.getUserIdHash();
+        return extras != null ? extras.userIdHash : null;
     }
 
     /**

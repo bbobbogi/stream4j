@@ -27,14 +27,47 @@ public class ChatMessage {
         int month = 0;
         String tierName = "";
 
+        // Common donation fields (CHAT/DONATION 형태에서 extras 안에 포함)
+        String nickname;
+        String userIdHash;
+        boolean verifiedMark;
+        boolean isAnonymous;
+        String anonymousToken;
+        String donationId;
+        String payType;
+        int continuousDonationDays;
+
         // Mission
         int durationTime;
         String missionDonationId;
+        String missionDonationType;
         String missionCreatedTime;
+        String missionStartTime;
         String missionEndTime;
         String missionText;
+        int totalPayAmount;
+        int participationCount;
         String status;
         boolean success;
+
+        // Mission Participation
+        String relatedMissionDonationId;
+
+        // Party Donation
+        String partyDonationId;
+        String partyName;
+        int partyNo;
+
+        // System Message
+        String description;
+
+        public String getDonationType() {
+            return donationType;
+        }
+
+        public String getDescription() {
+            return description;
+        }
 
         public OsType getOsType() {
             return OsType.valueOf(osType);
@@ -235,9 +268,12 @@ public class ChatMessage {
     }
 
     int msgTypeCode = 0;
-    String userId;
+    String userIdHash;
     String content;
+    Date messageTime;
     Date createTime;
+    String msgStatusType;
+    int memberCount;
     Extras extras = new Extras();
     Profile profile = new Profile();
 
@@ -249,12 +285,24 @@ public class ChatMessage {
         return msgTypeCode;
     }
 
+    public String getUserIdHash() {
+        return userIdHash;
+    }
+
+    /**
+     * @deprecated Use {@link #getUserIdHash()} instead
+     */
+    @Deprecated
     public String getUserId() {
-        return userId;
+        return userIdHash;
     }
 
     public String getContent() {
         return content;
+    }
+
+    public Date getMessageTime() {
+        return messageTime;
     }
 
     public Date getCreateTime() {
@@ -263,6 +311,38 @@ public class ChatMessage {
 
     public Extras getExtras() {
         return extras;
+    }
+
+    public String getMessageStatusType() {
+        return msgStatusType;
+    }
+
+    public int getMemberCount() {
+        return memberCount;
+    }
+
+    public boolean isBlind() {
+        return "BLIND".equals(msgStatusType);
+    }
+
+    public boolean isHidden() {
+        return "HIDDEN".equals(msgStatusType);
+    }
+
+    public boolean isSystemMessage() {
+        return "SYSTEM_MESSAGE".equals(userIdHash);
+    }
+
+    public boolean isOpenMessage() {
+        return "@OPEN".equals(userIdHash);
+    }
+
+    public boolean isTestMessage() {
+        return "@TEST".equals(userIdHash);
+    }
+
+    public boolean isUserMessage() {
+        return !isBlind() && !isHidden() && !isSystemMessage() && !isOpenMessage() && !isTestMessage();
     }
 
     /**
@@ -281,7 +361,7 @@ public class ChatMessage {
     @Override
     public String toString() {
         return "ChatMessage{" +
-                "userId='" + userId + '\'' +
+                "userIdHash='" + userIdHash + '\'' +
                 ", msgTypeCode='" + msgTypeCode + '\'' +
                 ", content='" + content + '\'' +
                 ", createTime=" + createTime +

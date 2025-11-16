@@ -4,4 +4,8 @@ public class DonationMessage extends ChatMessage {
     public int getPayAmount() {
         return extras.payAmount;
     }
+
+    public boolean isAnonymous() {
+        return extras != null && extras.isAnonymous;
+    }
 }

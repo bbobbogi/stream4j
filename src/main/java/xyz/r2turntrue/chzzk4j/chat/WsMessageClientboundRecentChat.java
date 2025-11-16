@@ -8,22 +8,29 @@ import java.util.Date;
 class WsMessageClientboundRecentChat extends WsMessageBase {
     static class Body {
         static class RecentChat {
-            public String userId;
-            public String content;
-            public int messageTypeCode;
-            public long createTime;
+            // 최근 메시지 필드명 (실시간 채팅과 다름)
+            public String userId;           // 실시간: uid
+            public String content;          // 실시간: msg
+            public int messageTypeCode;     // 실시간: msgTypeCode
+            public long messageTime;        // 실시간: msgTime
+            public long createTime;         // 실시간: ctime
             public String extras;
             public String profile;
+            public String messageStatusType;// 실시간: msgStatusType
+            public int memberCount;         // 실시간: mbrCnt
 
-            public ChatMessage toChatMessage(Class<? extends ChatMessage> clazz) throws InvocationTargetException, InstantiationException, IllegalAccessException {
+            public ChatMessage toChatMessage(Class<? extends ChatMessage> clazz, String rawJson) throws InvocationTargetException, InstantiationException, IllegalAccessException {
                 var msg = (ChatMessage) clazz.getConstructors()[0].newInstance();
-                msg.rawJson = new Gson().toJson(this);
+                msg.rawJson = rawJson;
                 msg.content = content;
                 msg.msgTypeCode = messageTypeCode;
+                msg.messageTime =new Date(messageTime);
                 msg.createTime = new Date(createTime);
+                msg.msgStatusType = messageStatusType;
+                msg.memberCount = memberCount;
                 msg.extras = new Gson().fromJson(extras, ChatMessage.Extras.class);
                 msg.profile = new Gson().fromJson(profile, ChatMessage.Profile.class);
-                msg.userId = userId;
+                msg.userIdHash = userId;
                 return msg;
             }
         }
