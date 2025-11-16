@@ -87,15 +87,83 @@ dependencies {
 
 ## CI/CD Workflows
 
+이 프로젝트는 다음과 같은 자동화된 검증 및 배포 파이프라인을 제공합니다:
+
 ### CI Workflow (ci.yml)
-- main/master 브랜치에 push 또는 PR 생성 시 실행
-- 빌드 및 테스트 수행
-- 테스트 결과와 빌드 아티팩트를 1일 동안 보관
+
+**실행 시점:**
+- main/master 브랜치에 push
+- Pull Request 생성 또는 업데이트
+- 수동 실행 (workflow_dispatch)
+
+**검증 단계:**
+1. **Gradle Wrapper 검증** - 빌드 도구의 무결성 확인
+2. **Dependencies 체크** - 모든 의존성 패키지 확인
+3. **빌드 수행** - 프로젝트 컴파일 및 빌드
+4. **테스트 실행** - 전체 테스트 스위트 실행
+5. **코드 커버리지** - JaCoCo를 이용한 테스트 커버리지 측정
+6. **빌드 아티팩트 검증** - 생성된 JAR 파일 확인
+
+**아티팩트 보관:**
+- 테스트 결과 (1일)
+- 커버리지 리포트 (1일)
+- 빌드 아티팩트 (1일)
+
+**PR 전용 검증:**
+- **Dependency Review** - 새로운 의존성의 보안 취약점 검사
+  - moderate 이상의 심각도에서 실패
+  - PR에 자동으로 요약 코멘트 추가
 
 ### Publish Workflow (publish.yml)
-- Release 생성 시 또는 수동 실행
-- 빌드 후 GitHub Packages에 배포
-- 빌드 아티팩트를 1일 동안 보관
+
+**실행 시점:**
+- GitHub Release 생성
+- 수동 실행 (workflow_dispatch)
+
+**배포 전 검증:**
+1. **Gradle Wrapper 검증**
+2. **Dependencies 체크**
+3. **테스트 실행** - 모든 테스트 통과 필수
+4. **테스트 결과 검증** - 테스트 결과 디렉토리 확인
+5. **빌드 수행**
+6. **빌드 아티팩트 검증**
+   - Main JAR (chzzk4j-0.0.12.jar)
+   - Sources JAR (chzzk4j-0.0.12-sources.jar)
+   - Javadoc JAR (chzzk4j-0.0.12-javadoc.jar)
+
+**배포:**
+- 모든 검증 통과 후 GitHub Packages에 배포
+- 테스트 실패 시 배포 중단
+
+**아티팩트 보관:**
+- 테스트 결과 (1일)
+- 빌드 아티팩트 (1일)
+
+### CodeQL Security Scan (codeql.yml)
+
+**실행 시점:**
+- main/master 브랜치에 push
+- Pull Request 생성 또는 업데이트
+- 매주 월요일 자정 (정기 스캔)
+- 수동 실행 (workflow_dispatch)
+
+**검사 내용:**
+- 보안 취약점 자동 탐지
+- 코드 품질 문제 검사
+- SQL Injection, XSS, Path Traversal 등 일반적인 취약점 검사
+- GitHub Security 탭에 결과 자동 등록
+
+## 코드 커버리지
+
+프로젝트는 JaCoCo를 사용하여 테스트 커버리지를 측정합니다.
+
+### 로컬에서 커버리지 확인
+
+```bash
+./gradlew test jacocoTestReport
+```
+
+리포트 위치: `build/reports/jacoco/test/html/index.html`
 
 ## 버전 업데이트
 

@@ -26,14 +26,59 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@v2
+
+      - name: Check dependencies
+        run: ./gradlew dependencies --no-daemon
+
+      - name: Run tests
+        run: ./gradlew test --no-daemon --stacktrace
+
+      - name: Verify test results
+        run: |
+          echo "Checking test results..."
+          if [ -d "build/test-results/test" ]; then
+            echo "Tests completed successfully"
+          else
+            echo "No test results found"
+            exit 1
+          fi
+
       - name: Build with Gradle
         run: ./gradlew build --no-daemon --stacktrace
+
+      - name: Verify build artifacts
+        run: |
+          echo "Verifying build artifacts..."
+          ls -lh build/libs/
+          if [ ! -f build/libs/chzzk4j-0.0.12.jar ]; then
+            echo "Main JAR not found!"
+            exit 1
+          fi
+          if [ ! -f build/libs/chzzk4j-0.0.12-sources.jar ]; then
+            echo "Sources JAR not found!"
+            exit 1
+          fi
+          if [ ! -f build/libs/chzzk4j-0.0.12-javadoc.jar ]; then
+            echo "Javadoc JAR not found!"
+            exit 1
+          fi
+          echo "All required artifacts verified successfully"
 
       - name: Publish to GitHub Packages
         env:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./gradlew publish --no-daemon --stacktrace
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: build/test-results/
+          retention-days: 1
 
       - name: Upload build artifacts
         if: always()

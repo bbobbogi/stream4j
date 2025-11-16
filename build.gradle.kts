@@ -2,6 +2,7 @@ plugins {
     id("java")
     `maven-publish`
     `java-library`
+    jacoco
 }
 
 group = "io.github.R2turnTrue"
@@ -84,4 +85,18 @@ publishing {
             }
         }
     }
+}
+
+// JaCoCo configuration for code coverage
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = false
+    }
+}
+
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport)
 }

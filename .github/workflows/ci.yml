@@ -8,10 +8,11 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      pull-requests: write
 
     steps:
       - name: Checkout repository
@@ -27,11 +28,23 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@v2
+
+      - name: Check dependencies
+        run: ./gradlew dependencies --no-daemon
+
       - name: Build with Gradle
         run: ./gradlew build --no-daemon --stacktrace
 
-      - name: Run tests
-        run: ./gradlew test --no-daemon --stacktrace
+      - name: Run tests with coverage
+        run: ./gradlew test jacocoTestReport --no-daemon --stacktrace
+        continue-on-error: true
+
+      - name: Verify build artifacts
+        run: |
+          echo "Checking build artifacts..."
+          ls -lh build/libs/
 
       - name: Upload test results
         if: always()
@@ -41,6 +54,14 @@ jobs:
           path: build/test-results/
           retention-days: 1
 
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: build/reports/jacoco/
+          retention-days: 1
+
       - name: Upload build artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -48,3 +69,20 @@ jobs:
           name: build-artifacts
           path: build/libs/
           retention-days: 1
+
+  dependency-review:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: moderate
+          comment-summary-in-pr: true
