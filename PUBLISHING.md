@@ -109,11 +109,6 @@ dependencies {
 - 커버리지 리포트 (1일)
 - 빌드 아티팩트 (1일)
 
-**PR 전용 검증:**
-- **Dependency Review** - 새로운 의존성의 보안 취약점 검사
-  - moderate 이상의 심각도에서 실패
-  - PR에 자동으로 요약 코멘트 추가
-
 ### Publish Workflow (publish.yml)
 
 **실행 시점:**
@@ -194,9 +189,8 @@ version = "0.0.13"
 
 Dependabot이 생성한 PR은:
 1. 자동으로 리뷰어 및 담당자 할당
-2. CI workflow가 자동 실행되어 테스트
-3. Dependency Review로 보안 검사
-4. 모든 검증 통과 시 병합 가능
+2. CI workflow가 자동 실행되어 테스트 및 빌드 검증
+3. 모든 검증 통과 시 병합 가능
 
 ### Dependabot 명령어
 
