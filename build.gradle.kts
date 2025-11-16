@@ -1,25 +1,16 @@
-import java.io.BufferedInputStream
-import java.io.InputStream
-import java.lang.IllegalStateException
-import java.util.Properties
-
 plugins {
     id("java")
     `maven-publish`
     `java-library`
-    signing
 }
 
 group = "io.github.R2turnTrue"
 version = "0.0.12"
 
-val publishProps = Properties()
-publishProps.load(
-    File("publish.properties").inputStream())
-
-ext["signing.keyId"] = publishProps["signing.keyId"]
-ext["signing.password"] = publishProps["signing.password"]
-ext["signing.secretKeyRingFile"] = publishProps["signing.secretKeyRingFile"]
+// Helper function to get property from environment
+fun getEnvOrProperty(envKey: String, defaultValue: String = ""): String {
+    return System.getenv(envKey) ?: defaultValue
+}
 
 repositories {
     mavenCentral()
@@ -47,28 +38,12 @@ java {
 
 publishing {
     publications {
-        create<MavenPublication>(rootProject.name) {
+        create<MavenPublication>("maven") {
             artifactId = "chzzk4j"
             groupId = "io.github.R2turnTrue"
-
             version = "0.0.12"
 
             from(components["java"])
-
-            repositories {
-                maven {
-                    name = "MavenCentral"
-                    val releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-                    //val snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
-                    //url = uri(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
-                    url = uri(releasesRepoUrl)
-
-                    credentials.runCatching {
-                        username = publishProps["nexusUsername"] as String
-                        password = publishProps["nexusPassword"] as String
-                    }
-                }
-            }
 
             pom {
                 name = "chzzk4j"
@@ -98,9 +73,15 @@ publishing {
             }
         }
     }
-}
 
-signing {
-    isRequired = true
-    sign(publishing.publications[rootProject.name])
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/R2turnTrue/chzzk4j")
+            credentials {
+                username = getEnvOrProperty("GITHUB_ACTOR")
+                password = getEnvOrProperty("GITHUB_TOKEN")
+            }
+        }
+    }
 }
