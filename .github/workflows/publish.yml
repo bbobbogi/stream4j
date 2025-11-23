@@ -50,7 +50,9 @@ jobs:
 
       - name: Get project version
         id: get_version
-        run: echo "version=$(./gradlew -q properties | awk -F': ' '/^version:/ {print $2}')" >> $GITHUB_OUTPUT
+        run: |
+          VERSION=$(./gradlew -q properties | grep "^version:" | cut -d' ' -f2)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Verify build artifacts
         run: |

@@ -1,5 +1,4 @@
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import xyz.r2turntrue.chzzk4j.Chzzk;
 import xyz.r2turntrue.chzzk4j.ChzzkBuilder;
@@ -14,7 +13,6 @@ public class NaverLoginTest extends NaverTestBase {
 
     @Test
     public void testNaverLogin() {
-        Assumptions.assumeTrue(hasNaverCredentials, "네이버 인증 정보가 없어 테스트를 건너뜁니다.");
         Assertions.assertDoesNotThrow(() -> {
             naver.login().thenRun(() -> {
                 for (Naver.Cookie value : Naver.Cookie.values()) {
@@ -26,7 +24,6 @@ public class NaverLoginTest extends NaverTestBase {
 
     @Test
     public void testNaverLoginFailed() {
-        Assumptions.assumeTrue(hasNaverCredentials, "네이버 인증 정보가 없어 테스트를 건너뜁니다.");
         Assertions.assertThrowsExactly(CompletionException.class, () -> {
             Chrome.setDriverProperty("");
             naver.login().join();
@@ -35,7 +32,6 @@ public class NaverLoginTest extends NaverTestBase {
 
     @Test
     public void testNaverLoginChzzk() {
-        Assumptions.assumeTrue(hasNaverCredentials, "네이버 인증 정보가 없어 테스트를 건너뜁니다.");
         Assertions.assertDoesNotThrow(() -> {
             naver.login().thenRun(() -> {
                 Chzzk chzzk = new ChzzkBuilder()
