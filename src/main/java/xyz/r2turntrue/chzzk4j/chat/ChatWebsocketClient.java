@@ -55,9 +55,16 @@ public class ChatWebsocketClient extends WebSocketClient {
         chat.isConnectedToWebsocket = true;
         if (chat.chzzk.isDebug) System.out.println("Connected to websocket! Connecting to chat...");
 
-        // 재연결 시 새 executor 생성 (이전 연결에서 shutdown된 경우)
-        if (executor == null || executor.isShutdown()) {
-            executor = Executors.newSingleThreadScheduledExecutor();
+        // 스레드 누수 방지를 위한 동기화된 executor 관리
+        synchronized (this) {
+            if (executor != null && !executor.isShutdown()) {
+                executor.shutdownNow();
+            }
+            executor = Executors.newSingleThreadScheduledExecutor(r -> {
+                Thread t = new Thread(r, "chzzk-chat-ws-" + chat.channelId);
+                t.setDaemon(true);
+                return t;
+            });
         }
 
         lastRecivedMessageTime = lastSendPingTime = System.currentTimeMillis();
@@ -423,12 +430,14 @@ public class ChatWebsocketClient extends WebSocketClient {
         }
 
         if (shouldReconnect) {
-            // 재연결 시 executor를 종료하지 않음 - onOpen에서 재사용하거나 새로 생성됨
+            // 재연결 시 executor를 종료하지 않음 - onOpen에서 정리됨
             chat.reconnectAsync();
         } else {
             // 재연결하지 않을 때만 executor 종료
-            if (executor != null && !executor.isShutdown()) {
-                executor.shutdownNow();
+            synchronized (this) {
+                if (executor != null && !executor.isShutdown()) {
+                    executor.shutdownNow();
+                }
             }
         }
     }
