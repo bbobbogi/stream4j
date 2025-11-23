@@ -32,7 +32,6 @@ public class ChatWebsocketClient extends WebSocketClient {
                 .newBuilder()
                 .disableHtmlEscaping()
                 .create();
-        this.executor = Executors.newSingleThreadScheduledExecutor();
     }
 
     private HashMap<Integer, Class<?>> clientboundMessages = new HashMap<>() {{
@@ -54,6 +53,11 @@ public class ChatWebsocketClient extends WebSocketClient {
     @Override
     public void onOpen(ServerHandshake handshakedata) {
         if (chat.chzzk.isDebug) System.out.println("Connected to websocket! Connecting to chat...");
+
+        // 재연결 시 새 executor 생성 (이전 연결에서 shutdown된 경우)
+        if (executor == null || executor.isShutdown()) {
+            executor = Executors.newSingleThreadScheduledExecutor();
+        }
 
         lastRecivedMessageTime = lastSendPingTime = System.currentTimeMillis();
         WsMessageServerboundConnect handshake = setupWsMessage(new WsMessageServerboundConnect());
@@ -421,7 +425,9 @@ public class ChatWebsocketClient extends WebSocketClient {
             chat.reconnectAsync();
         }
 
-        executor.shutdownNow();
+        if (executor != null && !executor.isShutdown()) {
+            executor.shutdownNow();
+        }
     }
 
     @Override
