@@ -1,6 +1,6 @@
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.BeforeEach;
 import xyz.r2turntrue.chzzk4j.naver.Naver;
 
 import java.io.File;
@@ -8,15 +8,17 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class NaverTestBase {
 
-    protected Properties properties = new Properties();
+    protected static Properties properties = new Properties();
+    protected static String naverId;
+    protected static String naverPw;
+    protected static boolean hasNaverCredentials = false;
+
     protected Naver naver;
-    protected boolean hasNaverCredentials = false;
 
     @BeforeAll
-    public void setup() {
+    public static void setupOnce() {
         try {
             File envFile = new File("env.properties");
             if (envFile.exists()) {
@@ -29,11 +31,10 @@ public class NaverTestBase {
                 System.out.println("env.properties 파일이 없습니다. 네이버 로그인 테스트를 건너뜁니다.");
             }
 
-            String naverId = properties.getProperty("NAVER_ID");
-            String naverPw = properties.getProperty("NAVER_PW");
+            naverId = properties.getProperty("NAVER_ID");
+            naverPw = properties.getProperty("NAVER_PW");
 
             if (naverId != null && !naverId.isEmpty() && naverPw != null && !naverPw.isEmpty()) {
-                this.naver = new Naver(naverId, naverPw);
                 hasNaverCredentials = true;
             }
         } catch (Exception e) {
@@ -43,6 +44,12 @@ public class NaverTestBase {
 
         // Skip all tests in this class if credentials are not available
         Assumptions.assumeTrue(hasNaverCredentials, "네이버 인증 정보가 없어 테스트를 건너뜁니다.");
+    }
+
+    @BeforeEach
+    public void setup() {
+        // Create a fresh Naver instance for each test to ensure isolation
+        naver = new Naver(naverId, naverPw);
     }
 
 }
