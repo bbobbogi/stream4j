@@ -50,22 +50,22 @@ jobs:
 
       - name: Get project version
         id: get_version
-        run: echo "version=$(grep '^version = ' build.gradle.kts | sed 's/version = "//' | sed 's/"//')" >> $GITHUB_OUTPUT
+        run: echo "version=$(./gradlew -q properties | awk -F': ' '/^version:/ {print $2}')" >> $GITHUB_OUTPUT
 
       - name: Verify build artifacts
         run: |
           VERSION=${{ steps.get_version.outputs.version }}
           echo "Verifying build artifacts for version $VERSION..."
           ls -lh build/libs/
-          if [ ! -f build/libs/chzzk4j-$VERSION.jar ]; then
+          if [ ! -f "build/libs/chzzk4j-${VERSION}.jar" ]; then
             echo "Main JAR not found!"
             exit 1
           fi
-          if [ ! -f build/libs/chzzk4j-$VERSION-sources.jar ]; then
+          if [ ! -f "build/libs/chzzk4j-${VERSION}-sources.jar" ]; then
             echo "Sources JAR not found!"
             exit 1
           fi
-          if [ ! -f build/libs/chzzk4j-$VERSION-javadoc.jar ]; then
+          if [ ! -f "build/libs/chzzk4j-${VERSION}-javadoc.jar" ]; then
             echo "Javadoc JAR not found!"
             exit 1
           fi
