@@ -75,6 +75,16 @@ public class ChatTest extends ChzzkTestBase {
 
                         System.out.println("[Mission] 익명: " + msg.getMissionText() + ": [" + msg.getPayAmount() + "원]");
                     }
+
+                    @Override
+                    public void onPartyDonationChat(PartyDonationMessage msg) {
+                        if (msg.getProfile() == null) {
+                            System.out.println("[Party] 익명: " + msg.getContent() + ": " + msg.getContent() + " [" + msg.getPayAmount() + "원 / " + msg.getPartyName() + "]");
+                            return;
+                        }
+
+                        System.out.println("[Party] " + msg.getProfile().getNickname() + ": " + msg.getContent() + " [" + msg.getPayAmount() + "원 / " + msg.getPartyName() + "]");
+                    }
                 })
                 .build();
 
