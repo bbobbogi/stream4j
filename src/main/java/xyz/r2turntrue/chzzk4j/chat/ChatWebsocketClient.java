@@ -423,11 +423,13 @@ public class ChatWebsocketClient extends WebSocketClient {
         }
 
         if (shouldReconnect) {
+            // 재연결 시 executor를 종료하지 않음 - onOpen에서 재사용하거나 새로 생성됨
             chat.reconnectAsync();
-        }
-
-        if (executor != null && !executor.isShutdown()) {
-            executor.shutdownNow();
+        } else {
+            // 재연결하지 않을 때만 executor 종료
+            if (executor != null && !executor.isShutdown()) {
+                executor.shutdownNow();
+            }
         }
     }
 
