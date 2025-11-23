@@ -8,6 +8,9 @@ import java.io.IOException;
 import java.util.Optional;
 
 public class ChatTest extends ChzzkTestBase {
+    // CI 환경에서는 30초, 로컬에서는 700초 대기
+    private static final long TEST_DURATION_MS = System.getenv("CI") != null ? 30_000 : 700_000;
+
     @Test
     void testingChat() throws IOException, InterruptedException {
         // 동적으로 라이브 중인 채널을 찾음
@@ -91,7 +94,7 @@ public class ChatTest extends ChzzkTestBase {
         System.out.println(new Gson().toJson(RawApiUtils.getContentJson(chzzk.getHttpClient(),
                 RawApiUtils.httpGetRequest("https://api.chzzk.naver.com/service/v2/channels/" + channelId + "/live-detail").build(), chzzk.isDebug)));
         chat.connectBlocking();
-        Thread.sleep(700000);
+        Thread.sleep(TEST_DURATION_MS);
         chat.closeBlocking();
     }
 }
