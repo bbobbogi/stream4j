@@ -20,8 +20,8 @@ public class NaverTestBase {
         try {
             File envFile = new File("env.properties");
             if (envFile.exists()) {
-                try {
-                    properties.load(new FileInputStream(envFile));
+                try (FileInputStream fis = new FileInputStream(envFile)) {
+                    properties.load(fis);
                 } catch (IOException e) {
                     System.out.println("env.properties 로드 실패: " + e.getMessage());
                 }
