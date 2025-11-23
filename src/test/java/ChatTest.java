@@ -1,13 +1,9 @@
 import com.google.gson.Gson;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import xyz.r2turntrue.chzzk4j.Chzzk;
 import xyz.r2turntrue.chzzk4j.chat.*;
-import xyz.r2turntrue.chzzk4j.types.channel.ChzzkChannel;
 import xyz.r2turntrue.chzzk4j.util.RawApiUtils;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class ChatTest extends ChzzkTestBase {
     @Test
