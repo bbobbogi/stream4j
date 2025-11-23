@@ -125,8 +125,6 @@ public class ChzzkChat {
 
                 this.autoReconnect = autoReconnect;
 
-                isConnectedToWebsocket = true;
-
                 this.channelId = channelId;
                 this.chatId = chatId;
 
