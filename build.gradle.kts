@@ -40,16 +40,16 @@ java {
 publishing {
     publications {
         create<MavenPublication>("maven") {
-            artifactId = "chzzk4j_new"
+            artifactId = "chzzk4j"
             groupId = "io.github.bbobbogi"
             version = "0.0.12"
 
             from(components["java"])
 
             pom {
-                name = "chzzk4j_new"
+                name = "chzzk4j"
                 description = "Unofficial Java API library of CHZZK (치지직, the video streaming service of Naver)"
-                url = "https://github.com/bbobbogi/chzzk4j_new"
+                url = "https://github.com/bbobbogi/chzzk4j"
 
                 developers {
                     developer {
@@ -60,9 +60,9 @@ publishing {
                 }
 
                 scm {
-                    connection = "scm:git:git://github.com/bbobbogi/chzzk4j_new.git"
-                    developerConnection = "scm:git:ssh://github.com:bbobbogi/chzzk4j_new.git"
-                    url = "https://github.com/bbobbogi/chzzk4j_new/tree/master"
+                    connection = "scm:git:git://github.com/bbobbogi/chzzk4j.git"
+                    developerConnection = "scm:git:ssh://github.com:bbobbogi/chzzk4j.git"
+                    url = "https://github.com/bbobbogi/chzzk4j/tree/master"
                 }
 
                 licenses {
@@ -78,7 +78,7 @@ publishing {
     repositories {
         maven {
             name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/bbobbogi/chzzk4j_new")
+            url = uri("https://maven.pkg.github.com/bbobbogi/chzzk4j")
             credentials {
                 username = getEnvOrProperty("GITHUB_ACTOR")
                 password = getEnvOrProperty("GITHUB_TOKEN")
