@@ -1,8 +1,6 @@
 # chzzk4j
 
-![](https://img.shields.io/maven-central/v/io.github.R2turnTrue/chzzk4j) / 
-[Example Minecraft Plugin](https://github.com/R2turnTrue/chzzk4j_demo) / 
-[Discord Server](https://discord.gg/gtJ265XZWn)
+> **Note**: 이 저장소는 [원본 chzzk4j](https://github.com/R2turnTrue/chzzk4j)의 비공식 포크입니다.
 
 Unofficial Java API library of CHZZK (치지직, the video streaming service of Naver)
 
@@ -17,7 +15,7 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.R2turnTrue:chzzk4j:0.0.12")
+    implementation("io.github.bbobbogi:chzzk4j:0.0.12")
 }
 ```
 
@@ -117,7 +115,27 @@ ChzzkChat chat = chzzk.chat("7f148028d1b8b3feab3a5442badded46")
                     return;
                 }
 
-                System.out.println("[Mission] 익명: " + msg.getMissionText() + ": [" + msg.getPayAmount() + "원]");
+                System.out.println("[Mission] " + msg.getProfile().getNickname() + ": " + msg.getMissionText() + ": [" + msg.getPayAmount() + "원]");
+            }
+
+            @Override
+            public void onPartyDonationChat(PartyDonationMessage msg) {
+                System.out.println("[Party Donation] " + msg.getContent());
+            }
+
+            @Override
+            public void onConnectionClosed(int code, String reason, boolean remote, boolean tryingToReconnect) {
+                System.out.println("Connection closed: " + reason + " (reconnecting: " + tryingToReconnect + ")");
+            }
+
+            @Override
+            public void onSubscriptionGift(SubscriptionGiftEvent event) {
+                System.out.println("[Gift] 구독권 선물 이벤트");
+            }
+
+            @Override
+            public void onTemporaryRestrict(TemporaryRestrictEvent event) {
+                System.out.println("[Restrict] 임시 제한 이벤트");
             }
         })
         .build();
