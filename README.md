@@ -2,8 +2,6 @@
 
 > **Note**: 이 저장소는 [원본 chzzk4j](https://github.com/R2turnTrue/chzzk4j)의 비공식 포크입니다.
 
-![](https://img.shields.io/maven-central/v/io.github.bbobbogi/chzzk4j)
-
 Unofficial Java API library of CHZZK (치지직, the video streaming service of Naver)
 
 * This library is not completed. Please contribute a lot through Pull-Request!
