@@ -10,6 +10,7 @@ import xyz.r2turntrue.chzzk4j.exception.ChatFailedConnectException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -31,7 +32,6 @@ public class ChatWebsocketClient extends WebSocketClient {
                 .newBuilder()
                 .disableHtmlEscaping()
                 .create();
-        this.executor = Executors.newSingleThreadScheduledExecutor();
     }
 
     private HashMap<Integer, Class<?>> clientboundMessages = new HashMap<>() {{
@@ -52,7 +52,20 @@ public class ChatWebsocketClient extends WebSocketClient {
 
     @Override
     public void onOpen(ServerHandshake handshakedata) {
+        chat.isConnectedToWebsocket = true;
         if (chat.chzzk.isDebug) System.out.println("Connected to websocket! Connecting to chat...");
+
+        // 스레드 누수 방지를 위한 동기화된 executor 관리
+        synchronized (this) {
+            if (executor != null && !executor.isShutdown()) {
+                executor.shutdownNow();
+            }
+            executor = Executors.newSingleThreadScheduledExecutor(r -> {
+                Thread t = new Thread(r, "chzzk-chat-ws-" + chat.channelId);
+                t.setDaemon(true);
+                return t;
+            });
+        }
 
         lastRecivedMessageTime = lastSendPingTime = System.currentTimeMillis();
         WsMessageServerboundConnect handshake = setupWsMessage(new WsMessageServerboundConnect());
@@ -417,10 +430,16 @@ public class ChatWebsocketClient extends WebSocketClient {
         }
 
         if (shouldReconnect) {
+            // 재연결 시 executor를 종료하지 않음 - onOpen에서 정리됨
             chat.reconnectAsync();
+        } else {
+            // 재연결하지 않을 때만 executor 종료
+            synchronized (this) {
+                if (executor != null && !executor.isShutdown()) {
+                    executor.shutdownNow();
+                }
+            }
         }
-
-        executor.shutdownNow();
     }
 
     @Override

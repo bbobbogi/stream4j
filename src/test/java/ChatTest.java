@@ -1,18 +1,26 @@
 import com.google.gson.Gson;
-import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
-import xyz.r2turntrue.chzzk4j.Chzzk;
 import xyz.r2turntrue.chzzk4j.chat.*;
-import xyz.r2turntrue.chzzk4j.types.channel.ChzzkChannel;
 import xyz.r2turntrue.chzzk4j.util.RawApiUtils;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.Optional;
 
 public class ChatTest extends ChzzkTestBase {
+    // CI 환경에서는 30초, 로컬에서는 700초 대기
+    private static final long TEST_DURATION_MS = System.getenv("CI") != null ? 30_000 : 700_000;
+
     @Test
     void testingChat() throws IOException, InterruptedException {
-        ChzzkChat chat = loginChzzk.chat("17aa057a8248b53affe30512a91481f5")
+        // 동적으로 라이브 중인 채널을 찾음
+        Optional<String> liveChannelId = findLiveChannelId();
+        Assumptions.assumeTrue(liveChannelId.isPresent(), "라이브 중인 채널이 없어 테스트를 건너뜁니다.");
+
+        String channelId = liveChannelId.get();
+        System.out.println("테스트에 사용할 채널 ID: " + channelId);
+
+        ChzzkChat chat = loginChzzk.chat(channelId)
                 .withChatListener(new ChatEventListener() {
                     @Override
                     public void onConnect(ChzzkChat chat, boolean isReconnecting) {
@@ -70,13 +78,23 @@ public class ChatTest extends ChzzkTestBase {
 
                         System.out.println("[Mission] 익명: " + msg.getMissionText() + ": [" + msg.getPayAmount() + "원]");
                     }
+
+                    @Override
+                    public void onPartyDonationChat(PartyDonationMessage msg) {
+                        if (msg.getProfile() == null) {
+                            System.out.println("[Party] 익명: " + msg.getContent() + ": " + msg.getContent() + " [" + msg.getPayAmount() + "원 / " + msg.getPartyName() + "]");
+                            return;
+                        }
+
+                        System.out.println("[Party] " + msg.getProfile().getNickname() + ": " + msg.getContent() + " [" + msg.getPayAmount() + "원 / " + msg.getPartyName() + "]");
+                    }
                 })
                 .build();
 
         System.out.println(new Gson().toJson(RawApiUtils.getContentJson(chzzk.getHttpClient(),
-                RawApiUtils.httpGetRequest("https://api.chzzk.naver.com/service/v2/channels/dc7fb0d085cfbbe90e11836e3b85b784/live-detail").build(), chzzk.isDebug)));
+                RawApiUtils.httpGetRequest("https://api.chzzk.naver.com/service/v2/channels/" + channelId + "/live-detail").build(), chzzk.isDebug)));
         chat.connectBlocking();
-        Thread.sleep(700000);
+        Thread.sleep(TEST_DURATION_MS);
         chat.closeBlocking();
     }
 }
