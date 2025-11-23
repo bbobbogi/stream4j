@@ -18,16 +18,13 @@ import xyz.r2turntrue.chzzk4j.types.channel.ChzzkChannelFollowingData;
 import xyz.r2turntrue.chzzk4j.types.channel.ChzzkChannelRules;
 import xyz.r2turntrue.chzzk4j.types.channel.recommendation.ChzzkRecommendationChannels;
 
-// 8e7a6f0a0b1f0612afee1a673e94027d - 레고칠칠
-// c2186ca6edb3a663f137b15ed7346fac - 리얼진짜우왁굳
-// 두 채널 모두 팔로우한 뒤 테스트 진행해주세요.
-//
-// 22bd842599735ae19e454983280f611e - ENCHANT
-// 위 채널은 팔로우 해제 후 테스트 진행해주세요.
+// FOLLOWED_CHANNEL_1, FOLLOWED_CHANNEL_2 채널을 팔로우한 뒤 테스트 진행해주세요.
+// UNFOLLOWED_CHANNEL 채널은 팔로우 해제 후 테스트 진행해주세요.
+// 채널 ID는 env.properties에서 설정합니다.
 public class ChannelApiTest extends ChzzkTestBase {
-    public final String FOLLOWED_CHANNEL_1 = "8e7a6f0a0b1f0612afee1a673e94027d"; // 레고칠칠
-    public final String FOLLOWED_CHANNEL_2 = "c2186ca6edb3a663f137b15ed7346fac"; // 리얼진짜우왁굳
-    public final String UNFOLLOWED_CHANNEL = "22bd842599735ae19e454983280f611e"; // ENCHANT
+    public final String FOLLOWED_CHANNEL_1 = properties.getProperty("FOLLOWED_CHANNEL_1");
+    public final String FOLLOWED_CHANNEL_2 = properties.getProperty("FOLLOWED_CHANNEL_2");
+    public final String UNFOLLOWED_CHANNEL = properties.getProperty("UNFOLLOWED_CHANNEL");
 
     @Test
     void gettingNormalChannelInfo() throws IOException {
