@@ -35,46 +35,107 @@ public class PartyDonationInfo {
 
     String rawJson;
 
+    /**
+     * PartyDonationInfo를 생성합니다.
+     */
+    PartyDonationInfo() {
+    }
+
+    /**
+     * 원본 JSON 문자열을 반환합니다.
+     *
+     * @return 원본 JSON 문자열
+     */
     public String getRawJson() {
         return rawJson;
     }
 
+    /**
+     * 호스트 채널의 인증 마크 여부를 반환합니다.
+     *
+     * @return 호스트 채널 인증 마크 여부
+     */
     public boolean isHostChannelVerifiedMark() {
         return hostChannelVerifiedMark;
     }
 
+    /**
+     * 호스트 채널의 닉네임을 반환합니다.
+     *
+     * @return 호스트 채널 닉네임
+     */
     public String getHostChannelNickname() {
         return hostChannelNickname;
     }
 
+    /**
+     * 파티 멤버 수를 반환합니다.
+     *
+     * @return 파티 멤버 수
+     */
     public int getMemberCount() {
         return memberCount;
     }
 
+    /**
+     * 파티 이름을 반환합니다.
+     *
+     * @return 파티 이름
+     */
     public String getPartyName() {
         return partyName;
     }
 
+    /**
+     * 이벤트 타입을 반환합니다.
+     *
+     * @return 이벤트 타입
+     */
     public String getType() {
         return type;
     }
 
+    /**
+     * 프로필 이미지 URL 목록을 반환합니다.
+     *
+     * @return 프로필 이미지 URL 배열
+     */
     public String[] getProfileImageUrlList() {
         return profileImageUrlList;
     }
 
+    /**
+     * 총 후원 금액을 반환합니다.
+     *
+     * @return 총 후원 금액
+     */
     public int getTotalDonationAmount() {
         return totalDonationAmount;
     }
 
+    /**
+     * 파티 상태의 원본 문자열을 반환합니다.
+     *
+     * @return 파티 상태 원본 문자열
+     */
     public String getStatusRaw() {
         return status;
     }
 
+    /**
+     * 파티 상태를 반환합니다.
+     *
+     * @return 파티 상태
+     */
     public PartyStatus getStatus() {
         return PartyStatus.fromString(status);
     }
 
+    /**
+     * 파티가 열려있는지 확인합니다.
+     *
+     * @return 파티가 열려있으면 true
+     */
     public boolean isOpen() {
         return PartyStatus.OPEN == getStatus();
     }

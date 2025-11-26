@@ -19,14 +19,35 @@ package xyz.r2turntrue.chzzk4j.chat;
  * 참고: 파티 후원 시작 후 채팅에 접속한 경우 1번 이벤트를 받지 못하고 2번부터 받을 수 있음
  */
 public class PartyDonationMessage extends DonationMessage {
+    /**
+     * PartyDonationMessage를 생성합니다.
+     */
+    PartyDonationMessage() {
+    }
+
+    /**
+     * 파티 후원 ID를 반환합니다.
+     *
+     * @return 파티 후원 ID
+     */
     public String getPartyDonationId() {
         return extras.partyDonationId;
     }
 
+    /**
+     * 파티 이름을 반환합니다.
+     *
+     * @return 파티 이름
+     */
     public String getPartyName() {
         return extras.partyName;
     }
 
+    /**
+     * 파티 번호를 반환합니다.
+     *
+     * @return 파티 번호
+     */
     public int getPartyNo() {
         return extras.partyNo;
     }

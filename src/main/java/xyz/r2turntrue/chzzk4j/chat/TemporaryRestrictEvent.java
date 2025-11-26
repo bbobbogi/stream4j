@@ -21,30 +21,71 @@ public class TemporaryRestrictEvent {
 
     String rawJson;
 
+    /**
+     * TemporaryRestrictEvent를 생성합니다.
+     */
+    TemporaryRestrictEvent() {
+    }
+
+    /**
+     * 제재 시간(초)을 반환합니다.
+     *
+     * @return 제재 시간(초)
+     */
     public int getDuration() {
         return duration;
     }
 
+    /**
+     * 누적 제재 횟수를 반환합니다.
+     *
+     * @return 누적 제재 횟수
+     */
     public int getTimes() {
         return times;
     }
 
+    /**
+     * 제재된 사용자의 ID 해시를 반환합니다.
+     *
+     * @return 사용자 ID 해시
+     */
     public String getUserIdHash() {
         return userIdHash;
     }
 
+    /**
+     * 제재 생성 시간의 원본 문자열을 반환합니다.
+     *
+     * @return 제재 생성 시간 원본 문자열
+     */
     public String getCreatedTimeRaw() {
         return createdTime;
     }
 
+    /**
+     * 제재 생성 시간을 반환합니다.
+     *
+     * @return 제재 생성 시간 (null일 수 있음)
+     */
     public LocalDateTime getCreatedTime() {
         return createdTime != null ? LocalDateTime.parse(createdTime, ISO_FORMATTER) : null;
     }
 
+    /**
+     * 이벤트 타입을 반환합니다.
+     *
+     * @return 이벤트 타입
+     */
     public String getType() {
         return type;
     }
 
+    /**
+     * 원본 JSON 문자열을 반환합니다.
+     *
+     * @return 원본 JSON 문자열
+     */
     public String getRawJson() {
         return rawJson;
     }

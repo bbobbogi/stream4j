@@ -26,27 +26,49 @@ public class ChangeDonationActiveEvent {
     String rawJson;
 
     /**
-     * 후원 활성화 여부
+     * ChangeDonationActiveEvent를 생성합니다.
+     */
+    ChangeDonationActiveEvent() {
+    }
+
+    /**
+     * 후원 활성화 여부를 반환합니다.
+     *
+     * @return 후원이 활성화되어 있으면 {@code true}, 그렇지 않으면 {@code false}
      */
     public boolean isDonationActive() {
         return donationActive;
     }
 
     /**
-     * 후원 타입
-     * "CHAT": 채팅 후원
-     * "VIDEO": 영상 후원
-     * "MISSION": 미션 후원
-     * "PARTY": 파티 후원
+     * 후원 타입을 반환합니다.
+     * <ul>
+     *   <li>"CHAT": 채팅 후원</li>
+     *   <li>"VIDEO": 영상 후원</li>
+     *   <li>"MISSION": 미션 후원</li>
+     *   <li>"PARTY": 파티 후원</li>
+     * </ul>
+     *
+     * @return 후원 타입 문자열
      */
     public String getDonationType() {
         return donationType;
     }
 
+    /**
+     * 이벤트 타입을 반환합니다.
+     *
+     * @return 이벤트 타입 문자열
+     */
     public String getType() {
         return type;
     }
 
+    /**
+     * 원본 JSON 문자열을 반환합니다.
+     *
+     * @return 원본 JSON 문자열
+     */
     public String getRawJson() {
         return rawJson;
     }
