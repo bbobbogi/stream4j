@@ -51,7 +51,7 @@ jobs:
       - name: Get project version
         id: get_version
         run: |
-          VERSION=$(./gradlew -q properties | grep "^version:" | cut -d' ' -f2)
+          VERSION=$(./gradlew -q properties | grep "^version:" | sed 's/version: //')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Verify build artifacts
