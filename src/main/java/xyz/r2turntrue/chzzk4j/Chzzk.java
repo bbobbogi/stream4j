@@ -23,10 +23,23 @@ import xyz.r2turntrue.chzzk4j.util.RawApiUtils;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * 치지직(CHZZK) API 클라이언트 클래스입니다.
+ */
 public class Chzzk {
+    /**
+     * CHZZK API URL
+     */
     public static String API_URL = "https://api.chzzk.naver.com";
+
+    /**
+     * 네이버 게임 API URL
+     */
     public static String GAME_API_URL = "https://comm-api.game.naver.com/nng_main";
 
+    /**
+     * 디버그 모드 활성화 여부
+     */
     public boolean isDebug = false;
 
     private String nidAuth;
@@ -71,6 +84,8 @@ public class Chzzk {
 
     /**
      * Get this {@link Chzzk} logged in.
+     *
+     * @return 로그인 상태면 {@code true}, 그렇지 않으면 {@code false}
      */
     public boolean isLoggedIn() {
         return !isAnonymous;
@@ -78,11 +93,19 @@ public class Chzzk {
 
     /**
      * Get new an instance of {@link ChzzkChat} with this {@link Chzzk}.
+     *
+     * @param channelId 채널 ID
+     * @return {@link ChzzkChatBuilder} 인스턴스
      */
     public ChzzkChatBuilder chat(String channelId) {
         return new ChzzkChatBuilder(this, channelId);
     }
 
+    /**
+     * HTTP 클라이언트를 반환합니다.
+     *
+     * @return {@link OkHttpClient} 인스턴스
+     */
     public OkHttpClient getHttpClient() {
         return httpClient;
     }
@@ -166,6 +189,13 @@ public class Chzzk {
         return rules;
     }
 
+    /**
+     * 채널의 이모티콘 팩 데이터를 가져옵니다.
+     *
+     * @param channelId 채널 ID
+     * @return {@link ChzzkChannelEmotePackData} 이모티콘 팩 데이터
+     * @throws IOException API 요청 실패 시
+     */
     public ChzzkChannelEmotePackData getChannelEmotePackData(String channelId) throws IOException {
         JsonElement contentJson = RawApiUtils.getContentJson(
                 httpClient,

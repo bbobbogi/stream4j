@@ -26,50 +26,116 @@ public class SubscriptionGiftReceiverEvent {
 
     String rawJson;
 
+    /**
+     * SubscriptionGiftReceiverEvent를 생성합니다.
+     */
+    SubscriptionGiftReceiverEvent() {
+    }
+
+    /**
+     * 선물 ID를 반환합니다.
+     *
+     * @return 선물 ID
+     */
     public String getGiftId() {
         return giftId;
     }
 
+    /**
+     * 수신자의 사용자 ID 해시를 반환합니다.
+     *
+     * @return 수신자 사용자 ID 해시
+     */
     public String getReceiverUserIdHash() {
         return receiverUserIdHash;
     }
 
+    /**
+     * 선택 타입의 원본 문자열을 반환합니다.
+     *
+     * @return 선택 타입 원본 문자열
+     */
     public String getSelectionTypeRaw() {
         return selectionType;
     }
 
+    /**
+     * 선택 타입을 반환합니다.
+     *
+     * @return 선택 타입
+     */
     public SelectionType getSelectionType() {
         return SelectionType.fromString(selectionType);
     }
 
+    /**
+     * 선물 티어 번호를 반환합니다.
+     *
+     * @return 선물 티어 번호
+     */
     public int getGiftTierNo() {
         return giftTierNo;
     }
 
+    /**
+     * 발신자의 사용자 ID 해시를 반환합니다.
+     *
+     * @return 발신자 사용자 ID 해시
+     */
     public String getUserIdHash() {
         return userIdHash;
     }
 
+    /**
+     * 수신자의 인증 마크 여부를 반환합니다.
+     *
+     * @return 수신자 인증 마크 여부
+     */
     public boolean isReceiverVerifiedMark() {
         return receiverVerifiedMark;
     }
 
+    /**
+     * 선물 타입을 반환합니다.
+     *
+     * @return 선물 타입
+     */
     public String getGiftType() {
         return giftType;
     }
 
+    /**
+     * 수신자의 닉네임을 반환합니다.
+     *
+     * @return 수신자 닉네임
+     */
     public String getReceiverNickname() {
         return receiverNickname;
     }
 
+    /**
+     * 이벤트 타입을 반환합니다.
+     *
+     * @return 이벤트 타입
+     */
     public String getType() {
         return type;
     }
 
+    /**
+     * 선물 티어 이름을 반환합니다.
+     *
+     * @return 선물 티어 이름
+     */
     public String getGiftTierName() {
         return giftTierName;
     }
 
+    /**
+     * 원본 JSON 문자열을 반환합니다.
+     *
+     * @return 원본 JSON 문자열
+     */
     public String getRawJson() {
         return rawJson;
     }

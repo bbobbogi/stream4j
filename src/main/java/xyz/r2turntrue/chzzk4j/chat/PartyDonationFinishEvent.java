@@ -25,17 +25,35 @@ public class PartyDonationFinishEvent {
     String rawJson;
 
     /**
-     * 확인이 필요한지 여부
-     * true일 경우 PARTY_DONATION_CONFIRM 이벤트가 뒤따름
+     * PartyDonationFinishEvent를 생성합니다.
+     */
+    PartyDonationFinishEvent() {
+    }
+
+    /**
+     * 확인이 필요한지 여부를 반환합니다.
+     * true일 경우 PARTY_DONATION_CONFIRM 이벤트가 뒤따릅니다.
+     *
+     * @return 확인 필요 여부
      */
     public boolean isConfirmNeeded() {
         return confirmNeeded;
     }
 
+    /**
+     * 이벤트 타입을 반환합니다.
+     *
+     * @return 이벤트 타입
+     */
     public String getType() {
         return type;
     }
 
+    /**
+     * 원본 JSON 문자열을 반환합니다.
+     *
+     * @return 원본 JSON 문자열
+     */
     public String getRawJson() {
         return rawJson;
     }

@@ -14,6 +14,12 @@ public enum SelectionType {
      */
     RANDOM;
 
+    /**
+     * 문자열에서 SelectionType으로 변환합니다.
+     *
+     * @param type 선택 타입 문자열
+     * @return 해당하는 SelectionType (없으면 null)
+     */
     public static SelectionType fromString(String type) {
         if (type == null) return null;
         try {

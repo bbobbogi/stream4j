@@ -2,6 +2,9 @@ package xyz.r2turntrue.chzzk4j.types.channel.live;
 
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * 라이브 채널 정보를 나타내는 클래스입니다.
+ */
 public class ChzzkLiveChannel {
 
     private String channelId;
@@ -10,7 +13,15 @@ public class ChzzkLiveChannel {
     private boolean verifiedMark;
 
     /**
+     * ChzzkLiveChannel을 생성합니다.
+     */
+    ChzzkLiveChannel() {
+    }
+
+    /**
      * Get id of the live channel.
+     *
+     * @return 채널 ID
      */
     public @NotNull String getId() {
         return channelId;
@@ -18,6 +29,8 @@ public class ChzzkLiveChannel {
 
     /**
      * Get name of the live channel.
+     *
+     * @return 채널 이름
      */
     public @NotNull String getName() {
         return channelName;
@@ -25,6 +38,8 @@ public class ChzzkLiveChannel {
 
     /**
      * Get image url of the live channel.
+     *
+     * @return 채널 이미지 URL
      */
     public @NotNull String getImageUrl() {
         return channelImageUrl;
@@ -32,6 +47,8 @@ public class ChzzkLiveChannel {
 
     /**
      * Get verified mark status of the live channel.
+     *
+     * @return 인증 마크 여부
      */
     public boolean hasVerifiedMark() {
         return verifiedMark;

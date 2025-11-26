@@ -29,6 +29,12 @@ public enum MissionStatus {
      */
     EXPIRED;
 
+    /**
+     * 문자열에서 MissionStatus로 변환합니다.
+     *
+     * @param status 미션 상태 문자열
+     * @return 해당하는 MissionStatus (없으면 null)
+     */
     public static MissionStatus fromString(String status) {
         if (status == null) return null;
         try {

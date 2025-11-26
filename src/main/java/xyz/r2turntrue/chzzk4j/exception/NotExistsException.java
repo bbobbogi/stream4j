@@ -2,6 +2,9 @@ package xyz.r2turntrue.chzzk4j.exception;
 
 import java.io.InvalidObjectException;
 
+/**
+ * 요청한 리소스가 존재하지 않을 때 발생하는 예외입니다.
+ */
 public class NotExistsException extends InvalidObjectException {
     /**
      * Constructs an {@code NotExistsException}.

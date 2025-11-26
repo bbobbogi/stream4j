@@ -1,5 +1,8 @@
 package xyz.r2turntrue.chzzk4j.types.channel;
 
+/**
+ * 치지직 채널 정보를 나타내는 클래스입니다.
+ */
 public class ChzzkChannel extends ChzzkPartialChannel {
     private String channelDescription;
     private int followerCount;
@@ -11,6 +14,8 @@ public class ChzzkChannel extends ChzzkPartialChannel {
 
     /**
      * Get description of the channel.
+     *
+     * @return 채널 설명
      */
     public String getChannelDescription() {
         return channelDescription;
@@ -18,6 +23,8 @@ public class ChzzkChannel extends ChzzkPartialChannel {
 
     /**
      * Get the count of the channel's followers.
+     *
+     * @return 팔로워 수
      */
     public int getFollowerCount() {
         return followerCount;
@@ -25,6 +32,8 @@ public class ChzzkChannel extends ChzzkPartialChannel {
 
     /**
      * Get is the channel broadcasting.
+     *
+     * @return 방송 중이면 {@code true}, 그렇지 않으면 {@code false}
      */
     public boolean isBroadcasting() {
         return openLive;

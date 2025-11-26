@@ -16,6 +16,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 채팅 웹소켓 클라이언트입니다.
+ */
 public class ChatWebsocketClient extends WebSocketClient {
 
     private ChzzkChat chat;
@@ -25,6 +28,12 @@ public class ChatWebsocketClient extends WebSocketClient {
     private long lastSendPingTime;
     private long lastRecivedMessageTime;
 
+    /**
+     * ChatWebsocketClient를 생성합니다.
+     *
+     * @param chat 채팅 인스턴스
+     * @param websocketUri 웹소켓 URI
+     */
     public ChatWebsocketClient(ChzzkChat chat, URI websocketUri) {
         super(websocketUri);
         this.chat = chat;
@@ -449,6 +458,11 @@ public class ChatWebsocketClient extends WebSocketClient {
         }
     }
 
+    /**
+     * 채팅 메시지를 전송합니다.
+     *
+     * @param content 전송할 메시지 내용
+     */
     public void sendChat(String content) {
         var msg = setupWsMessage(new WsMessageServerboundSendChat());
         msg.sid = sid;
@@ -461,6 +475,11 @@ public class ChatWebsocketClient extends WebSocketClient {
         send(gson.toJson(msg));
     }
 
+    /**
+     * 최근 채팅 메시지를 요청합니다.
+     *
+     * @param chatCount 요청할 채팅 메시지 수
+     */
     public void requestRecentChat(int chatCount) {
         var msg = setupWsMessage(new WsMessageServerboundRequestRecentChat());
         msg.tid = 2;

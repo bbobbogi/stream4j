@@ -1,5 +1,8 @@
 package xyz.r2turntrue.chzzk4j.types.channel;
 
+/**
+ * 채널 규칙 정보를 나타내는 클래스입니다.
+ */
 public class ChzzkChannelRules {
     private boolean agree;
     private String channelId;
@@ -11,6 +14,8 @@ public class ChzzkChannelRules {
 
     /**
      * Get the user is agreed to the rules of channel.
+     *
+     * @return 규칙 동의 여부
      */
     public boolean isAgree() {
         return agree;
@@ -18,6 +23,8 @@ public class ChzzkChannelRules {
 
     /**
      * Get the id of channel.
+     *
+     * @return 채널 ID
      */
     public String getChannelId() {
         return channelId;
@@ -25,6 +32,8 @@ public class ChzzkChannelRules {
 
     /**
      * Get the rule string of channel.
+     *
+     * @return 채널 규칙 문자열
      */
     public String getRule() {
         return rule;
@@ -32,6 +41,8 @@ public class ChzzkChannelRules {
 
     /**
      * Get when the rule updated in yyyy-mm-dd HH:mm:ss format.
+     *
+     * @return 규칙 업데이트 날짜
      */
     public String getUpdatedDate() {
         return updatedDate;
@@ -39,6 +50,8 @@ public class ChzzkChannelRules {
 
     /**
      * Get the user is agreed to the rules of channel.
+     *
+     * @return 서비스 동의 여부
      */
     public boolean isServiceAgree() {
         return serviceAgree;

@@ -12,6 +12,9 @@ import java.nio.channels.AlreadyConnectedException;
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * 치지직 채팅 클라이언트 클래스입니다.
+ */
 public class ChzzkChat {
     boolean reconnecting;
     Chzzk chzzk;
@@ -27,18 +30,38 @@ public class ChzzkChat {
 
     boolean autoReconnect = false;
 
+    /**
+     * 채팅 서버 연결 상태를 반환합니다.
+     *
+     * @return 연결되어 있으면 {@code true}, 그렇지 않으면 {@code false}
+     */
     public boolean isConnectedToChat() {
         return isConnectedToWebsocket;
     }
 
+    /**
+     * 자동 재연결 설정 여부를 반환합니다.
+     *
+     * @return 자동 재연결이 활성화되어 있으면 {@code true}, 그렇지 않으면 {@code false}
+     */
     public boolean shouldAutoReconnect() {
         return autoReconnect;
     }
 
+    /**
+     * 채팅 ID를 반환합니다.
+     *
+     * @return 채팅 ID
+     */
     public String getChatId() {
         return chatId;
     }
 
+    /**
+     * 채널 ID를 반환합니다.
+     *
+     * @return 채널 ID
+     */
     public String getChannelId() {
         return channelId;
     }
@@ -51,6 +74,8 @@ public class ChzzkChat {
 
     /**
      * Connects to the chat. This method doesn't block.
+     *
+     * @return 비동기 작업을 위한 CompletableFuture
      */
     public CompletableFuture<Void> connectAsync() {
         return connectFromChannelId(channelId, autoReconnect);
@@ -63,14 +88,22 @@ public class ChzzkChat {
         connectFromChannelId(channelId, autoReconnect).join();
     }
 
-    @Deprecated
     /**
+     * 이벤트 리스너를 추가합니다.
+     *
+     * @param listener 추가할 리스너
      * @deprecated Please add listeners when build {@link ChzzkChat} by {@link ChzzkChatBuilder}
      */
+    @Deprecated
     public void addListener(ChatEventListener listener) {
         listeners.add(listener);
     }
 
+    /**
+     * 최근 채팅 메시지를 요청합니다.
+     *
+     * @param chatCount 요청할 채팅 메시지 수
+     */
     public void requestRecentChat(int chatCount) {
         if (!isConnectedToWebsocket) {
             throw new IllegalStateException("Connect to request recent chats!");
@@ -79,6 +112,11 @@ public class ChzzkChat {
         client.requestRecentChat(chatCount);
     }
 
+    /**
+     * 채팅 메시지를 전송합니다.
+     *
+     * @param content 전송할 메시지 내용
+     */
     public void sendChat(String content) {
         if (!isConnectedToWebsocket) {
             throw new IllegalStateException("Connect to send chat!");
@@ -162,6 +200,11 @@ public class ChzzkChat {
         });
     }
 
+    /**
+     * 비동기로 재연결합니다.
+     *
+     * @return 비동기 작업을 위한 CompletableFuture
+     */
     public CompletableFuture<Void> reconnectAsync() {
         return CompletableFuture.runAsync(() -> {
             try {
@@ -188,10 +231,18 @@ public class ChzzkChat {
         });
     }
 
+    /**
+     * 동기로 재연결합니다.
+     */
     public void reconnectSync() {
         reconnectAsync().join();
     }
 
+    /**
+     * 비동기로 연결을 종료합니다.
+     *
+     * @return 비동기 작업을 위한 CompletableFuture
+     */
     public CompletableFuture<Void> closeAsync() {
         return CompletableFuture.runAsync(() -> {
             try {
@@ -207,6 +258,9 @@ public class ChzzkChat {
         });
     }
 
+    /**
+     * 동기로 연결을 종료합니다.
+     */
     public void closeBlocking() {
         closeAsync().join();
     }

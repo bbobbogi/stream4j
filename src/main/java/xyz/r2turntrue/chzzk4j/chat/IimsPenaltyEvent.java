@@ -14,16 +14,34 @@ public class IimsPenaltyEvent {
     String rawJson;
 
     /**
-     * 제재받은 사용자 ID 해시
+     * IimsPenaltyEvent를 생성합니다.
+     */
+    IimsPenaltyEvent() {
+    }
+
+    /**
+     * 제재받은 사용자 ID 해시를 반환합니다.
+     *
+     * @return 사용자 ID 해시
      */
     public String getUserIdHash() {
         return userIdHash;
     }
 
+    /**
+     * 이벤트 타입을 반환합니다.
+     *
+     * @return 이벤트 타입
+     */
     public String getType() {
         return type;
     }
 
+    /**
+     * 원본 JSON 문자열을 반환합니다.
+     *
+     * @return 원본 JSON
+     */
     public String getRawJson() {
         return rawJson;
     }

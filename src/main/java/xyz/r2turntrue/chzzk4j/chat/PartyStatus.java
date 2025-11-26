@@ -14,6 +14,12 @@ public enum PartyStatus {
      */
     CLOSED;
 
+    /**
+     * 문자열에서 PartyStatus로 변환합니다.
+     *
+     * @param status 파티 상태 문자열
+     * @return 해당하는 PartyStatus (없으면 null)
+     */
     public static PartyStatus fromString(String status) {
         if (status == null) return null;
         try {

@@ -25,30 +25,52 @@ public class PartyDonationConfirmEvent {
     String rawJson;
 
     /**
-     * 파티 후원 순위
+     * PartyDonationConfirmEvent를 생성합니다.
+     */
+    PartyDonationConfirmEvent() {
+    }
+
+    /**
+     * 파티 후원 순위를 반환합니다.
+     *
+     * @return 파티 후원 순위
      */
     public int getRank() {
         return rank;
     }
 
     /**
-     * 채널 이름
+     * 채널 이름을 반환합니다.
+     *
+     * @return 채널 이름
      */
     public String getChannelName() {
         return channelName;
     }
 
     /**
-     * 순위 이름 (예: "참가비")
+     * 순위 이름을 반환합니다. (예: "참가비")
+     *
+     * @return 순위 이름
      */
     public String getRankName() {
         return rankName;
     }
 
+    /**
+     * 이벤트 타입을 반환합니다.
+     *
+     * @return 이벤트 타입
+     */
     public String getType() {
         return type;
     }
 
+    /**
+     * 원본 JSON 문자열을 반환합니다.
+     *
+     * @return 원본 JSON 문자열
+     */
     public String getRawJson() {
         return rawJson;
     }

@@ -30,67 +30,152 @@ import java.time.format.DateTimeFormatter;
 public class MissionDonationMessage extends DonationMessage {
     private static final DateTimeFormatter MISSION_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+    /**
+     * MissionDonationMessage를 생성합니다.
+     */
+    MissionDonationMessage() {
+    }
 
+    /**
+     * 미션 지속 시간(초)을 반환합니다.
+     *
+     * @return 미션 지속 시간(초)
+     */
     public int getDurationTime() {
         return extras.durationTime;
     }
 
+    /**
+     * 미션 후원 ID를 반환합니다.
+     *
+     * @return 미션 후원 ID
+     */
     public String getMissionDonationId() {
         return extras.missionDonationId;
     }
 
+    /**
+     * 미션 후원 타입의 원본 문자열을 반환합니다.
+     *
+     * @return 미션 후원 타입 원본 문자열
+     */
     public String getMissionDonationTypeRaw() {
         return extras.missionDonationType;
     }
 
+    /**
+     * 미션 후원 타입을 반환합니다.
+     *
+     * @return 미션 후원 타입
+     */
     public MissionDonationType getMissionDonationType() {
         return MissionDonationType.fromString(extras.missionDonationType);
     }
 
+    /**
+     * 미션 생성 시간의 원본 문자열을 반환합니다.
+     *
+     * @return 미션 생성 시간 원본 문자열
+     */
     public String getMissionCreatedTimeRaw() {
         return extras.missionCreatedTime;
     }
 
+    /**
+     * 미션 생성 시간을 반환합니다.
+     *
+     * @return 미션 생성 시간 (null일 수 있음)
+     */
     public LocalDateTime getMissionCreatedTime() {
         return extras.missionCreatedTime != null ? LocalDateTime.parse(extras.missionCreatedTime, MISSION_TIME_FORMATTER) : null;
     }
 
+    /**
+     * 미션 시작 시간의 원본 문자열을 반환합니다.
+     *
+     * @return 미션 시작 시간 원본 문자열
+     */
     public String getMissionStartTimeRaw() {
         return extras.missionStartTime;
     }
 
+    /**
+     * 미션 시작 시간을 반환합니다.
+     *
+     * @return 미션 시작 시간 (null일 수 있음)
+     */
     public LocalDateTime getMissionStartTime() {
         return extras.missionStartTime != null ? LocalDateTime.parse(extras.missionStartTime, MISSION_TIME_FORMATTER) : null;
     }
 
+    /**
+     * 미션 종료 시간의 원본 문자열을 반환합니다.
+     *
+     * @return 미션 종료 시간 원본 문자열
+     */
     public String getMissionEndTimeRaw() {
         return extras.missionEndTime;
     }
 
+    /**
+     * 미션 종료 시간을 반환합니다.
+     *
+     * @return 미션 종료 시간 (null일 수 있음)
+     */
     public LocalDateTime getMissionEndTime() {
         return extras.missionEndTime != null ? LocalDateTime.parse(extras.missionEndTime, MISSION_TIME_FORMATTER) : null;
     }
 
+    /**
+     * 미션 텍스트를 반환합니다.
+     *
+     * @return 미션 텍스트
+     */
     public String getMissionText() {
         return extras.missionText;
     }
 
+    /**
+     * 총 결제 금액을 반환합니다.
+     *
+     * @return 총 결제 금액
+     */
     public int getTotalPayAmount() {
         return extras.totalPayAmount;
     }
 
+    /**
+     * 참여자 수를 반환합니다.
+     *
+     * @return 참여자 수
+     */
     public int getParticipationCount() {
         return extras.participationCount;
     }
 
+    /**
+     * 미션 상태의 원본 문자열을 반환합니다.
+     *
+     * @return 미션 상태 원본 문자열
+     */
     public String getMissionStatusRaw() {
         return extras.status;
     }
 
+    /**
+     * 미션 상태를 반환합니다.
+     *
+     * @return 미션 상태
+     */
     public MissionStatus getMissionStatus() {
         return MissionStatus.fromString(extras.status);
     }
 
+    /**
+     * 미션 성공 여부를 반환합니다.
+     *
+     * @return 미션 성공 여부
+     */
     public boolean isMissionSucceed() {
         return extras.success;
     }
@@ -99,6 +184,8 @@ public class MissionDonationMessage extends DonationMessage {
      * 닉네임 (익명일 경우 null)
      * EVENT 형태: 상속받은 profile 내부
      * CHAT/DONATION 형태: extras 내부 또는 profile 내부
+     *
+     * @return 닉네임 (익명일 경우 null)
      */
     public String getNickname() {
         if (profile != null && profile.getNickname() != null) return profile.getNickname();
@@ -109,6 +196,8 @@ public class MissionDonationMessage extends DonationMessage {
      * 사용자 ID 해시 (익명일 경우 null)
      * EVENT 형태: 상속받은 userIdHash 필드 사용
      * CHAT/DONATION 형태: extras 내부 또는 userIdHash 필드
+     *
+     * @return 사용자 ID 해시 (익명일 경우 null)
      */
     @Override
     public String getUserIdHash() {
@@ -120,6 +209,8 @@ public class MissionDonationMessage extends DonationMessage {
      * 인증 마크 여부
      * EVENT 형태: 상속받은 profile 내부
      * CHAT/DONATION 형태: extras 내부 또는 profile 내부
+     *
+     * @return 인증 마크 여부
      */
     public boolean isVerifiedMark() {
         if (profile != null) return profile.isVerifiedMark();
@@ -130,6 +221,8 @@ public class MissionDonationMessage extends DonationMessage {
      * 익명 여부
      * EVENT 형태: extras에 정보 없음 (항상 false)
      * CHAT/DONATION 형태: extras 내부
+     *
+     * @return 익명 여부
      */
     public boolean isAnonymous() {
         return extras != null && extras.isAnonymous;
@@ -139,6 +232,8 @@ public class MissionDonationMessage extends DonationMessage {
      * 익명 토큰 (익명일 경우에만 존재)
      * EVENT 형태: extras에 정보 없음
      * CHAT/DONATION 형태: extras 내부
+     *
+     * @return 익명 토큰 (익명일 경우에만 존재)
      */
     public String getAnonymousToken() {
         return extras != null ? extras.anonymousToken : null;
@@ -148,6 +243,8 @@ public class MissionDonationMessage extends DonationMessage {
      * 후원 ID
      * EVENT 형태: extras에 정보 없음
      * CHAT/DONATION 형태: extras 내부
+     *
+     * @return 후원 ID
      */
     public String getDonationId() {
         return extras != null ? extras.donationId : null;
@@ -157,6 +254,8 @@ public class MissionDonationMessage extends DonationMessage {
      * 결제 타입 (예: "CURRENCY")
      * EVENT 형태: extras에 정보 없음
      * CHAT/DONATION 형태: extras 내부
+     *
+     * @return 결제 타입
      */
     public String getPayType() {
         return extras != null ? extras.payType : null;
@@ -166,6 +265,8 @@ public class MissionDonationMessage extends DonationMessage {
      * 연속 후원 일수
      * EVENT 형태: extras에 정보 없음
      * CHAT/DONATION 형태: extras 내부
+     *
+     * @return 연속 후원 일수
      */
     public int getContinuousDonationDays() {
         return extras != null ? extras.continuousDonationDays : 0;
