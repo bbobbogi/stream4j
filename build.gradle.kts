@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "io.github.bbobbogi"
-version = "0.0.12"
+version = "0.0.12+fork.2"
 
 // Helper function to get property from environment
 fun getEnvOrProperty(envKey: String, defaultValue: String = ""): String {
@@ -42,7 +42,7 @@ publishing {
         create<MavenPublication>("maven") {
             artifactId = "chzzk4j"
             groupId = "io.github.bbobbogi"
-            version = "0.0.12"
+            version = "0.0.12+fork.2"
 
             from(components["java"])
 
