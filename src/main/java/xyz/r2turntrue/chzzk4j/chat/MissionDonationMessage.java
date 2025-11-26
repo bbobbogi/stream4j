@@ -87,7 +87,7 @@ public class MissionDonationMessage extends DonationMessage {
      * @return 미션 생성 시간 (null일 수 있음)
      */
     public LocalDateTime getMissionCreatedTime() {
-        return extras.missionCreatedTime != null ? LocalDateTime.parse(extras.missionCreatedTime, MISSION_TIME_FORMATTER) : null;
+        return parseMissionTime(extras.missionCreatedTime);
     }
 
     /**
@@ -105,7 +105,7 @@ public class MissionDonationMessage extends DonationMessage {
      * @return 미션 시작 시간 (null일 수 있음)
      */
     public LocalDateTime getMissionStartTime() {
-        return extras.missionStartTime != null ? LocalDateTime.parse(extras.missionStartTime, MISSION_TIME_FORMATTER) : null;
+        return parseMissionTime(extras.missionStartTime);
     }
 
     /**
@@ -123,7 +123,14 @@ public class MissionDonationMessage extends DonationMessage {
      * @return 미션 종료 시간 (null일 수 있음)
      */
     public LocalDateTime getMissionEndTime() {
-        return extras.missionEndTime != null ? LocalDateTime.parse(extras.missionEndTime, MISSION_TIME_FORMATTER) : null;
+        return parseMissionTime(extras.missionEndTime);
+    }
+
+    private LocalDateTime parseMissionTime(String timeStr) {
+        if (timeStr == null || timeStr.isEmpty()) {
+            return null;
+        }
+        return LocalDateTime.parse(timeStr, MISSION_TIME_FORMATTER);
     }
 
     /**

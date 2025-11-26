@@ -109,7 +109,14 @@ public class ChatMessage {
          * @return 운영 체제 타입
          */
         public OsType getOsType() {
-            return OsType.valueOf(osType);
+            if (osType == null) {
+                return OsType.PC;
+            }
+            try {
+                return OsType.valueOf(osType);
+            } catch (IllegalArgumentException e) {
+                return OsType.PC;
+            }
         }
 
         /**
