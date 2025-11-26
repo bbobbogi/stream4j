@@ -127,10 +127,14 @@ public class MissionDonationMessage extends DonationMessage {
     }
 
     private LocalDateTime parseMissionTime(String timeStr) {
-        if (timeStr == null || timeStr.isEmpty()) {
+        if (timeStr == null || timeStr.trim().isEmpty()) {
             return null;
         }
-        return LocalDateTime.parse(timeStr, MISSION_TIME_FORMATTER);
+        try {
+            return LocalDateTime.parse(timeStr, MISSION_TIME_FORMATTER);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     /**
