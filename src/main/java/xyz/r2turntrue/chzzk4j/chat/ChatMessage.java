@@ -70,7 +70,14 @@ public class ChatMessage {
         }
 
         public OsType getOsType() {
-            return OsType.valueOf(osType);
+            if (osType == null) {
+                return OsType.PC;
+            }
+            try {
+                return OsType.valueOf(osType);
+            } catch (IllegalArgumentException e) {
+                return OsType.PC;
+            }
         }
 
         public int getPayAmount() {
