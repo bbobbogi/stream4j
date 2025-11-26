@@ -8,10 +8,20 @@ import org.openqa.selenium.chrome.ChromeOptions;
 
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Chrome WebDriver 유틸리티 클래스입니다.
+ */
 public class Chrome {
+    /**
+     * Chrome 인스턴스를 생성합니다.
+     */
+    private Chrome() {
+    }
 
     /**
      * Explicitly sets the properties for the chrome driver.
+     *
+     * @param path Chrome 드라이버 경로
      */
     public static void setDriverProperty(@NotNull String path) {
         System.setProperty("webdriver.chrome.driver", path);
@@ -19,6 +29,8 @@ public class Chrome {
 
     /**
      * Get chrome web driver.
+     *
+     * @return Chrome WebDriver 인스턴스
      */
     public static WebDriver getDriver() {
         try {
@@ -34,6 +46,11 @@ public class Chrome {
         }
     }
 
+    /**
+     * WebDriver를 JavascriptExecutor로 반환합니다.
+     *
+     * @return JavascriptExecutor 인스턴스
+     */
     public static JavascriptExecutor getDriverAsJavascriptExecutor() {
         return (JavascriptExecutor) getDriver();
     }
