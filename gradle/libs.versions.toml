@@ -1,0 +1,16 @@
+[versions]
+junit = "5.10.1"
+jetbrains-annotations = "26.0.2-1"
+okhttp = "5.3.2"
+gson = "2.13.2"
+java-websocket = "1.6.0"
+selenium = "4.26.0"
+
+[libraries]
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }
+okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+java-websocket = { module = "org.java-websocket:Java-WebSocket", version.ref = "java-websocket" }
+selenium = { module = "org.seleniumhq.selenium:selenium-java", version.ref = "selenium" }

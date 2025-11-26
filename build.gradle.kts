@@ -18,14 +18,14 @@ repositories {
 }
 
 dependencies {
-    testImplementation(platform("org.junit:junit-bom:5.9.1"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation(platform(libs.junit.bom))
+    testImplementation(libs.junit.jupiter)
 
-    implementation("org.jetbrains:annotations:24.1.0")
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
-    implementation("com.google.code.gson:gson:2.10.1")
-    implementation("org.java-websocket:Java-WebSocket:1.5.5")
-    implementation("org.seleniumhq.selenium:selenium-java:4.26.0")
+    implementation(libs.jetbrains.annotations)
+    implementation(libs.okhttp)
+    implementation(libs.gson)
+    implementation(libs.java.websocket)
+    implementation(libs.selenium)
 }
 
 tasks.test {
