@@ -83,6 +83,9 @@ public class ChzzkChat {
         if (!isConnectedToWebsocket) {
             throw new IllegalStateException("Connect to send chat!");
         }
+        if (content == null || content.isEmpty()) {
+            throw new IllegalArgumentException("Chat content must not be null or empty.");
+        }
 
         client.sendChat(content);
     }
