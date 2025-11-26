@@ -52,10 +52,7 @@ public class MissionDonationMessage extends DonationMessage {
     }
 
     public LocalDateTime getMissionCreatedTime() {
-        if (extras.missionCreatedTime == null || extras.missionCreatedTime.isEmpty()) {
-            return null;
-        }
-        return LocalDateTime.parse(extras.missionCreatedTime, MISSION_TIME_FORMATTER);
+        return parseMissionTime(extras.missionCreatedTime);
     }
 
     public String getMissionStartTimeRaw() {
@@ -63,10 +60,7 @@ public class MissionDonationMessage extends DonationMessage {
     }
 
     public LocalDateTime getMissionStartTime() {
-        if (extras.missionStartTime == null || extras.missionStartTime.isEmpty()) {
-            return null;
-        }
-        return LocalDateTime.parse(extras.missionStartTime, MISSION_TIME_FORMATTER);
+        return parseMissionTime(extras.missionStartTime);
     }
 
     public String getMissionEndTimeRaw() {
@@ -74,10 +68,14 @@ public class MissionDonationMessage extends DonationMessage {
     }
 
     public LocalDateTime getMissionEndTime() {
-        if (extras.missionEndTime == null || extras.missionEndTime.isEmpty()) {
+        return parseMissionTime(extras.missionEndTime);
+    }
+
+    private LocalDateTime parseMissionTime(String timeStr) {
+        if (timeStr == null || timeStr.isEmpty()) {
             return null;
         }
-        return LocalDateTime.parse(extras.missionEndTime, MISSION_TIME_FORMATTER);
+        return LocalDateTime.parse(timeStr, MISSION_TIME_FORMATTER);
     }
 
     public String getMissionText() {
