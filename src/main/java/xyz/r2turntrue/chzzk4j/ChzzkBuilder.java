@@ -18,6 +18,11 @@ public class ChzzkBuilder {
         this.isAnonymous = true;
     }
 
+    /**
+     * 디버그 모드를 활성화합니다.
+     *
+     * @return 현재 {@link ChzzkBuilder} 인스턴스
+     */
     public ChzzkBuilder withDebugMode() {
         isDebug = true;
 
@@ -35,6 +40,7 @@ public class ChzzkBuilder {
      *
      * @param nidAuth The value of NID_AUT cookie
      * @param nidSession The value of NID_SES cookie
+     * @return 현재 {@link ChzzkBuilder} 인스턴스
      */
     public ChzzkBuilder withAuthorization(String nidAuth, String nidSession) {
         this.nidAuth = nidAuth;
@@ -48,11 +54,17 @@ public class ChzzkBuilder {
      * Add authorize token (NID_AUT and NID_SES) automatically by {@link Naver}.
      *
      * @param naver The authorized naver object
+     * @return 현재 {@link ChzzkBuilder} 인스턴스
      */
     public ChzzkBuilder withAuthorization(Naver naver) {
         return withAuthorization(naver.getCookie(Naver.Cookie.NID_AUT), naver.getCookie(Naver.Cookie.NID_SES));
     }
 
+    /**
+     * {@link Chzzk} 인스턴스를 생성합니다.
+     *
+     * @return 생성된 {@link Chzzk} 인스턴스
+     */
     public Chzzk build() {
         Chzzk chzzk = new Chzzk(this);
         chzzk.isDebug = this.isDebug;
