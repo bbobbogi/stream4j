@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ChatReconnectTest extends ChzzkTestBase {
     // CI 환경에서는 30초, 로컬에서는 700초 대기
-    private static final long TEST_DURATION_MS = System.getenv("CI") != null ? 30_000 : 700_000;
+    private static final long TEST_DURATION_MS = 30_000;
     // 최대 재연결 횟수
     private static final int MAX_RECONNECT_COUNT = 5;
     // 재연결 딜레이 범위 (1~3초)
