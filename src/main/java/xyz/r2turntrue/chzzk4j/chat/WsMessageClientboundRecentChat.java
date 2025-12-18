@@ -19,8 +19,8 @@ class WsMessageClientboundRecentChat extends WsMessageBase {
             public String messageStatusType;// 실시간: msgStatusType
             public int memberCount;         // 실시간: mbrCnt
 
-            public ChatMessage toChatMessage(Class<? extends ChatMessage> clazz, String rawJson) throws InvocationTargetException, InstantiationException, IllegalAccessException {
-                var msg = (ChatMessage) clazz.getConstructors()[0].newInstance();
+            public ChatMessage toChatMessage(Class<? extends ChatMessage> clazz, String rawJson) throws InvocationTargetException, InstantiationException, IllegalAccessException, NoSuchMethodException {
+                var msg = (ChatMessage) clazz.getDeclaredConstructor().newInstance();
                 msg.rawJson = rawJson;
                 msg.content = content;
                 msg.msgTypeCode = messageTypeCode;
