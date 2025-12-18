@@ -61,7 +61,6 @@ public class ChatWebsocketClient extends WebSocketClient {
 
     @Override
     public void onOpen(ServerHandshake handshakedata) {
-        chat.isConnectedToWebsocket = true;
         if (chat.chzzk.isDebug) System.out.println("Connected to websocket! Connecting to chat...");
 
         // 스레드 누수 방지를 위한 동기화된 executor 관리
@@ -86,7 +85,7 @@ public class ChatWebsocketClient extends WebSocketClient {
         this.send(gson.toJson(handshake));
     }
 
-    private void processChatMessageFromJson(JsonObject chatJson, boolean isRecentChat) throws InvocationTargetException, InstantiationException, IllegalAccessException {
+    private void processChatMessageFromJson(JsonObject chatJson, boolean isRecentChat) throws InvocationTargetException, InstantiationException, IllegalAccessException, NoSuchMethodException {
         Class<? extends ChatMessage> clazz = ChatMessage.class;
         int messageTypeCode = chatJson.get(isRecentChat ? "messageTypeCode" : "msgTypeCode").getAsInt();
 
@@ -115,7 +114,7 @@ public class ChatWebsocketClient extends WebSocketClient {
             clazz = SubscriptionMessage.class;
         }
 
-        var msg = (ChatMessage) clazz.getConstructors()[0].newInstance();
+        var msg = (ChatMessage) clazz.getDeclaredConstructor().newInstance();
         msg.rawJson = chatJson.toString();
         msg.content = chatJson.get(isRecentChat ? "content" : "msg").getAsString();
         msg.msgTypeCode = messageTypeCode;
@@ -233,7 +232,7 @@ public class ChatWebsocketClient extends WebSocketClient {
 
                     try {
                         processChatMessageFromJson(chatJson, true); // RECENT_CHAT
-                    } catch (InvocationTargetException | IllegalAccessException | InstantiationException e) {
+                    } catch (InvocationTargetException | IllegalAccessException | InstantiationException | NoSuchMethodException e) {
                         throw new RuntimeException(e);
                     }
                 }
@@ -249,7 +248,7 @@ public class ChatWebsocketClient extends WebSocketClient {
 
                     try {
                         processChatMessageFromJson(chatJson, false); // 실시간 CHAT/DONATION
-                    } catch (InvocationTargetException | IllegalAccessException | InstantiationException e) {
+                    } catch (InvocationTargetException | IllegalAccessException | InstantiationException | NoSuchMethodException e) {
                         throw new RuntimeException(e);
                     }
                 }
@@ -422,8 +421,6 @@ public class ChatWebsocketClient extends WebSocketClient {
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
-        chat.isConnectedToWebsocket = false;
-
         boolean shouldReconnect = remote && chat.autoReconnect;
 
         for (ChatEventListener listener : chat.listeners) {

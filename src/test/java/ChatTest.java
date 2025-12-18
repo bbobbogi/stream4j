@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public class ChatTest extends ChzzkTestBase {
     // CI 환경에서는 30초, 로컬에서는 700초 대기
-    private static final long TEST_DURATION_MS = System.getenv("CI") != null ? 30_000 : 700_000;
+    private static final long TEST_DURATION_MS = 30_000;
 
     @Test
     void testingChat() throws IOException, InterruptedException {

@@ -19,7 +19,7 @@ public class ChzzkChat {
     boolean reconnecting;
     Chzzk chzzk;
 
-    boolean isConnectedToWebsocket = false;
+    private final Object lock = new Object();
     private ChatWebsocketClient client;
     ArrayList<ChatEventListener> listeners = new ArrayList<>();
 
@@ -36,7 +36,9 @@ public class ChzzkChat {
      * @return 연결되어 있으면 {@code true}, 그렇지 않으면 {@code false}
      */
     public boolean isConnectedToChat() {
-        return isConnectedToWebsocket;
+        synchronized (lock) {
+            return client != null && client.isOpen();
+        }
     }
 
     /**
@@ -105,11 +107,14 @@ public class ChzzkChat {
      * @param chatCount 요청할 채팅 메시지 수
      */
     public void requestRecentChat(int chatCount) {
-        if (!isConnectedToWebsocket) {
-            throw new IllegalStateException("Connect to request recent chats!");
+        ChatWebsocketClient c;
+        synchronized (lock) {
+            c = client;
+            if (c == null || !c.isOpen()) {
+                throw new IllegalStateException("Connect to request recent chats!");
+            }
         }
-
-        client.requestRecentChat(chatCount);
+        c.requestRecentChat(chatCount);
     }
 
     /**
@@ -118,14 +123,17 @@ public class ChzzkChat {
      * @param content 전송할 메시지 내용
      */
     public void sendChat(String content) {
-        if (!isConnectedToWebsocket) {
-            throw new IllegalStateException("Connect to send chat!");
-        }
         if (content == null || content.isEmpty()) {
             throw new IllegalArgumentException("Chat content must not be null or empty.");
         }
-
-        client.sendChat(content);
+        ChatWebsocketClient c;
+        synchronized (lock) {
+            c = client;
+            if (c == null || !c.isOpen()) {
+                throw new IllegalStateException("Connect to send chat!");
+            }
+        }
+        c.sendChat(content);
     }
 
     /**
@@ -158,8 +166,10 @@ public class ChzzkChat {
     private CompletableFuture<Void> connectFromChatId(String channelId, String chatId, boolean autoReconnect) {
         return CompletableFuture.runAsync(() -> {
             try {
-                if (isConnectedToWebsocket) {
-                    throw new AlreadyConnectedException();
+                synchronized (lock) {
+                    if (client != null && client.isOpen()) {
+                        throw new AlreadyConnectedException();
+                    }
                 }
 
                 reconnecting = false;
@@ -193,10 +203,14 @@ public class ChzzkChat {
 
                 serverId = Math.abs(serverId) % 9 + 1;
 
-                client = new ChatWebsocketClient(this,
+                ChatWebsocketClient newClient = new ChatWebsocketClient(this,
                         URI.create("wss://kr-ss" + serverId + ".chat.naver.com/chat"));
 
-                client.connectBlocking();
+                synchronized (lock) {
+                    client = newClient;
+                }
+
+                newClient.connectBlocking();
             } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -211,15 +225,17 @@ public class ChzzkChat {
     public CompletableFuture<Void> reconnectAsync() {
         return CompletableFuture.runAsync(() -> {
             try {
-                if (client == null) {
-                    throw new IllegalStateException("Client not initalized to reconnect!");
+                ChatWebsocketClient c;
+                synchronized (lock) {
+                    c = client;
+                    if (c == null) {
+                        throw new IllegalStateException("Client not initalized to reconnect!");
+                    }
                 }
 
-                URI chatUri = client.getURI();
-
-                if (!client.isClosed() && !client.isClosing()) {
+                if (!c.isClosed() && !c.isClosing()) {
                     try {
-                        client.closeBlocking();
+                        c.closeBlocking();
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
@@ -227,7 +243,7 @@ public class ChzzkChat {
 
                 reconnecting = true;
 
-                client.reconnectBlocking();
+                c.reconnectBlocking();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -248,15 +264,17 @@ public class ChzzkChat {
      */
     public CompletableFuture<Void> closeAsync() {
         return CompletableFuture.runAsync(() -> {
-            try {
-                if (!isConnectedToWebsocket) {
-                    throw new IllegalStateException("Not connected!");
+            ChatWebsocketClient c;
+            synchronized (lock) {
+                c = client;
+                client = null;  // 재사용 방지
+            }
+            if (c != null && !c.isClosed() && !c.isClosing()) {
+                try {
+                    c.closeBlocking();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
-
-                client.closeBlocking();
-                isConnectedToWebsocket = false;
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
             }
         });
     }

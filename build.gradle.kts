@@ -5,13 +5,13 @@ plugins {
     jacoco
 }
 
-group = "io.github.bbobbogi"
-version = "0.0.13"
-
 // Helper function to get property from environment
 fun getEnvOrProperty(envKey: String, defaultValue: String = ""): String {
     return System.getenv(envKey) ?: defaultValue
 }
+
+group = "io.github.bbobbogi"
+version = getEnvOrProperty("VERSION", "0.0.14-SNAPSHOT")
 
 repositories {
     mavenCentral()
@@ -42,7 +42,7 @@ publishing {
         create<MavenPublication>("maven") {
             artifactId = "chzzk4j"
             groupId = "io.github.bbobbogi"
-            version = "0.0.13"
+            version = project.version.toString()
 
             from(components["java"])
 
