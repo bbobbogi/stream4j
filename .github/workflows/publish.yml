@@ -32,6 +32,10 @@ jobs:
             # workflow_dispatch에서 입력받은 버전 사용
             VERSION="${{ inputs.version }}"
           fi
+          if [ -z "$VERSION" ]; then
+            echo "Error: VERSION is empty, aborting."
+            exit 1
+          fi
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Using version: $VERSION"
