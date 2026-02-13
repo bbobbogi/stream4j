@@ -274,8 +274,7 @@ public class ChzzkChat {
                     try {
                         c.closeBlocking();
                         return;
-                    } catch (InterruptedException e) {
-                        // closeBlocking() was interrupted, likely due to a hang. Force shutdown.
+                    } catch (InterruptedException ignored) {
                     }
                 }
                 c.forceShutdown();
