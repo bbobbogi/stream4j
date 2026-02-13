@@ -36,11 +36,31 @@ public class ChatWebsocketClient extends WebSocketClient {
      */
     public ChatWebsocketClient(ChzzkChat chat, URI websocketUri) {
         super(websocketUri);
+        setConnectionLostTimeout(0);
         this.chat = chat;
         this.gson = new Gson()
                 .newBuilder()
                 .disableHtmlEscaping()
                 .create();
+    }
+
+    /**
+     * 모든 내부 스레드를 강제 종료합니다.
+     * closeBlocking() 타임아웃 시 호출하여 connectionLostChecker, Read/Write 스레드를 정리합니다.
+     */
+    public void forceShutdown() {
+        synchronized (this) {
+            if (executor != null && !executor.isShutdown()) {
+                executor.shutdownNow();
+                executor = null;
+            }
+        }
+        stopConnectionLostTimer();
+
+        try {
+            closeConnection(org.java_websocket.framing.CloseFrame.ABNORMAL_CLOSE, "force shutdown");
+        } catch (Exception ignored) {
+        }
     }
 
     private HashMap<Integer, Class<?>> clientboundMessages = new HashMap<>() {{

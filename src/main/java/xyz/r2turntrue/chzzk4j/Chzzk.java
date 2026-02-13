@@ -110,6 +110,19 @@ public class Chzzk {
         return httpClient;
     }
 
+    public void close() {
+        if (httpClient != null) {
+            httpClient.dispatcher().executorService().shutdown();
+            httpClient.connectionPool().evictAll();
+            try {
+                if (httpClient.cache() != null) {
+                    httpClient.cache().close();
+                }
+            } catch (Exception ignored) {
+            }
+        }
+    }
+
     /**
      * Get {@link ChzzkChannel} by the channel id.
      *
