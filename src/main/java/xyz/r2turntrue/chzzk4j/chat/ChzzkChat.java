@@ -273,9 +273,9 @@ public class ChzzkChat {
                 if (!c.isClosed() && !c.isClosing()) {
                     try {
                         c.closeBlocking();
-                    } catch (InterruptedException e) {
-                        c.forceShutdown();
                         return;
+                    } catch (InterruptedException e) {
+                        // closeBlocking() was interrupted, likely due to a hang. Force shutdown.
                     }
                 }
                 c.forceShutdown();
