@@ -180,7 +180,14 @@ public class ConnectionPoolLeakTest extends ChzzkTestBase {
             }
 
             connectExecutor.shutdown();
-            connectExecutor.awaitTermination(10, TimeUnit.SECONDS);
+            try {
+                if (!connectExecutor.awaitTermination(10, TimeUnit.SECONDS)) {
+                    connectExecutor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                connectExecutor.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
 
             System.out.println("  연결 성공: " + activeChatList.size() + "/" + batchChannels.size());
 
