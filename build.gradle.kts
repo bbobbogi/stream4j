@@ -11,7 +11,7 @@ fun getEnvOrProperty(envKey: String, defaultValue: String = ""): String {
 }
 
 group = "io.github.bbobbogi"
-version = getEnvOrProperty("VERSION", "0.0.14-SNAPSHOT")
+version = getEnvOrProperty("VERSION", "0.0.15-SNAPSHOT")
 
 repositories {
     mavenCentral()
@@ -30,6 +30,9 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+    testLogging {
+        showStandardStreams = true
+    }
 }
 
 java {

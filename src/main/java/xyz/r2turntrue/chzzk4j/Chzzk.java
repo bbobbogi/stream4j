@@ -22,6 +22,7 @@ import xyz.r2turntrue.chzzk4j.util.RawApiUtils;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 치지직(CHZZK) API 클라이언트 클래스입니다.
@@ -108,6 +109,28 @@ public class Chzzk {
      */
     public OkHttpClient getHttpClient() {
         return httpClient;
+    }
+
+    public void close() {
+        if (httpClient != null) {
+            var executor = httpClient.dispatcher().executorService();
+            executor.shutdown();
+            try {
+                if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
+                    executor.shutdownNow();
+                }
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                executor.shutdownNow();
+            }
+            httpClient.connectionPool().evictAll();
+            try {
+                if (httpClient.cache() != null) {
+                    httpClient.cache().close();
+                }
+            } catch (Exception ignored) {
+            }
+        }
     }
 
     /**

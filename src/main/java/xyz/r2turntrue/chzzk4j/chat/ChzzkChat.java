@@ -267,14 +267,17 @@ public class ChzzkChat {
             ChatWebsocketClient c;
             synchronized (lock) {
                 c = client;
-                client = null;  // 재사용 방지
+                client = null;
             }
-            if (c != null && !c.isClosed() && !c.isClosing()) {
-                try {
-                    c.closeBlocking();
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+            if (c != null) {
+                if (!c.isClosed() && !c.isClosing()) {
+                    try {
+                        c.closeBlocking();
+                        return;
+                    } catch (InterruptedException ignored) {
+                    }
                 }
+                c.forceShutdown();
             }
         });
     }
