@@ -619,8 +619,13 @@ public class DonationMonitorTest {
                         @Override
                         public void onDonation(SOOPChat chat, SOOPDonationMessage msg) {
                             soopLastActivity.put(streamerId, System.currentTimeMillis());
+                            String typeLabel = switch (msg.getType()) {
+                                case TEXT -> "별풍선";
+                                case VIDEO -> "영상풍선";
+                                case AD_BALLOON -> "AD풍선";
+                            };
                             System.out.println("[" + now("SOOP") + "][Donation] " + channelName
-                                    + " | " + msg.getFromUsername() + " | " + msg.getAmount() + "개 | " + msg.getType());
+                                    + " | " + msg.getFromUsername() + " | " + msg.getAmount() + "개 | " + typeLabel);
                             Map<String, Object> parsed = new LinkedHashMap<>();
                             parsed.put("type", msg.getType().name());
                             parsed.put("from", msg.getFrom());
