@@ -6,7 +6,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
-import xyz.r2turntrue.chzzk4j.cime.CiMeChat;
+import com.bbobbogi.stream4j.cime.CiMeChat;
 
 import java.util.ArrayList;
 import java.util.HashSet;

@@ -1,6 +1,6 @@
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
-import xyz.r2turntrue.chzzk4j.cime.*;
+import com.bbobbogi.stream4j.cime.*;
 
 import java.util.Optional;
 

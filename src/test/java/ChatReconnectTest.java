@@ -1,6 +1,6 @@
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
-import xyz.r2turntrue.chzzk4j.chat.*;
+import com.bbobbogi.stream4j.chzzk.chat.*;
 
 import java.io.IOException;
 import java.util.Optional;

@@ -10,7 +10,7 @@ fun getEnvOrProperty(envKey: String, defaultValue: String = ""): String {
     return System.getenv(envKey) ?: defaultValue
 }
 
-group = "io.github.bbobbogi"
+group = "com.bbobbogi"
 version = getEnvOrProperty("VERSION", "0.0.15-SNAPSHOT")
 
 repositories {
@@ -43,16 +43,16 @@ java {
 publishing {
     publications {
         create<MavenPublication>("maven") {
-            artifactId = "chzzk4j"
-            groupId = "io.github.bbobbogi"
+            artifactId = "stream4j"
+            groupId = "com.bbobbogi"
             version = project.version.toString()
 
             from(components["java"])
 
             pom {
-                name = "chzzk4j"
-                description = "Unofficial Java API library of CHZZK (치지직, the video streaming service of Naver)"
-                url = "https://github.com/bbobbogi/chzzk4j"
+                name = "stream4j"
+                description = "Unified Java streaming donation API library for CHZZK, ci.me, Toonation and more"
+                url = "https://github.com/bbobbogi/stream4j"
 
                 developers {
                     developer {
@@ -63,9 +63,9 @@ publishing {
                 }
 
                 scm {
-                    connection = "scm:git:git://github.com/bbobbogi/chzzk4j.git"
-                    developerConnection = "scm:git:ssh://github.com:bbobbogi/chzzk4j.git"
-                    url = "https://github.com/bbobbogi/chzzk4j/tree/master"
+                    connection = "scm:git:git://github.com/bbobbogi/stream4j.git"
+                    developerConnection = "scm:git:ssh://github.com:bbobbogi/stream4j.git"
+                    url = "https://github.com/bbobbogi/stream4j/tree/master"
                 }
 
                 licenses {
@@ -81,7 +81,7 @@ publishing {
     repositories {
         maven {
             name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/bbobbogi/chzzk4j")
+            url = uri("https://maven.pkg.github.com/bbobbogi/stream4j")
             credentials {
                 username = getEnvOrProperty("GITHUB_ACTOR")
                 password = getEnvOrProperty("GITHUB_TOKEN")

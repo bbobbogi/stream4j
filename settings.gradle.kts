@@ -1,2 +1,2 @@
-rootProject.name = "chzzk4j"
+rootProject.name = "stream4j"
 

@@ -1,7 +1,7 @@
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import xyz.r2turntrue.chzzk4j.naver.Naver;
+import com.bbobbogi.stream4j.chzzk.naver.Naver;
 
 import java.io.File;
 import java.io.FileInputStream;

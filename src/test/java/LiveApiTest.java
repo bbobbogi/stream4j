@@ -1,8 +1,8 @@
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import xyz.r2turntrue.chzzk4j.types.channel.live.ChzzkLiveDetail;
-import xyz.r2turntrue.chzzk4j.types.channel.live.ChzzkLiveStatus;
+import com.bbobbogi.stream4j.chzzk.types.channel.live.ChzzkLiveDetail;
+import com.bbobbogi.stream4j.chzzk.types.channel.live.ChzzkLiveStatus;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
