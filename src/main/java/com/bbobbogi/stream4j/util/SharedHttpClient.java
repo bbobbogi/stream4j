@@ -5,6 +5,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 프로젝트 전체에서 공유하는 OkHttpClient입니다.
@@ -14,37 +15,58 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * 인증이 필요한 경우 {@link #newBuilder()}로 파생 클라이언트를 생성하세요.
  * 파생 클라이언트는 Dispatcher와 ConnectionPool을 공유합니다.
+ * <p>
+ * 커스텀 설정이 필요한 경우 {@link #configure(HttpClientConfig)}를 사용하세요.
+ * 설정은 반드시 {@link #get()} 호출 전에 적용되어야 합니다.
  */
 public final class SharedHttpClient {
 
-    private static final OkHttpClient INSTANCE;
-
-    static {
-        Dispatcher dispatcher = new Dispatcher();
-        dispatcher.setMaxRequests(1024);
-        dispatcher.setMaxRequestsPerHost(1024);
-        INSTANCE = new OkHttpClient.Builder()
-                .dispatcher(dispatcher)
-                .connectTimeout(10, TimeUnit.SECONDS)
-                .readTimeout(10, TimeUnit.SECONDS)
-                .addInterceptor(chain -> {
-                    Request request = chain.request().newBuilder()
-                            .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0")
-                            .build();
-                    return chain.proceed(request);
-                })
-                .build();
-    }
+    private static final AtomicReference<HttpClientConfig> CONFIG = new AtomicReference<>(new HttpClientConfig());
+    private static volatile OkHttpClient INSTANCE;
+    private static final Object LOCK = new Object();
 
     private SharedHttpClient() {
     }
 
     /**
+     * SharedHttpClient의 설정을 지정합니다.
+     * <p>
+     * 이 메서드는 {@link #get()} 호출 전에 호출되어야 합니다.
+     * 이미 클라이언트가 초기화된 후에는 설정 변경이 무시됩니다.
+     *
+     * @param config 적용할 설정
+     * @throws IllegalStateException 이미 클라이언트가 초기화된 경우
+     */
+    public static void configure(HttpClientConfig config) {
+        if (INSTANCE != null) {
+            throw new IllegalStateException("SharedHttpClient is already initialized. configure() must be called before get().");
+        }
+        CONFIG.set(config);
+    }
+
+    /**
+     * 현재 설정을 반환합니다.
+     *
+     * @return 현재 설정 (읽기 전용 용도)
+     */
+    public static HttpClientConfig getConfig() {
+        return CONFIG.get();
+    }
+
+    /**
      * 공유 OkHttpClient 인스턴스를 반환합니다.
+     * 최초 호출 시 클라이언트가 초기화됩니다.
      *
      * @return 공유 OkHttpClient
      */
     public static OkHttpClient get() {
+        if (INSTANCE == null) {
+            synchronized (LOCK) {
+                if (INSTANCE == null) {
+                    INSTANCE = createClient(CONFIG.get());
+                }
+            }
+        }
         return INSTANCE;
     }
 
@@ -55,6 +77,37 @@ public final class SharedHttpClient {
      * @return OkHttpClient.Builder
      */
     public static OkHttpClient.Builder newBuilder() {
-        return INSTANCE.newBuilder();
+        return get().newBuilder();
+    }
+
+    private static OkHttpClient createClient(HttpClientConfig config) {
+        Dispatcher dispatcher = new Dispatcher();
+        dispatcher.setMaxRequests(config.getMaxRequests());
+        dispatcher.setMaxRequestsPerHost(config.getMaxRequestsPerHost());
+
+        String userAgent = config.getUserAgent();
+
+        return new OkHttpClient.Builder()
+                .dispatcher(dispatcher)
+                .connectTimeout(config.getConnectTimeoutMs(), TimeUnit.MILLISECONDS)
+                .readTimeout(config.getReadTimeoutMs(), TimeUnit.MILLISECONDS)
+                .addInterceptor(chain -> {
+                    Request request = chain.request().newBuilder()
+                            .addHeader("User-Agent", userAgent)
+                            .build();
+                    return chain.proceed(request);
+                })
+                .build();
+    }
+
+    /**
+     * 테스트 용도로 클라이언트를 리셋합니다.
+     * 프로덕션 코드에서는 사용하지 마세요.
+     */
+    static void resetForTesting() {
+        synchronized (LOCK) {
+            INSTANCE = null;
+            CONFIG.set(new HttpClientConfig());
+        }
     }
 }

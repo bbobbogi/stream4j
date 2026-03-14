@@ -77,30 +77,42 @@ public class StreamChat {
     }
 
     public CompletableFuture<Void> closeAllAsync() {
-        return CompletableFuture.runAsync(() -> {
+        List<CompletableFuture<Void>> closeFutures = new ArrayList<>();
 
-            for (ChzzkChat chat : chzzkChats.values()) {
-                try { chat.closeBlocking(); } catch (Exception ignored) {}
-            }
-            for (CiMeChat chat : cimeChats.values()) {
-                try { chat.closeBlocking(); } catch (Exception ignored) {}
-            }
-            for (SOOPChat chat : soopChats.values()) {
-                try { chat.closeBlocking(); } catch (Exception ignored) {}
-            }
-            for (ToonationChat chat : toonationChats.values()) {
-                try { chat.closeBlocking(); } catch (Exception ignored) {}
-            }
-            for (YouTubeChat chat : youtubeChats) {
-                try { chat.closeBlocking(); } catch (Exception ignored) {}
-            }
+        for (ChzzkChat chat : chzzkChats.values()) {
+            closeFutures.add(CompletableFuture.runAsync(() -> {
+                try { chat.closeBlocking(); } catch (Exception e) { logDebug("Error closing ChzzkChat", e); }
+            }));
+        }
+        for (CiMeChat chat : cimeChats.values()) {
+            closeFutures.add(CompletableFuture.runAsync(() -> {
+                try { chat.closeBlocking(); } catch (Exception e) { logDebug("Error closing CiMeChat", e); }
+            }));
+        }
+        for (SOOPChat chat : soopChats.values()) {
+            closeFutures.add(CompletableFuture.runAsync(() -> {
+                try { chat.closeBlocking(); } catch (Exception e) { logDebug("Error closing SOOPChat", e); }
+            }));
+        }
+        for (ToonationChat chat : toonationChats.values()) {
+            closeFutures.add(CompletableFuture.runAsync(() -> {
+                try { chat.closeBlocking(); } catch (Exception e) { logDebug("Error closing ToonationChat", e); }
+            }));
+        }
+        for (YouTubeChat chat : youtubeChats) {
+            closeFutures.add(CompletableFuture.runAsync(() -> {
+                try { chat.closeBlocking(); } catch (Exception e) { logDebug("Error closing YouTubeChat", e); }
+            }));
+        }
 
-            chzzkChats.clear();
-            cimeChats.clear();
-            soopChats.clear();
-            toonationChats.clear();
-            youtubeChats.clear();
-        });
+        return CompletableFuture.allOf(closeFutures.toArray(new CompletableFuture[0]))
+                .thenRun(() -> {
+                    chzzkChats.clear();
+                    cimeChats.clear();
+                    soopChats.clear();
+                    toonationChats.clear();
+                    youtubeChats.clear();
+                });
     }
 
     public void closeAllBlocking() {
@@ -191,7 +203,7 @@ public class StreamChat {
                                 emit(l -> l.onBroadcastEnd(DonationPlatform.CIME, slug));
                                 CiMeChat removed = cimeChats.remove(slug);
                                 if (removed != null) {
-                                    try { removed.closeBlocking(); } catch (Exception ignored) {}
+                                    try { removed.closeBlocking(); } catch (Exception e) { logDebug("Error closing CiMeChat on LIVE_ENDED", e); }
                                 }
                                 return;
                             }
@@ -234,7 +246,9 @@ public class StreamChat {
                     null, nickname, message, amount, rawJson
             );
             emit(l -> l.onDonation(donation));
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            logDebug("Error parsing CiMe donation", e);
+        }
     }
 
     private void connectSoop(String streamerId) {
@@ -423,8 +437,15 @@ public class StreamChat {
             try {
                 action.accept(listener);
             } catch (Exception e) {
-                if (debug) e.printStackTrace();
+                logDebug("Error in listener callback", e);
             }
+        }
+    }
+
+    private void logDebug(String message, Exception e) {
+        if (debug) {
+            System.err.println("[StreamChat] " + message + ": " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }

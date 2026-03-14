@@ -14,7 +14,7 @@ import com.google.gson.JsonParser;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.junit.jupiter.api.Assumptions;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedWriter;
@@ -27,7 +27,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.*;
 
-@Disabled("\uc218\ub3d9 \uc2e4\ud589 \uc804\uc6a9")
+@Tag("manual")
 public class DonationMonitorTest {
 
     private final ChzzkTestBase chzzkBase = new ChzzkTestBase();
