@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import xyz.r2turntrue.chzzk4j.util.SharedHttpClient;
 import org.jetbrains.annotations.NotNull;
 import xyz.r2turntrue.chzzk4j.chat.ChzzkChat;
 import xyz.r2turntrue.chzzk4j.chat.ChzzkChatBuilder;
@@ -56,31 +57,21 @@ public class Chzzk {
         this.isAnonymous = chzzkBuilder.isAnonymous;
         this.gson = new Gson();
 
-        OkHttpClient.Builder httpBuilder = new OkHttpClient().newBuilder();
-
-        if (!chzzkBuilder.isAnonymous) {
-            httpBuilder.addInterceptor(chain -> {
-                Request original = chain.request();
-                Request authorized = original.newBuilder()
-                        .addHeader("Cookie",
-                                "NID_AUT=" + chzzkBuilder.nidAuth + "; " +
-                                "NID_SES=" + chzzkBuilder.nidSession)
-                        .build();
-
-                return chain.proceed(authorized);
-            });
-        }
-
-        httpBuilder.addInterceptor(chain -> {
-            Request original = chain.request();
-            Request authorized = original.newBuilder()
-                    .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0")
+        if (chzzkBuilder.isAnonymous) {
+            httpClient = SharedHttpClient.get();
+        } else {
+            httpClient = SharedHttpClient.newBuilder()
+                    .addInterceptor(chain -> {
+                        Request original = chain.request();
+                        Request authorized = original.newBuilder()
+                                .addHeader("Cookie",
+                                        "NID_AUT=" + chzzkBuilder.nidAuth + "; " +
+                                        "NID_SES=" + chzzkBuilder.nidSession)
+                                .build();
+                        return chain.proceed(authorized);
+                    })
                     .build();
-
-            return chain.proceed(authorized);
-        });
-
-        httpClient = httpBuilder.build();
+        }
     }
 
     /**
@@ -112,17 +103,9 @@ public class Chzzk {
     }
 
     public void close() {
-        if (httpClient != null) {
-            var executor = httpClient.dispatcher().executorService();
-            executor.shutdown();
-            try {
-                if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
-                    executor.shutdownNow();
-                }
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-                executor.shutdownNow();
-            }
+        // 공유 Dispatcher/ConnectionPool은 종료하지 않음 (SharedHttpClient 관리)
+        // 파생 클라이언트의 캐시만 정리
+        if (httpClient != null && httpClient != SharedHttpClient.get()) {
             httpClient.connectionPool().evictAll();
             try {
                 if (httpClient.cache() != null) {
