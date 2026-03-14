@@ -28,7 +28,9 @@ public class ChatWebsocketClient extends WebSocketClient {
     private long lastSendPingTime;
     private long lastRecivedMessageTime;
     private long lastLiveCheckTime;
+    private int liveCheckFailCount;
     private static final long LIVE_CHECK_INTERVAL_MS = 30_000;
+    private static final int LIVE_CHECK_MAX_FAILURES = 3;
 
     /**
      * ChatWebsocketClient를 생성합니다.
@@ -519,16 +521,22 @@ public class ChatWebsocketClient extends WebSocketClient {
         try {
             var status = chat.chzzk.getLiveStatus(chat.channelId);
             if (status == null || !status.isOnline()) {
-                if (chat.chzzk.isDebug) {
-                    System.out.println("[Chzzk] Broadcast ended: " + chat.channelId);
-                }
+                System.out.println("[Chzzk] Broadcast ended: " + chat.channelId);
+                liveCheckFailCount = 0;
                 for (ChatEventListener listener : chat.listeners) {
                     listener.onBroadcastEnd(chat);
                 }
+            } else {
+                liveCheckFailCount = 0;
             }
         } catch (Exception e) {
-            if (chat.chzzk.isDebug) {
-                System.out.println("[Chzzk] Live check error: " + e.getMessage());
+            liveCheckFailCount++;
+            System.out.println("[Chzzk] Live check error (" + liveCheckFailCount + "/" + LIVE_CHECK_MAX_FAILURES + "): " + e.getMessage());
+            if (liveCheckFailCount >= LIVE_CHECK_MAX_FAILURES) {
+                System.out.println("[Chzzk] Live check failed " + LIVE_CHECK_MAX_FAILURES + " times, assuming broadcast ended: " + chat.channelId);
+                for (ChatEventListener listener : chat.listeners) {
+                    listener.onBroadcastEnd(chat);
+                }
             }
         }
     }
