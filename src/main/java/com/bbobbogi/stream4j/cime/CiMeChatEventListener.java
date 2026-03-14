@@ -22,6 +22,8 @@ public interface CiMeChatEventListener {
      */
     default void onConnectionClosed(int code, String reason, boolean remote, boolean tryingToReconnect) {}
 
+    default void onBroadcastEnd(CiMeChat chat) {}
+
     /**
      * 오류가 발생했을 때 호출됩니다.
      *

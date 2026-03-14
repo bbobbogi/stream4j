@@ -276,7 +276,7 @@ public class ToonationChat {
             closeAsync().join();
 
             for (ToonationChatEventListener listener : listeners) {
-                listener.onConnectionClosed(ToonationChat.this, code, reason, true, autoReconnect);
+                listener.onConnectionClosed(code, reason, true, autoReconnect);
             }
 
             if (autoReconnect) {

@@ -2,13 +2,10 @@ package com.bbobbogi.stream4j.soop;
 
 public interface SOOPChatEventListener {
 
-    default void onConnect(SOOPChat chat) {
+    default void onConnect(SOOPChat chat, boolean isReconnecting) {
     }
 
-    default void onChatRoomEntered(SOOPChat chat) {
-    }
-
-    default void onChat(SOOPChat chat, String userId, String username, String message) {
+    default void onChat(String userId, String username, String message) {
     }
 
     default void onDonation(SOOPChat chat, SOOPDonationMessage msg) {
@@ -17,7 +14,10 @@ public interface SOOPChatEventListener {
     default void onSubscribe(SOOPChat chat, String from, String fromUsername, int monthCount, int tier) {
     }
 
-    default void onConnectionClosed(SOOPChat chat, String reason, boolean tryingToReconnect) {
+    default void onConnectionClosed(int code, String reason, boolean remote, boolean tryingToReconnect) {
+    }
+
+    default void onBroadcastEnd(SOOPChat chat) {
     }
 
     default void onError(Exception ex) {

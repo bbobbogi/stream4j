@@ -597,19 +597,15 @@ public class DonationMonitorTest {
                     .withAutoReconnect(false)
                     .withChatListener(new SOOPChatEventListener() {
                         @Override
-                        public void onConnect(SOOPChat chat) {
+                        public void onConnect(SOOPChat chat, boolean isReconnecting) {
                             System.out.println("[" + now("SOOP") + "][연결] " + channelName + " (" + streamerId + ")");
-                        }
-                        @Override
-                        public void onChatRoomEntered(SOOPChat chat) {
-                            soopLastActivity.put(streamerId, System.currentTimeMillis());
                         }
                         @Override
                         public void onError(Exception ex) {
                             System.out.println("[" + now("SOOP") + "][에러] " + channelName + " — " + ex.getMessage());
                         }
                         @Override
-                        public void onChat(SOOPChat chat, String userId, String username, String message) {
+                        public void onChat(String userId, String username, String message) {
                             soopLastActivity.put(streamerId, System.currentTimeMillis());
                         }
                         @Override
@@ -638,7 +634,7 @@ public class DonationMonitorTest {
                             saveEvent("SOOP", "SUBSCRIBE", channelName, null, parsed);
                         }
                         @Override
-                        public void onConnectionClosed(SOOPChat chat, String reason, boolean tryingToReconnect) {
+                        public void onConnectionClosed(int code, String reason, boolean remote, boolean tryingToReconnect) {
                             System.out.println("[" + now("SOOP") + "][연결종료] " + channelName + " | reason=" + reason);
                             if (soopConnections.remove(streamerId) == null) return;
                             soopConnectedIds.remove(streamerId);

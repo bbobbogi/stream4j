@@ -2,7 +2,6 @@ package com.bbobbogi.stream4j.common;
 
 import com.bbobbogi.stream4j.chzzk.Chzzk;
 import com.bbobbogi.stream4j.chzzk.chat.*;
-import com.bbobbogi.stream4j.chzzk.types.channel.live.ChzzkLiveStatus;
 import com.bbobbogi.stream4j.cime.*;
 import com.bbobbogi.stream4j.soop.*;
 import com.bbobbogi.stream4j.toonation.*;
@@ -12,14 +11,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 public class StreamChat {
 
-    private static final long CHZZK_POLL_INTERVAL_SECONDS = 30;
 
     private final List<StreamChatEventListener> listeners;
     private final boolean autoReconnect;
@@ -36,8 +30,6 @@ public class StreamChat {
     private final Map<String, SOOPChat> soopChats = new ConcurrentHashMap<>();
     private final Map<String, ToonationChat> toonationChats = new ConcurrentHashMap<>();
 
-    private ScheduledExecutorService chzzkPoller;
-    private ScheduledFuture<?> chzzkPollTask;
 
     StreamChat(StreamChatBuilder builder) {
         this.listeners = new ArrayList<>(builder.listeners);
@@ -70,8 +62,7 @@ public class StreamChat {
             futures.add(CompletableFuture.runAsync(() -> connectToonation(key)));
         }
 
-        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-                .thenRun(this::startChzzkPoller);
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
     }
 
     public void connectAllBlocking() {
@@ -80,7 +71,6 @@ public class StreamChat {
 
     public CompletableFuture<Void> closeAllAsync() {
         return CompletableFuture.runAsync(() -> {
-            stopChzzkPoller();
 
             for (ChzzkChat chat : chzzkChats.values()) {
                 try { chat.closeBlocking(); } catch (Exception ignored) {}
@@ -152,6 +142,12 @@ public class StreamChat {
                         @Override
                         public void onConnectionClosed(int code, String reason, boolean remote, boolean tryingToReconnect) {
                             emit(l -> l.onDisconnect(DonationPlatform.CHZZK, channelId, reason));
+                        }
+
+                        @Override
+                        public void onBroadcastEnd(ChzzkChat c) {
+                            emit(l -> l.onBroadcastEnd(DonationPlatform.CHZZK, channelId));
+                            chzzkChats.remove(channelId);
                         }
                     })
                     .build();
@@ -236,12 +232,12 @@ public class StreamChat {
                     .withAutoReconnect(autoReconnect)
                     .withChatListener(new SOOPChatEventListener() {
                         @Override
-                        public void onConnect(SOOPChat c) {
+                        public void onConnect(SOOPChat c, boolean isReconnecting) {
                             emit(l -> l.onConnect(DonationPlatform.SOOP, streamerId));
                         }
 
                         @Override
-                        public void onChat(SOOPChat c, String userId, String username, String message) {
+                        public void onChat(String userId, String username, String message) {
                             emit(l -> l.onChat(DonationPlatform.SOOP, streamerId, username, message));
                         }
 
@@ -266,12 +262,14 @@ public class StreamChat {
                         }
 
                         @Override
-                        public void onConnectionClosed(SOOPChat c, String reason, boolean tryingToReconnect) {
-                            if (!tryingToReconnect) {
-                                emit(l -> l.onBroadcastEnd(DonationPlatform.SOOP, streamerId));
-                                soopChats.remove(streamerId);
-                            }
+                        public void onConnectionClosed(int code, String reason, boolean remote, boolean tryingToReconnect) {
                             emit(l -> l.onDisconnect(DonationPlatform.SOOP, streamerId, reason));
+                        }
+
+                        @Override
+                        public void onBroadcastEnd(SOOPChat c) {
+                            emit(l -> l.onBroadcastEnd(DonationPlatform.SOOP, streamerId));
+                            soopChats.remove(streamerId);
                         }
 
                         @Override
@@ -311,7 +309,7 @@ public class StreamChat {
                         }
 
                         @Override
-                        public void onConnectionClosed(ToonationChat c, int code, String reason, boolean remote, boolean tryingToReconnect) {
+                        public void onConnectionClosed(int code, String reason, boolean remote, boolean tryingToReconnect) {
                             emit(l -> l.onDisconnect(DonationPlatform.TOONATION, key, reason));
                         }
 
@@ -328,45 +326,6 @@ public class StreamChat {
         }
     }
 
-    private void startChzzkPoller() {
-        if (chzzkChats.isEmpty() || chzzk == null) return;
-
-        chzzkPoller = Executors.newSingleThreadScheduledExecutor(r -> {
-            Thread t = new Thread(r, "stream4j-chzzk-poller");
-            t.setDaemon(true);
-            return t;
-        });
-
-        chzzkPollTask = chzzkPoller.scheduleAtFixedRate(() -> {
-            for (Map.Entry<String, ChzzkChat> entry : chzzkChats.entrySet()) {
-                String channelId = entry.getKey();
-                try {
-                    ChzzkLiveStatus status = chzzk.getLiveStatus(channelId);
-                    if (status == null || !status.isOnline()) {
-                        if (debug) System.out.println("[StreamChat] Chzzk broadcast ended: " + channelId);
-                        emit(l -> l.onBroadcastEnd(DonationPlatform.CHZZK, channelId));
-                        ChzzkChat chat = chzzkChats.remove(channelId);
-                        if (chat != null) {
-                            try { chat.closeBlocking(); } catch (Exception ignored) {}
-                        }
-                    }
-                } catch (Exception e) {
-                    if (debug) System.out.println("[StreamChat] Chzzk poll error for " + channelId + ": " + e.getMessage());
-                }
-            }
-        }, CHZZK_POLL_INTERVAL_SECONDS, CHZZK_POLL_INTERVAL_SECONDS, TimeUnit.SECONDS);
-    }
-
-    private void stopChzzkPoller() {
-        if (chzzkPollTask != null) {
-            chzzkPollTask.cancel(false);
-            chzzkPollTask = null;
-        }
-        if (chzzkPoller != null) {
-            chzzkPoller.shutdownNow();
-            chzzkPoller = null;
-        }
-    }
 
     private void emit(java.util.function.Consumer<StreamChatEventListener> action) {
         for (StreamChatEventListener listener : listeners) {

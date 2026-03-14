@@ -27,6 +27,8 @@ public class ChatWebsocketClient extends WebSocketClient {
     private ScheduledExecutorService executor;
     private long lastSendPingTime;
     private long lastRecivedMessageTime;
+    private long lastLiveCheckTime;
+    private static final long LIVE_CHECK_INTERVAL_MS = 30_000;
 
     /**
      * ChatWebsocketClient를 생성합니다.
@@ -217,10 +219,12 @@ public class ChatWebsocketClient extends WebSocketClient {
                     }
 
                     Runnable task = () -> {
-                        if(System.currentTimeMillis() - lastSendPingTime >= 60000 || // 1 minutes from last ping time
-                            System.currentTimeMillis() - lastRecivedMessageTime >= 20000) { // 20 seconds later from last message
+                        long now = System.currentTimeMillis();
+
+                        if(now - lastSendPingTime >= 60000 ||
+                            now - lastRecivedMessageTime >= 20000) {
                             if (chat.chzzk.isDebug) {
-                                System.out.println("need client ping: current = " + (System.currentTimeMillis() / 1000) +
+                                System.out.println("need client ping: current = " + (now / 1000) +
                                         ", ping = " + (lastSendPingTime / 1000)  +
                                         ", recived message = " + (lastRecivedMessageTime/1000));
                             }
@@ -229,7 +233,12 @@ public class ChatWebsocketClient extends WebSocketClient {
                                 this.send(gson.toJson(new WsMessageServerboundPing()));
                             }
 
-                            lastRecivedMessageTime = lastSendPingTime = System.currentTimeMillis();
+                            lastRecivedMessageTime = lastSendPingTime = now;
+                        }
+
+                        if (now - lastLiveCheckTime >= LIVE_CHECK_INTERVAL_MS) {
+                            lastLiveCheckTime = now;
+                            checkBroadcastEnd();
                         }
                     };
 
@@ -505,4 +514,23 @@ public class ChatWebsocketClient extends WebSocketClient {
         //System.out.println(gson.toJson(msg));
         send(gson.toJson(msg));
     }
+
+    private void checkBroadcastEnd() {
+        try {
+            var status = chat.chzzk.getLiveStatus(chat.channelId);
+            if (status == null || !status.isOnline()) {
+                if (chat.chzzk.isDebug) {
+                    System.out.println("[Chzzk] Broadcast ended: " + chat.channelId);
+                }
+                for (ChatEventListener listener : chat.listeners) {
+                    listener.onBroadcastEnd(chat);
+                }
+            }
+        } catch (Exception e) {
+            if (chat.chzzk.isDebug) {
+                System.out.println("[Chzzk] Live check error: " + e.getMessage());
+            }
+        }
+    }
+
 }

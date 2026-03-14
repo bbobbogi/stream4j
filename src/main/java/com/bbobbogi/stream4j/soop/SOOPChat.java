@@ -260,7 +260,7 @@ public class SOOPChat {
                 connected = true;
                 reconnectAttempts = 0;
                 for (SOOPChatEventListener listener : listeners) {
-                    listener.onConnect(this);
+                    listener.onConnect(this, reconnecting);
                 }
                 synchronized (lock) {
                     if (webSocketClient != null) {
@@ -275,9 +275,6 @@ public class SOOPChat {
                     if (webSocketClient != null) {
                         webSocketClient.startPing();
                     }
-                }
-                for (SOOPChatEventListener listener : listeners) {
-                    listener.onChatRoomEntered(this);
                 }
                 break;
 
@@ -345,7 +342,7 @@ public class SOOPChat {
         entered = false;
 
         for (SOOPChatEventListener listener : listeners) {
-            listener.onConnectionClosed(this, reason, shouldReconnect);
+            listener.onConnectionClosed(remote ? 1006 : 1000, reason, remote, shouldReconnect);
         }
 
         if (shouldReconnect) {
@@ -367,7 +364,7 @@ public class SOOPChat {
         String userId = getField(fields, 2);
         String username = getField(fields, 6);
         for (SOOPChatEventListener listener : listeners) {
-            listener.onChat(this, userId, username, message);
+            listener.onChat(userId, username, message);
         }
     }
 

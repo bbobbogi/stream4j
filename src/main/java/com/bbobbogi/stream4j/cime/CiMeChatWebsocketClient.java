@@ -138,6 +138,9 @@ class CiMeChatWebsocketClient extends WebSocketClient {
         }
 
         for (CiMeChatEventListener listener : chat.listeners) {
+            if ("LIVE_ENDED".equals(eventName)) {
+                listener.onBroadcastEnd(chat);
+            }
             listener.onEvent(eventName, parsed.toString());
         }
     }

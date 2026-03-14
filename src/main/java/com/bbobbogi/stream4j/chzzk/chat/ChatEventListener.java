@@ -23,6 +23,14 @@ public interface ChatEventListener {
     default void onConnectionClosed(int code, String reason, boolean remote, boolean tryingToReconnect) {}
 
     /**
+     * 방송이 종료되었을 때 호출됩니다.
+     * 30초 간격으로 라이브 상태를 폴링하여 감지합니다.
+     *
+     * @param chat 채팅 인스턴스
+     */
+    default void onBroadcastEnd(ChzzkChat chat) {}
+
+    /**
      * 오류가 발생했을 때 호출됩니다.
      *
      * @param ex 발생한 예외
