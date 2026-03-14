@@ -5,6 +5,7 @@ import com.bbobbogi.stream4j.chzzk.chat.*;
 import com.bbobbogi.stream4j.cime.*;
 import com.bbobbogi.stream4j.soop.*;
 import com.bbobbogi.stream4j.toonation.*;
+import com.bbobbogi.stream4j.youtube.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,11 +25,13 @@ public class StreamChat {
     private final List<String> cimeSlugs;
     private final List<String> soopStreamerIds;
     private final List<String> toonationAlertboxKeys;
+    private final List<String> youtubeVideoIds;
 
     private final Map<String, ChzzkChat> chzzkChats = new ConcurrentHashMap<>();
     private final Map<String, CiMeChat> cimeChats = new ConcurrentHashMap<>();
     private final Map<String, SOOPChat> soopChats = new ConcurrentHashMap<>();
     private final Map<String, ToonationChat> toonationChats = new ConcurrentHashMap<>();
+    private final List<YouTubeChat> youtubeChats = new ArrayList<>();
 
 
     StreamChat(StreamChatBuilder builder) {
@@ -40,6 +43,7 @@ public class StreamChat {
         this.cimeSlugs = new ArrayList<>(builder.cimeSlugs);
         this.soopStreamerIds = new ArrayList<>(builder.soopStreamerIds);
         this.toonationAlertboxKeys = new ArrayList<>(builder.toonationAlertboxKeys);
+        this.youtubeVideoIds = new ArrayList<>(builder.youtubeVideoIds);
     }
 
     public static StreamChatBuilder builder() {
@@ -60,6 +64,9 @@ public class StreamChat {
         }
         for (String key : toonationAlertboxKeys) {
             futures.add(CompletableFuture.runAsync(() -> connectToonation(key)));
+        }
+        for (String videoId : youtubeVideoIds) {
+            futures.add(CompletableFuture.runAsync(() -> connectYouTube(videoId)));
         }
 
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
@@ -84,11 +91,15 @@ public class StreamChat {
             for (ToonationChat chat : toonationChats.values()) {
                 try { chat.closeBlocking(); } catch (Exception ignored) {}
             }
+            for (YouTubeChat chat : youtubeChats) {
+                try { chat.closeBlocking(); } catch (Exception ignored) {}
+            }
 
             chzzkChats.clear();
             cimeChats.clear();
             soopChats.clear();
             toonationChats.clear();
+            youtubeChats.clear();
         });
     }
 
@@ -97,7 +108,7 @@ public class StreamChat {
     }
 
     public int getConnectionCount() {
-        return chzzkChats.size() + cimeChats.size() + soopChats.size() + toonationChats.size();
+        return chzzkChats.size() + cimeChats.size() + soopChats.size() + toonationChats.size() + youtubeChats.size();
     }
 
     private void connectChzzk(String channelId) {
@@ -326,6 +337,86 @@ public class StreamChat {
         }
     }
 
+
+    private void connectYouTube(String videoId) {
+        try {
+            YouTubeChat chat = new YouTubeChatBuilder(videoId)
+                    .withAutoReconnect(autoReconnect)
+                    .withChatListener(new YouTubeChatEventListener() {
+                        @Override
+                        public void onConnect(YouTubeChat c, boolean isReconnecting) {
+                            emit(l -> l.onConnect(DonationPlatform.YOUTUBE, videoId));
+                        }
+
+                        @Override
+                        public void onChat(ChatItem item) {
+                            emit(l -> l.onChat(DonationPlatform.YOUTUBE, videoId, item.getAuthorName(), item.getMessage()));
+                        }
+
+                        @Override
+                        public void onSuperChat(ChatItem item) {
+                            int amount = parsePurchaseAmount(item.getPurchaseAmount());
+                            Donation donation = new Donation(
+                                    DonationPlatform.YOUTUBE, DonationType.CHAT,
+                                    item.getAuthorChannelID(), item.getAuthorName() != null ? item.getAuthorName() : "익명",
+                                    item.getMessage() != null ? item.getMessage() : "",
+                                    amount, item
+                            );
+                            emit(l -> l.onDonation(donation));
+                        }
+
+                        @Override
+                        public void onSuperSticker(ChatItem item) {
+                            int amount = parsePurchaseAmount(item.getPurchaseAmount());
+                            Donation donation = new Donation(
+                                    DonationPlatform.YOUTUBE, DonationType.CHAT,
+                                    item.getAuthorChannelID(), item.getAuthorName() != null ? item.getAuthorName() : "익명",
+                                    "[스티커]", amount, item
+                            );
+                            emit(l -> l.onDonation(donation));
+                        }
+
+                        @Override
+                        public void onNewMember(ChatItem item) {
+                            Donation donation = new Donation(
+                                    DonationPlatform.YOUTUBE, DonationType.SUBSCRIPTION,
+                                    item.getAuthorChannelID(), item.getAuthorName() != null ? item.getAuthorName() : "익명",
+                                    item.getMessage() != null ? item.getMessage() : "", 0, item
+                            );
+                            emit(l -> l.onDonation(donation));
+                        }
+
+                        @Override
+                        public void onBroadcastEnd(YouTubeChat c) {
+                            emit(l -> l.onBroadcastEnd(DonationPlatform.YOUTUBE, videoId));
+                        }
+
+                        @Override
+                        public void onConnectionClosed(int code, String reason, boolean remote, boolean tryingToReconnect) {
+                            emit(l -> l.onDisconnect(DonationPlatform.YOUTUBE, videoId, reason));
+                        }
+
+                        @Override
+                        public void onError(Exception ex) {
+                            emit(l -> l.onError(DonationPlatform.YOUTUBE, videoId, ex));
+                        }
+                    })
+                    .build();
+            chat.connectBlocking();
+            youtubeChats.add(chat);
+        } catch (Exception e) {
+            emit(l -> l.onError(DonationPlatform.YOUTUBE, videoId, e));
+        }
+    }
+
+    private static int parsePurchaseAmount(String amount) {
+        if (amount == null || amount.isEmpty()) return 0;
+        try {
+            return (int) Double.parseDouble(amount.replaceAll("[^0-9.]", ""));
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
 
     private void emit(java.util.function.Consumer<StreamChatEventListener> action) {
         for (StreamChatEventListener listener : listeners) {

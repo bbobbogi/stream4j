@@ -2,6 +2,7 @@ import com.bbobbogi.stream4j.chzzk.Chzzk;
 import com.bbobbogi.stream4j.chzzk.chat.*;
 import com.bbobbogi.stream4j.cime.*;
 import com.bbobbogi.stream4j.soop.*;
+import com.bbobbogi.stream4j.youtube.*;
 import com.bbobbogi.stream4j.util.SharedHttpClient;
 import com.bbobbogi.stream4j.util.RawApiUtils;
 import com.google.gson.Gson;
@@ -66,6 +67,8 @@ public class DonationMonitorTest {
     private PrintWriter chzzkEventLog;
     private PrintWriter cimeEventLog;
     private PrintWriter soopEventLog;
+    private final List<YouTubeChat> youtubeChats = new ArrayList<>();
+    private PrintWriter youtubeEventLog;
 
     private static String now(String platform) {
         return platform + "|" + LocalDateTime.now().format(TIME_FMT);
@@ -159,6 +162,7 @@ public class DonationMonitorTest {
         PrintWriter eventLog;
         if ("Chzzk".equals(platform)) eventLog = chzzkEventLog;
         else if ("CiMe".equals(platform)) eventLog = cimeEventLog;
+        else if ("YouTube".equals(platform)) eventLog = youtubeEventLog;
         else eventLog = soopEventLog;
         if (eventLog == null) return;
 
@@ -1122,6 +1126,134 @@ public class DonationMonitorTest {
         System.out.println("[" + now("SOOP") + "] 초기 연결 완료: " + soopConnections.size() + "개 채널");
     }
 
+    private static final String[] YOUTUBE_SEARCH_QUERIES = {
+            "%EA%B2%8C%EC%9E%84",
+            "%EB%B2%84%EC%B8%84%EC%96%BC",
+            "%EB%B0%A9%EC%86%A1",
+            "%EC%97%AC%EC%BA%A0",
+            "%EB%82%A8%EC%BA%A0",
+            "%EC%B1%84%ED%8C%85"
+    };
+
+    private List<String> findYouTubeLiveVideoIds() {
+        List<String> videoIds = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+        for (String query : YOUTUBE_SEARCH_QUERIES) {
+            if (videoIds.size() >= MAX_CHANNELS) break;
+            try {
+                Request request = new Request.Builder()
+                        .url("https://www.youtube.com/results?search_query=" + query + "&sp=CAMSAkAB")
+                        .header("Accept-Language", "ko")
+                        .get()
+                        .build();
+                try (Response response = SharedHttpClient.get().newCall(request).execute()) {
+                    if (!response.isSuccessful() || response.body() == null) continue;
+                    String html = response.body().string();
+                    java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("\"videoId\":\"([^\"]{11})\"")
+                            .matcher(html);
+                    while (matcher.find() && videoIds.size() < MAX_CHANNELS) {
+                        String vid = matcher.group(1);
+                        if (seen.add(vid)) videoIds.add(vid);
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("[" + now("YouTube") + "][에러] 검색 실패 (" + query + "): " + e.getMessage());
+            }
+        }
+        return videoIds;
+    }
+
+    private void initYouTube() throws Exception {
+        String configuredIds = chzzkBase.properties.getProperty("YOUTUBE_VIDEO_IDS", "");
+        List<String> videoIds;
+        if (!configuredIds.isEmpty()) {
+            videoIds = Arrays.stream(configuredIds.split(",")).map(String::trim).filter(s -> !s.isEmpty()).collect(java.util.stream.Collectors.toList());
+        } else {
+            videoIds = findYouTubeLiveVideoIds();
+        }
+
+        if (videoIds.isEmpty()) {
+            System.out.println("[" + now("YouTube") + "] 라이브 중인 채널이 없습니다.");
+            return;
+        }
+
+        File logDir = new File("build/youtube-donation-logs");
+        logDir.mkdirs();
+        File logFile = new File(logDir, "events-" + LocalDateTime.now().format(FILE_TIME_FMT) + ".jsonl");
+        youtubeEventLog = new PrintWriter(new BufferedWriter(new FileWriter(logFile, true)));
+
+        System.out.println("[" + now("YouTube") + "] === YouTube 후원 모니터링 ===");
+        System.out.println("[" + now("YouTube") + "] 채널 수: " + videoIds.size());
+        System.out.println("[" + now("YouTube") + "] 로그: " + logFile.getAbsolutePath());
+
+        for (String videoId : videoIds) {
+            try {
+                String vid = videoId;
+                YouTubeChat chat = new YouTubeChatBuilder(vid)
+                        .withAutoReconnect(true)
+                        .withChatListener(new YouTubeChatEventListener() {
+                            @Override
+                            public void onConnect(YouTubeChat chat, boolean isReconnecting) {
+                                System.out.println("[" + now("YouTube") + "][연결] " + vid);
+                            }
+
+                            @Override
+                            public void onError(Exception ex) {}
+
+                            @Override
+                            public void onChat(ChatItem item) {}
+
+                            @Override
+                            public void onSuperChat(ChatItem item) {
+                                System.out.println("[" + now("YouTube") + "][SuperChat] " + vid
+                                        + " | " + item.getAuthorName() + " | " + item.getPurchaseAmount() + " | " + item.getMessage());
+                                Map<String, Object> parsed = new LinkedHashMap<>();
+                                parsed.put("type", "SUPER_CHAT");
+                                parsed.put("author", item.getAuthorName());
+                                parsed.put("amount", item.getPurchaseAmount());
+                                parsed.put("message", item.getMessage());
+                                saveEvent("YouTube", "SuperChat", vid, null, parsed);
+                            }
+
+                            @Override
+                            public void onSuperSticker(ChatItem item) {
+                                System.out.println("[" + now("YouTube") + "][SuperSticker] " + vid
+                                        + " | " + item.getAuthorName() + " | " + item.getPurchaseAmount());
+                                Map<String, Object> parsed = new LinkedHashMap<>();
+                                parsed.put("type", "SUPER_STICKER");
+                                parsed.put("author", item.getAuthorName());
+                                parsed.put("amount", item.getPurchaseAmount());
+                                saveEvent("YouTube", "SuperSticker", vid, null, parsed);
+                            }
+
+                            @Override
+                            public void onNewMember(ChatItem item) {
+                                System.out.println("[" + now("YouTube") + "][멤버십] " + vid
+                                        + " | " + item.getAuthorName() + " | " + item.getMessage());
+                                Map<String, Object> parsed = new LinkedHashMap<>();
+                                parsed.put("type", "NEW_MEMBER");
+                                parsed.put("author", item.getAuthorName());
+                                parsed.put("message", item.getMessage());
+                                saveEvent("YouTube", "NewMember", vid, null, parsed);
+                            }
+
+                            @Override
+                            public void onBroadcastEnd(YouTubeChat chat) {
+                                System.out.println("[" + now("YouTube") + "][방송종료] " + vid);
+                            }
+                        })
+                        .build();
+                chat.connectBlocking();
+                youtubeChats.add(chat);
+            } catch (Exception e) {
+                System.out.println("[" + now("YouTube") + "][에러] " + videoId + " 연결 실패: " + e.getMessage());
+            }
+            Thread.sleep(CONNECT_INTERVAL_SECONDS * 1000L);
+        }
+
+        System.out.println("[" + now("YouTube") + "] 초기 연결 완료: " + youtubeChats.size() + "개 채널");
+    }
+
     @Test
     void testDonationMonitoring() throws Exception {
         Thread chzzkInit = new Thread(() -> {
@@ -1142,18 +1274,26 @@ public class DonationMonitorTest {
             }
         }, "soop-init");
 
+        Thread youtubeInit = new Thread(() -> {
+            try { initYouTube(); } catch (Exception e) {
+                if (!(e instanceof InterruptedException)) System.out.println("[YouTube] 초기화 오류: " + e.getMessage());
+            }
+        }, "youtube-init");
+
         chzzkInit.start();
         cimeInit.start();
         soopInit.start();
+        youtubeInit.start();
         chzzkInit.join();
         cimeInit.join();
         soopInit.join();
+        youtubeInit.join();
 
-        Assumptions.assumeTrue(!chzzkConnections.isEmpty() || !cimeConnections.isEmpty() || !soopConnections.isEmpty(),
+        Assumptions.assumeTrue(!chzzkConnections.isEmpty() || !cimeConnections.isEmpty() || !soopConnections.isEmpty() || !youtubeChats.isEmpty(),
                 "연결된 채널이 없어 테스트를 건너뛱니다.");
 
         System.out.println();
-        System.out.println("=== 모니터링 시작 (Chzzk: " + chzzkConnections.size() + " / CiMe: " + cimeConnections.size() + " / SOOP: " + soopConnections.size() + ") ===");
+        System.out.println("=== 모니터링 시작 (Chzzk: " + chzzkConnections.size() + " / CiMe: " + cimeConnections.size() + " / SOOP: " + soopConnections.size() + " / YouTube: " + youtubeChats.size() + ") ===");
         System.out.println("=== 종료: Ctrl+C ===");
 
         startMonitorThreads();
@@ -1167,6 +1307,10 @@ public class DonationMonitorTest {
             cleanupChzzk();
             cleanupCiMe();
             cleanupSOOP();
+            for (YouTubeChat yt : youtubeChats) {
+                try { yt.closeBlocking(); } catch (Exception ignored) {}
+            }
+            if (youtubeEventLog != null) youtubeEventLog.close();
         }
     }
 }

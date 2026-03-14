@@ -13,7 +13,9 @@ public enum DonationPlatform {
     /** 숲 (SOOP/AfreecaTV) */
     SOOP,
     /** 투네이션 (Toonation) */
-    TOONATION;
+    TOONATION,
+    /** YouTube */
+    YOUTUBE;
 
     /**
      * 이름으로 플랫폼을 찾습니다.

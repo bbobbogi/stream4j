@@ -12,6 +12,7 @@ public class StreamChatBuilder {
     final List<String> cimeSlugs = new ArrayList<>();
     final List<String> soopStreamerIds = new ArrayList<>();
     final List<String> toonationAlertboxKeys = new ArrayList<>();
+    final List<String> youtubeVideoIds = new ArrayList<>();
     final List<StreamChatEventListener> listeners = new ArrayList<>();
 
     Chzzk chzzk;
@@ -35,6 +36,11 @@ public class StreamChatBuilder {
 
     public StreamChatBuilder addToonation(String alertboxKey) {
         toonationAlertboxKeys.add(alertboxKey);
+        return this;
+    }
+
+    public StreamChatBuilder addYouTube(String videoId) {
+        youtubeVideoIds.add(videoId);
         return this;
     }
 
