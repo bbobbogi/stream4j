@@ -144,8 +144,8 @@ public class SOOPChat {
         }
 
         LiveInfo liveInfo = fetchLiveInfo();
-        if (!liveInfo.online) {
-            throw new IOException("[SOOP] Streamer is offline: " + streamerId);
+        if (liveInfo.chatNo == null || liveInfo.chatNo.isEmpty()) {
+            throw new IOException("[SOOP] Streamer is offline or no chat available: " + streamerId);
         }
 
         chatNo = liveInfo.chatNo;
@@ -229,11 +229,13 @@ public class SOOPChat {
                 System.out.println("[SOOP] Live detail loaded - bno=" + broadcastNo + ", nick=" + bjNick + ", title=" + title);
             }
 
+            boolean online = chatDomain != null && chatNo != null && !chatNo.isEmpty();
+
             return new LiveInfo(
                     chatDomain,
                     parseIntSafe(chatPort),
                     chatNo,
-                    result == 1
+                    online
             );
         }
     }
