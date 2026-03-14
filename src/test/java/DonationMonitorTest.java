@@ -35,7 +35,6 @@ public class DonationMonitorTest {
 
     private static final int CONNECT_INTERVAL_SECONDS = 5;
     private static final int MAX_CHANNELS = 50;
-    private static final long IDLE_TIMEOUT_MS = 10 * 60 * 1000L;
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm:ss");
     private static final DateTimeFormatter FILE_TIME_FMT = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
     private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
@@ -56,11 +55,6 @@ public class DonationMonitorTest {
     private final Map<String, String> soopChannelNames = new ConcurrentHashMap<>();
     private final LinkedBlockingQueue<String[]> soopReplaceQueue = new LinkedBlockingQueue<>();
 
-    private final ScheduledExecutorService idleChecker = Executors.newSingleThreadScheduledExecutor(r -> {
-        Thread t = new Thread(r, "idle-checker");
-        t.setDaemon(true);
-        return t;
-    });
     private final ExecutorService replaceWorker = Executors.newSingleThreadExecutor(r -> {
         Thread t = new Thread(r, "replace-worker");
         t.setDaemon(true);
@@ -338,13 +332,13 @@ public class DonationMonitorTest {
                         @Override
                         public void onBroadcastEnd(ChzzkChat c) {
                             System.out.println("[" + now("Chzzk") + "][방송종료] " + channelName);
-                            ChzzkChat removed = chzzkConnections.remove(channelId);
+                            chzzkConnections.remove(channelId);
                             chzzkConnectedIds.remove(channelId);
                             chzzkLastActivity.remove(channelId);
                             chzzkChannelNames.remove(channelId);
-                            if (removed != null) {
-                                try { removed.closeBlocking(); } catch (Exception ignored) {}
-                            }
+                            CompletableFuture.runAsync(() -> {
+                                try { c.closeBlocking(); } catch (Exception ignored) {}
+                            });
                             chzzkReplaceQueue.offer(new String[]{channelId, channelName});
                         }
 
@@ -416,29 +410,6 @@ public class DonationMonitorTest {
                 }
             }
         } catch (Exception e) {
-        }
-    }
-
-    private void evictIdleChzzkChannels() {
-        long now = System.currentTimeMillis();
-        for (Map.Entry<String, Long> entry : chzzkLastActivity.entrySet()) {
-            String channelId = entry.getKey();
-            long elapsed = now - entry.getValue();
-            if (elapsed >= IDLE_TIMEOUT_MS) {
-                String name = chzzkChannelNames.getOrDefault(channelId, channelId);
-                System.out.println("[" + now("Chzzk") + "][유휴정리] " + name + " (" + (elapsed / 60000) + "분 무응답)");
-                ChzzkChat chat = chzzkConnections.remove(channelId);
-                chzzkConnectedIds.remove(channelId);
-                chzzkLastActivity.remove(channelId);
-                chzzkChannelNames.remove(channelId);
-                if (chat != null) {
-                    try {
-                        chat.closeBlocking();
-                    } catch (Exception ignored) {
-                    }
-                }
-                chzzkReplaceQueue.offer(new String[]{channelId, name});
-            }
         }
     }
 
@@ -1025,60 +996,11 @@ public class DonationMonitorTest {
         saveEvent("CiMe", "SUBSCRIPTION_GIFT_MESSAGE", channelName, rawJson, parsed);
     }
 
-    private void evictIdleCiMeChannels() {
-        long now = System.currentTimeMillis();
-        for (Map.Entry<String, Long> entry : cimeLastActivity.entrySet()) {
-            String slug = entry.getKey();
-            long elapsed = now - entry.getValue();
-            if (elapsed >= IDLE_TIMEOUT_MS) {
-                String name = cimeChannelNames.getOrDefault(slug, slug);
-                System.out.println("[" + now("CiMe") + "][유휴정리] " + name + " (" + (elapsed / 60000) + "분 무응답)");
-                CiMeChat chat = cimeConnections.remove(slug);
-                cimeConnectedSlugs.remove(slug);
-                cimeLastActivity.remove(slug);
-                cimeChannelNames.remove(slug);
-                if (chat != null) {
-                    try {
-                        chat.closeBlocking();
-                    } catch (Exception ignored) {
-                    }
-                }
-                cimeReplaceQueue.offer(new String[]{slug, name});
-            }
-        }
-    }
-
-    private void evictIdleSOOPChannels() {
-        long now = System.currentTimeMillis();
-        for (Map.Entry<String, Long> entry : soopLastActivity.entrySet()) {
-            String streamerId = entry.getKey();
-            long elapsed = now - entry.getValue();
-            if (elapsed >= IDLE_TIMEOUT_MS) {
-                String name = soopChannelNames.getOrDefault(streamerId, streamerId);
-                System.out.println("[" + now("SOOP") + "][유휴정리] " + name + " (" + (elapsed / 60000) + "분 무응답)");
-                SOOPChat chat = soopConnections.remove(streamerId);
-                soopConnectedIds.remove(streamerId);
-                soopLastActivity.remove(streamerId);
-                soopChannelNames.remove(streamerId);
-                if (chat != null) {
-                    try { chat.closeBlocking(); } catch (Exception ignored) {}
-                }
-                soopReplaceQueue.offer(new String[]{streamerId, name});
-            }
-        }
-    }
-
-
     private void startMonitorThreads() {
         replaceWorker.submit(this::processReplaceQueues);
-        idleChecker.scheduleAtFixedRate(() -> {
-            evictIdleChzzkChannels();
-            evictIdleSOOPChannels();
-        }, 1, 1, TimeUnit.MINUTES);
     }
 
     private void stopMonitorThreads() {
-        idleChecker.shutdownNow();
         replaceWorker.shutdownNow();
     }
 
