@@ -7,6 +7,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import okhttp3.OkHttpClient;
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.protocols.Protocol;
 import com.bbobbogi.stream4j.util.SharedHttpClient;
@@ -25,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 public class SOOPChat {
 
     private static final String LIVE_DETAIL_API = "https://live.sooplive.co.kr/afreeca/player_live_api.php?bjid=";
-
+    private static final String LOGIN_API = "https://login.sooplive.co.kr/app/LoginAction.php";
     private final Object lock = new Object();
     final ArrayList<SOOPChatEventListener> listeners = new ArrayList<>();
     private final String streamerId;
@@ -33,6 +34,7 @@ public class SOOPChat {
     private final boolean debug;
     private final int maxReconnectAttempts;
     private final long reconnectDelayMs;
+    private OkHttpClient httpClient;
 
     private SOOPChatWebSocketClient webSocketClient;
     private String chatNo;
@@ -47,13 +49,15 @@ public class SOOPChat {
             boolean autoReconnect,
             boolean debug,
             int maxReconnectAttempts,
-            long reconnectDelayMs
+            long reconnectDelayMs,
+            OkHttpClient httpClient
     ) {
         this.streamerId = streamerId;
         this.autoReconnect = autoReconnect;
         this.debug = debug;
-        this.maxReconnectAttempts = Math.max(0, maxReconnectAttempts);
-        this.reconnectDelayMs = Math.max(0L, reconnectDelayMs);
+        this.maxReconnectAttempts = maxReconnectAttempts;
+        this.reconnectDelayMs = reconnectDelayMs;
+        this.httpClient = httpClient != null ? httpClient : SharedHttpClient.get();
     }
 
     public boolean isConnected() {
@@ -197,7 +201,7 @@ public class SOOPChat {
                 .post(formBody)
                 .build();
 
-        try (Response response = SharedHttpClient.get().newCall(request).execute()) {
+        try (Response response = httpClient.newCall(request).execute()) {
             if (!response.isSuccessful()) {
                 throw new IOException("[SOOP] Failed to fetch live info: HTTP " + response.code());
             }

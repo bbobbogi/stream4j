@@ -593,8 +593,16 @@ public class DonationMonitorTest {
     private void connectSOOPChannel(String streamerId, String channelName) {
         if (soopConnectedIds.contains(streamerId)) return;
         try {
-            SOOPChat chat = new SOOPChatBuilder(streamerId)
-                    .withAutoReconnect(false)
+            SOOPChatBuilder builder = new SOOPChatBuilder(streamerId)
+                    .withAutoReconnect(false);
+
+            String soopId = chzzkBase.properties.getProperty("SOOP_ID");
+            String soopPw = chzzkBase.properties.getProperty("SOOP_PW");
+            if (soopId != null && !soopId.isEmpty() && soopPw != null && !soopPw.isEmpty()) {
+                builder.withCredentials(soopId, soopPw);
+            }
+
+            SOOPChat chat = builder
                     .withChatListener(new SOOPChatEventListener() {
                         @Override
                         public void onConnect(SOOPChat chat, boolean isReconnecting) {
