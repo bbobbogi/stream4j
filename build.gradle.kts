@@ -37,6 +37,15 @@ tasks.test {
     }
 }
 
+tasks.register<Test>("manualTest") {
+    useJUnitPlatform {
+        includeTags("manual")
+    }
+    testLogging {
+        showStandardStreams = true
+    }
+}
+
 java {
     withJavadocJar()
     withSourcesJar()

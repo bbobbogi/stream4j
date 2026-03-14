@@ -44,7 +44,8 @@ class Util {
 
     static Map<String, Object> toJSON(String json) {
         if (!json.startsWith("{")) {
-            throw new IllegalArgumentException("This is not json(map)!");
+            String preview = json.length() > 200 ? json.substring(0, 200) + "..." : json;
+            throw new IllegalArgumentException("Expected JSON but got: " + preview);
         }
         return gson.fromJson(json, Map.class);
     }

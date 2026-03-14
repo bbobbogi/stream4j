@@ -296,6 +296,19 @@ public class DonationMonitorTest {
                         }
 
                         @Override
+                        public void onBroadcastEnd(ChzzkChat c) {
+                            System.out.println("[" + now("Chzzk") + "][방송종료] " + channelName);
+                            ChzzkChat removed = chzzkConnections.remove(channelId);
+                            chzzkConnectedIds.remove(channelId);
+                            chzzkLastActivity.remove(channelId);
+                            chzzkChannelNames.remove(channelId);
+                            if (removed != null) {
+                                try { removed.closeBlocking(); } catch (Exception ignored) {}
+                            }
+                            chzzkReplaceQueue.offer(new String[]{channelId, channelName});
+                        }
+
+                        @Override
                         public void onConnectionClosed(int code, String reason, boolean remote, boolean tryingToReconnect) {
                             System.out.println("[" + now("Chzzk") + "][연결종료] " + channelName + " | code=" + code + " reason=" + reason);
                             if (chzzkConnections.remove(channelId) == null) return;
