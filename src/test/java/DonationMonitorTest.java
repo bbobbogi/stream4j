@@ -11,6 +11,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.junit.jupiter.api.Assumptions;
@@ -1121,6 +1122,7 @@ public class DonationMonitorTest {
                 Request request = new Request.Builder()
                         .url("https://www.youtube.com/results?search_query=" + query + "&sp=CAMSAkAB")
                         .header("Accept-Language", "ko")
+                        .header("Cookie", "CONSENT=YES+")
                         .get()
                         .build();
                 try (Response response = SharedHttpClient.get().newCall(request).execute()) {
