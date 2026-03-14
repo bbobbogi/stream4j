@@ -1,6 +1,11 @@
 import org.junit.jupiter.api.Test;
 import com.bbobbogi.stream4j.chzzk.chat.*;
-
+import com.bbobbogi.stream4j.soop.*;
+import com.bbobbogi.stream4j.youtube.*;
+import com.bbobbogi.stream4j.util.SharedHttpClient;
+import com.google.gson.*;
+import okhttp3.Request;
+import okhttp3.Response;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
@@ -100,7 +105,7 @@ public class ConnectionPoolLeakTest extends ChzzkTestBase {
 
         // 1. 테스트 시작 전 스레드 스냅샷
         Thread.sleep(1000); // JVM 안정화 대기
-        Set<String> baselineThreads = getChzzkThreadNames();
+        Set<String> baselineThreads = getMonitoredThreadNames();
         int baselineCount = baselineThreads.size();
         System.out.println("[기준] chzzk 관련 스레드 수: " + baselineCount);
         if (!baselineThreads.isEmpty()) {
@@ -193,7 +198,7 @@ public class ConnectionPoolLeakTest extends ChzzkTestBase {
             // 2b. 잠시 대기 (연결 유지 상태에서 스레드 확인)
             Thread.sleep(CONNECT_WAIT_MS);
 
-            Set<String> midThreads = getChzzkThreadNames();
+            Set<String> midThreads = getMonitoredThreadNames();
             System.out.println("  현재 chzzk 스레드 수: " + midThreads.size());
 
             // 2c. 모든 연결 종료
@@ -209,13 +214,99 @@ public class ConnectionPoolLeakTest extends ChzzkTestBase {
             // 종료 후 정리 대기
             Thread.sleep(CLEANUP_WAIT_MS);
 
-            Set<String> afterBatchThreads = getChzzkThreadNames();
+            Set<String> afterBatchThreads = getMonitoredThreadNames();
             System.out.println("  종료 후 chzzk 스레드 수: " + afterBatchThreads.size());
             if (!afterBatchThreads.isEmpty()) {
                 afterBatchThreads.forEach(t -> System.out.println("    - " + t));
             }
             System.out.println();
         }
+
+        // === SOOP 배치 테스트 ===
+        System.out.println("=== SOOP 커넥션 풀 테스트 ===");
+        try {
+            Request soopReq = new Request.Builder()
+                    .url("https://live.sooplive.co.kr/api/main_broad_list_api.php?selectType=action&selectValue=all&orderType=view_cnt&pageNo=1&lang=ko_KR&_=" + System.currentTimeMillis())
+                    .get().build();
+            try (Response soopResp = SharedHttpClient.get().newCall(soopReq).execute()) {
+                if (soopResp.isSuccessful() && soopResp.body() != null) {
+                    JsonObject soopJson = JsonParser.parseString(soopResp.body().string()).getAsJsonObject();
+                    JsonArray broads = soopJson.has("broad") ? soopJson.getAsJsonArray("broad") : null;
+                    if (broads != null && !broads.isEmpty()) {
+                        List<SOOPChat> soopChats = new ArrayList<>();
+                        int soopCount = Math.min(POOL_SIZE, broads.size());
+                        for (int i = 0; i < soopCount; i++) {
+                            String sid = broads.get(i).getAsJsonObject().get("user_id").getAsString();
+                            try {
+                                SOOPChat sc = new SOOPChatBuilder(sid).withAutoReconnect(false)
+                                        .withChatListener(new SOOPChatEventListener() {
+                                            @Override public void onConnect(SOOPChat chat, boolean r) { System.out.println("  [SOOP 연결] " + sid); }
+                                            @Override public void onError(Exception ex) {}
+                                        }).build();
+                                sc.connectBlocking();
+                                soopChats.add(sc);
+                            } catch (Exception e) {
+                                System.out.println("  [SOOP 실패] " + sid + ": " + e.getMessage());
+                            }
+                        }
+                        System.out.println("  SOOP 연결: " + soopChats.size() + "/" + soopCount);
+                        Thread.sleep(CONNECT_WAIT_MS);
+                        System.out.println("  SOOP 스레드: " + getMonitoredThreadNames().size());
+                        for (SOOPChat sc : soopChats) { try { sc.closeBlocking(); } catch (Exception ignored) {} }
+                        Thread.sleep(CLEANUP_WAIT_MS);
+                        System.out.println("  SOOP 정리 후 스레드: " + getMonitoredThreadNames().size());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("  [SOOP 건너뜀] " + e.getMessage());
+        }
+        System.out.println();
+
+        // === YouTube 배치 테스트 ===
+        System.out.println("=== YouTube 커넥션 풀 테스트 ===");
+        try {
+            Request ytReq = new Request.Builder()
+                    .url("https://www.youtube.com/results?search_query=%EA%B2%8C%EC%9E%84&sp=CAMSAkAB")
+                    .header("Accept-Language", "ko").get().build();
+            try (Response ytResp = SharedHttpClient.get().newCall(ytReq).execute()) {
+                if (ytResp.isSuccessful() && ytResp.body() != null) {
+                    String html = ytResp.body().string();
+                    java.util.regex.Matcher m = java.util.regex.Pattern.compile("\"videoId\":\"([^\"]{11})\"")
+                            .matcher(html);
+                    Set<String> seen = new HashSet<>();
+                    List<String> vids = new ArrayList<>();
+                    while (m.find() && vids.size() < POOL_SIZE) {
+                        if (seen.add(m.group(1))) vids.add(m.group(1));
+                    }
+                    if (!vids.isEmpty()) {
+                        List<YouTubeChat> ytChats = new ArrayList<>();
+                        for (String vid : vids) {
+                            try {
+                                YouTubeChat yc = new YouTubeChatBuilder(vid).withAutoReconnect(false)
+                                        .withChatListener(new YouTubeChatEventListener() {
+                                            @Override public void onConnect(YouTubeChat c, boolean r) { System.out.println("  [YouTube 연결] " + vid); }
+                                            @Override public void onError(Exception ex) {}
+                                        }).build();
+                                yc.connectBlocking();
+                                ytChats.add(yc);
+                            } catch (Exception e) {
+                                System.out.println("  [YouTube 실패] " + vid);
+                            }
+                        }
+                        System.out.println("  YouTube 연결: " + ytChats.size() + "/" + vids.size());
+                        Thread.sleep(CONNECT_WAIT_MS);
+                        System.out.println("  YouTube 스레드: " + getMonitoredThreadNames().size());
+                        for (YouTubeChat yc : ytChats) { try { yc.closeBlocking(); } catch (Exception ignored) {} }
+                        Thread.sleep(CLEANUP_WAIT_MS);
+                        System.out.println("  YouTube 정리 후 스레드: " + getMonitoredThreadNames().size());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("  [YouTube 건너뜀] " + e.getMessage());
+        }
+        System.out.println();
 
         // 3. 최종 스레드 확인
         System.out.println("=== 최종 결과 ===");
@@ -227,7 +318,7 @@ public class ConnectionPoolLeakTest extends ChzzkTestBase {
         System.gc();
         Thread.sleep(CLEANUP_WAIT_MS);
 
-        Set<String> finalChzzkThreads = getChzzkThreadNames();
+        Set<String> finalChzzkThreads = getMonitoredThreadNames();
         int finalAllThreads = Thread.activeCount();
 
         System.out.println("[최종] chzzk 관련 스레드 수: " + finalChzzkThreads.size() + " (기준: " + baselineCount + ")");
@@ -271,14 +362,17 @@ public class ConnectionPoolLeakTest extends ChzzkTestBase {
                         t.getName(), t.isDaemon(), t.getState()));
     }
 
-    private Set<String> getChzzkThreadNames() {
+    private Set<String> getMonitoredThreadNames() {
         return Thread.getAllStackTraces().keySet().stream()
                 .filter(t -> {
                     String name = t.getName().toLowerCase();
                     return name.contains("chzzk") ||
                             name.contains("websocket") ||
                             name.contains("websocketread") ||
-                            name.contains("websocketwrite");
+                            name.contains("websocketwrite") ||
+                            name.contains("soop") ||
+                            name.contains("youtube") ||
+                            name.contains("chat-poller");
                 })
                 .map(Thread::getName)
                 .collect(Collectors.toSet());
