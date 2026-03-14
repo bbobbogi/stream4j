@@ -149,7 +149,13 @@ public class SOOPChat {
 
         LiveInfo liveInfo = fetchLiveInfo();
         if (liveInfo.chatNo == null || liveInfo.chatNo.isEmpty()) {
-            throw new IOException("[SOOP] Streamer is offline or no chat available: " + streamerId);
+            String reason = switch (liveInfo.result) {
+                case 0 -> "오프라인";
+                case -6 -> "성인 인증 필요 (로그인 필요)";
+                case -14 -> "구독자 전용 방송 (티어 " + liveInfo.minTier + " 이상)";
+                default -> "RESULT=" + liveInfo.result;
+            };
+            throw new IOException("[SOOP] " + streamerId + " 연결 불가: " + reason);
         }
 
         chatNo = liveInfo.chatNo;
@@ -234,12 +240,15 @@ public class SOOPChat {
             }
 
             boolean online = chatDomain != null && chatNo != null && !chatNo.isEmpty();
+            int minTier = getAsInt(channel, "P_MIN_TIER");
 
             return new LiveInfo(
                     chatDomain,
                     parseIntSafe(chatPort),
                     chatNo,
-                    online
+                    online,
+                    result,
+                    minTier
             );
         }
     }
@@ -426,12 +435,16 @@ public class SOOPChat {
         private final int chatPort;
         private final String chatNo;
         private final boolean online;
+        private final int result;
+        private final int minTier;
 
-        private LiveInfo(String chatDomain, int chatPort, String chatNo, boolean online) {
+        private LiveInfo(String chatDomain, int chatPort, String chatNo, boolean online, int result, int minTier) {
             this.chatDomain = chatDomain;
             this.chatPort = chatPort;
             this.chatNo = chatNo;
             this.online = online;
+            this.result = result;
+            this.minTier = minTier;
         }
     }
 }
