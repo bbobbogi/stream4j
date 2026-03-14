@@ -1005,7 +1005,6 @@ public class DonationMonitorTest {
         replaceWorker.submit(this::processReplaceQueues);
         idleChecker.scheduleAtFixedRate(() -> {
             evictIdleChzzkChannels();
-            evictIdleCiMeChannels();
             evictIdleSOOPChannels();
         }, 1, 1, TimeUnit.MINUTES);
     }
