@@ -35,7 +35,6 @@ public class ChzzkTestBase {
 
         // 익명 Chzzk 인스턴스 (항상 생성)
         chzzk = new ChzzkBuilder()
-                .withDebugMode()
                 .build();
 
         // 로그인된 Chzzk 인스턴스 (인증 정보가 있을 때만 생성)
@@ -43,7 +42,6 @@ public class ChzzkTestBase {
         String nidSes = properties.getProperty("NID_SES");
         if (nidAut != null && !nidAut.isEmpty() && nidSes != null && !nidSes.isEmpty()) {
             loginChzzk = new ChzzkBuilder()
-                    .withDebugMode()
                     .withAuthorization(nidAut, nidSes)
                     .build();
             hasCredentials = true;

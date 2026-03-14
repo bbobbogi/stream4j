@@ -134,7 +134,7 @@ public class ConnectionPoolLeakTest extends ChzzkTestBase {
             for (String channelId : batchChannels) {
                 futures.add(connectExecutor.submit(() -> {
                     try {
-                        ChzzkChat chat = chzzk.chat(channelId)
+                        ChzzkChat chat = (loginChzzk != null ? loginChzzk : chzzk).chat(channelId)
                                 .withAutoReconnect(false)
                                 .withChatListener(new ChatEventListener() {
                                     @Override
