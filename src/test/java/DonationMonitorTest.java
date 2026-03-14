@@ -322,11 +322,19 @@ public class DonationMonitorTest {
 
                         @Override
                         public void onSubscriptionGift(SubscriptionGiftEvent msg) {
-                            System.out.println("[" + now("Chzzk") + "][구독선물] " + channelName + " | " + msg);
+                            System.out.println("[" + now("Chzzk") + "][구독선물] " + channelName
+                                    + " | " + msg.getQuantity() + "개 " + msg.getGiftTierName()
+                                    + " | type=" + msg.getSelectionTypeRaw());
 
                             Map<String, Object> parsed = new LinkedHashMap<>();
-                            parsed.put("raw", msg.toString());
-                            saveEvent("Chzzk", "SubscriptionGift", channelName, null, parsed);
+                            parsed.put("giftId", msg.getGiftId());
+                            parsed.put("quantity", msg.getQuantity());
+                            parsed.put("completedQuantity", msg.getCompletedQuantity());
+                            parsed.put("giftTierName", msg.getGiftTierName());
+                            parsed.put("giftTierNo", msg.getGiftTierNo());
+                            parsed.put("selectionType", msg.getSelectionTypeRaw());
+                            parsed.put("userIdHash", msg.getUserIdHash());
+                            saveEvent("Chzzk", "SubscriptionGift", channelName, msg.getRawJson(), parsed);
                             chzzkLastActivity.put(channelId, System.currentTimeMillis());
                         }
 
