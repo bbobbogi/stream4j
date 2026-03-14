@@ -296,6 +296,46 @@ public class DonationMonitorTest {
                         }
 
                         @Override
+                        public void onPartyDonationChat(PartyDonationMessage msg) {
+                            String nickname = msg.isAnonymous() ? "익명" : (msg.getProfile() != null && msg.getProfile().getNickname() != null) ? msg.getProfile().getNickname() : "익명";
+                            System.out.println("[" + now("Chzzk") + "][파티후원] " + channelName
+                                    + " | " + nickname + " | " + msg.getPayAmount() + "원 | " + msg.getPartyName() + " | " + msg.getContent());
+
+                            Map<String, Object> parsed = new LinkedHashMap<>();
+                            parsed.put("nickname", nickname);
+                            parsed.put("amount", msg.getPayAmount());
+                            parsed.put("partyName", msg.getPartyName());
+                            parsed.put("content", msg.getContent());
+                            parsed.put("anonymous", msg.isAnonymous());
+                            saveEvent("Chzzk", "PartyDonation", channelName, msg.getRawJson(), parsed);
+                            chzzkLastActivity.put(channelId, System.currentTimeMillis());
+                        }
+
+                        @Override
+                        public void onSubscriptionChat(SubscriptionMessage msg) {
+                            String nickname = (msg.getProfile() != null && msg.getProfile().getNickname() != null) ? msg.getProfile().getNickname() : "익명";
+                            System.out.println("[" + now("Chzzk") + "][구독] " + channelName
+                                    + " | " + nickname + " | " + msg.getSubscriptionMonth() + "개월 " + msg.getSubscriptionTierName());
+
+                            Map<String, Object> parsed = new LinkedHashMap<>();
+                            parsed.put("nickname", nickname);
+                            parsed.put("month", msg.getSubscriptionMonth());
+                            parsed.put("tierName", msg.getSubscriptionTierName());
+                            saveEvent("Chzzk", "Subscription", channelName, msg.getRawJson(), parsed);
+                            chzzkLastActivity.put(channelId, System.currentTimeMillis());
+                        }
+
+                        @Override
+                        public void onSubscriptionGift(SubscriptionGiftEvent msg) {
+                            System.out.println("[" + now("Chzzk") + "][구독선물] " + channelName + " | " + msg);
+
+                            Map<String, Object> parsed = new LinkedHashMap<>();
+                            parsed.put("raw", msg.toString());
+                            saveEvent("Chzzk", "SubscriptionGift", channelName, null, parsed);
+                            chzzkLastActivity.put(channelId, System.currentTimeMillis());
+                        }
+
+                        @Override
                         public void onBroadcastEnd(ChzzkChat c) {
                             System.out.println("[" + now("Chzzk") + "][방송종료] " + channelName);
                             ChzzkChat removed = chzzkConnections.remove(channelId);
