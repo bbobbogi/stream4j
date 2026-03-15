@@ -425,7 +425,7 @@ public class DonationMonitorTest {
     private void processReplaceQueues() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
-                // 양쪽 큐 모두 대기 — 어느 쪽이든 들어오면 처리
+                // 큐에 대기 중인 항목 처리
                 String[] item = chzzkReplaceQueue.poll(5, TimeUnit.SECONDS);
                 if (item != null) {
                     List<String[]> batch = new ArrayList<>();
@@ -449,6 +449,7 @@ public class DonationMonitorTest {
                     soopReplaceQueue.drainTo(batch);
                     replaceSOOPChannels(batch);
                 }
+
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;
@@ -457,68 +458,60 @@ public class DonationMonitorTest {
     }
 
     private void replaceChzzkChannels(List<String[]> batch) {
-        System.out.println("[" + now("Chzzk") + "] 대체 채널 " + batch.size() + "개 탐색 중...");
+        int need = MAX_CHANNELS - chzzkConnections.size();
+        System.out.println("[" + now("Chzzk") + "] " + batch.size() + "개 종료, " + need + "개 보충 필요 (" + chzzkConnections.size() + "/" + MAX_CHANNELS + ")");
+        if (need <= 0) return;
+
         List<String[]> liveChannels = findChzzkLiveChannels();
         Collections.shuffle(liveChannels);
-
-        for (String[] dc : batch) {
-            boolean found = false;
-            for (String[] ch : liveChannels) {
-                if (!chzzkConnectedIds.contains(ch[0])) {
-                    System.out.println("[" + now("Chzzk") + "] " + dc[1] + " \u2192 " + ch[1] + " 대체 연결");
-                    connectChzzkChannel(ch[0], ch[1]);
-                    try { Thread.sleep(CONNECT_INTERVAL_SECONDS * 1000L); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); return; }
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                System.out.println("[" + now("Chzzk") + "] " + dc[1] + " 대체 불가 (현재 " + chzzkConnections.size() + "개 연결)");
+        int connected = 0;
+        for (String[] ch : liveChannels) {
+            if (connected >= need) break;
+            if (!chzzkConnectedIds.contains(ch[0])) {
+                connectChzzkChannel(ch[0], ch[1]);
+                connected++;
+                try { Thread.sleep(CONNECT_INTERVAL_SECONDS * 1000L); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); return; }
             }
         }
+        System.out.println("[" + now("Chzzk") + "] 보충 완료: " + chzzkConnections.size() + "/" + MAX_CHANNELS + "개");
     }
 
     private void replaceCiMeChannels(List<String[]> batch) {
-        System.out.println("[" + now("CiMe") + "] 대체 채널 " + batch.size() + "개 탐색 중...");
+        int need = MAX_CHANNELS - cimeConnections.size();
+        System.out.println("[" + now("CiMe") + "] " + batch.size() + "개 종료, " + need + "개 보충 필요 (" + cimeConnections.size() + "/" + MAX_CHANNELS + ")");
+        if (need <= 0) return;
+
         List<String[]> liveChannels = cimeBase.findLiveChannels(MAX_CHANNELS);
         Collections.shuffle(liveChannels);
-
-        for (String[] dc : batch) {
-            boolean found = false;
-            for (String[] ch : liveChannels) {
-                if (!cimeConnectedSlugs.contains(ch[0])) {
-                    System.out.println("[" + now("CiMe") + "] " + dc[1] + " \u2192 " + ch[1] + " 대체 연결");
-                    connectCiMeChannel(ch[0], ch[1]);
-                    try { Thread.sleep(CONNECT_INTERVAL_SECONDS * 1000L); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); return; }
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                System.out.println("[" + now("CiMe") + "] " + dc[1] + " 대체 불가 (현재 " + cimeConnections.size() + "개 연결)");
+        int connected = 0;
+        for (String[] ch : liveChannels) {
+            if (connected >= need) break;
+            if (!cimeConnectedSlugs.contains(ch[0])) {
+                connectCiMeChannel(ch[0], ch[1]);
+                connected++;
+                try { Thread.sleep(CONNECT_INTERVAL_SECONDS * 1000L); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); return; }
             }
         }
+        System.out.println("[" + now("CiMe") + "] 보충 완료: " + cimeConnections.size() + "/" + MAX_CHANNELS + "개");
     }
 
     private void replaceSOOPChannels(List<String[]> batch) {
-        System.out.println("[" + now("SOOP") + "] 대체 채널 " + batch.size() + "개 탐색 중...");
+        int need = MAX_CHANNELS - soopConnections.size();
+        System.out.println("[" + now("SOOP") + "] " + batch.size() + "개 종료, " + need + "개 보충 필요 (" + soopConnections.size() + "/" + MAX_CHANNELS + ")");
+        if (need <= 0) return;
+
         List<String[]> liveChannels = findSOOPLiveChannels();
         Collections.shuffle(liveChannels);
-        for (String[] dc : batch) {
-            boolean found = false;
-            for (String[] ch : liveChannels) {
-                if (!soopConnectedIds.contains(ch[0])) {
-                    System.out.println("[" + now("SOOP") + "] " + dc[1] + " → " + ch[1] + " 대체 연결");
-                    connectSOOPChannel(ch[0], ch[1]);
-                    try { Thread.sleep(CONNECT_INTERVAL_SECONDS * 1000L); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); return; }
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                System.out.println("[" + now("SOOP") + "] " + dc[1] + " 대체 불가 (현재 " + soopConnections.size() + "개 연결)");
+        int connected = 0;
+        for (String[] ch : liveChannels) {
+            if (connected >= need) break;
+            if (!soopConnectedIds.contains(ch[0])) {
+                connectSOOPChannel(ch[0], ch[1]);
+                connected++;
+                try { Thread.sleep(CONNECT_INTERVAL_SECONDS * 1000L); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); return; }
             }
         }
+        System.out.println("[" + now("SOOP") + "] 보충 완료: " + soopConnections.size() + "/" + MAX_CHANNELS + "개");
     }
 
     private void connectCiMeChannel(String channelSlug, String channelName) {
