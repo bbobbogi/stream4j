@@ -82,7 +82,12 @@ public class YouTubeChat {
             return t;
         });
 
-        pollTask = poller.scheduleAtFixedRate(() -> {
+        schedulePoll(0);
+    }
+
+    private void schedulePoll(long delayMs) {
+        if (poller == null || poller.isShutdown()) return;
+        pollTask = poller.schedule(() -> {
             try {
                 liveChat.update();
 
@@ -107,26 +112,29 @@ public class YouTubeChat {
                     }
                 }
 
+                long nextInterval = liveChat.getRecommendedIntervalMs();
+                if (nextInterval <= 0) nextInterval = pollIntervalMs;
+                schedulePoll(nextInterval);
+
             } catch (IOException e) {
                 if (debug) System.out.println("[YouTube] Poll error: " + e.getMessage());
 
                 if (autoReconnect) {
                     try {
                         liveChat.reset();
+                        schedulePoll(pollIntervalMs);
                     } catch (IOException resetEx) {
                         connected = false;
-                        stopPolling();
                         for (YouTubeChatEventListener l : listeners) l.onBroadcastEnd(YouTubeChat.this);
                         for (YouTubeChatEventListener l : listeners) l.onConnectionClosed(1000, "Broadcast ended", true, false);
                     }
                 } else {
                     connected = false;
-                    stopPolling();
                     for (YouTubeChatEventListener l : listeners) l.onError(e);
                     for (YouTubeChatEventListener l : listeners) l.onConnectionClosed(1006, e.getMessage(), true, false);
                 }
             }
-        }, 0, pollIntervalMs, TimeUnit.MILLISECONDS);
+        }, delayMs, TimeUnit.MILLISECONDS);
     }
 
     private void stopPolling() {

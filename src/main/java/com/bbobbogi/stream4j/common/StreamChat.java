@@ -145,7 +145,7 @@ public class StreamChat {
                             Donation donation = new Donation(
                                     DonationPlatform.CHZZK, DonationType.CHAT,
                                     msg.getUserIdHash(), nickname != null ? nickname : "익명",
-                                    msg.getContent(), msg.getPayAmount(), msg
+                                    msg.getContent(), CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, msg.getPayAmount()), msg
                             );
                             emit(l -> l.onDonation(donation));
                         }
@@ -157,7 +157,7 @@ public class StreamChat {
                                     DonationPlatform.CHZZK, DonationType.MISSION,
                                     msg.getUserIdHash(), nickname != null ? nickname : "익명",
                                     msg.getMissionText() != null ? msg.getMissionText() : "",
-                                    msg.getTotalPayAmount(), msg
+                                    CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, msg.getTotalPayAmount()), msg
                             );
                             emit(l -> l.onDonation(donation));
                         }
@@ -243,7 +243,7 @@ public class StreamChat {
 
             Donation donation = new Donation(
                     DonationPlatform.CIME, type,
-                    null, nickname, message, amount, rawJson
+                    null, nickname, message, CurrencyUtils.of(CurrencyUtils.CIME_BEAM, amount), rawJson
             );
             emit(l -> l.onDonation(donation));
         } catch (Exception e) {
@@ -271,7 +271,7 @@ public class StreamChat {
                             Donation donation = new Donation(
                                     DonationPlatform.SOOP, DonationType.CHAT,
                                     msg.getFrom(), msg.getFromUsername() != null ? msg.getFromUsername() : "익명",
-                                    "", msg.getAmount(), msg
+                                    "", CurrencyUtils.of(CurrencyUtils.SOOP_BALLOON, msg.getAmount()), msg
                             );
                             emit(l -> l.onDonation(donation));
                         }
@@ -281,7 +281,7 @@ public class StreamChat {
                             Donation donation = new Donation(
                                     DonationPlatform.SOOP, DonationType.SUBSCRIPTION,
                                     from, fromUsername != null ? fromUsername : "익명",
-                                    monthCount + "개월 " + tier + "티어", 0, null
+                                    monthCount + "개월 " + tier + "티어", CurrencyUtils.of(CurrencyUtils.SOOP_BALLOON, 0), null
                             );
                             emit(l -> l.onDonation(donation));
                         }
@@ -328,7 +328,7 @@ public class StreamChat {
                             Donation donation = new Donation(
                                     DonationPlatform.TOONATION, type,
                                     msg.getAccount(), nickname,
-                                    message, msg.getAmount(), msg
+                                    message, CurrencyUtils.of(CurrencyUtils.TOONATION_WON, msg.getAmount()), msg
                             );
                             emit(l -> l.onDonation(donation));
                         }
@@ -369,23 +369,21 @@ public class StreamChat {
 
                         @Override
                         public void onSuperChat(ChatItem item) {
-                            int amount = parsePurchaseAmount(item.getPurchaseAmount());
                             Donation donation = new Donation(
                                     DonationPlatform.YOUTUBE, DonationType.CHAT,
                                     item.getAuthorChannelID(), item.getAuthorName() != null ? item.getAuthorName() : "익명",
                                     item.getMessage() != null ? item.getMessage() : "",
-                                    amount, item
+                                    CurrencyUtils.parse(item.getPurchaseAmount()), item
                             );
                             emit(l -> l.onDonation(donation));
                         }
 
                         @Override
                         public void onSuperSticker(ChatItem item) {
-                            int amount = parsePurchaseAmount(item.getPurchaseAmount());
                             Donation donation = new Donation(
                                     DonationPlatform.YOUTUBE, DonationType.CHAT,
                                     item.getAuthorChannelID(), item.getAuthorName() != null ? item.getAuthorName() : "익명",
-                                    "[스티커]", amount, item
+                                    "[스티커]", CurrencyUtils.parse(item.getPurchaseAmount()), item
                             );
                             emit(l -> l.onDonation(donation));
                         }
@@ -395,7 +393,8 @@ public class StreamChat {
                             Donation donation = new Donation(
                                     DonationPlatform.YOUTUBE, DonationType.SUBSCRIPTION,
                                     item.getAuthorChannelID(), item.getAuthorName() != null ? item.getAuthorName() : "익명",
-                                    item.getMessage() != null ? item.getMessage() : "", 0, item
+                                    item.getMessage() != null ? item.getMessage() : "",
+                                    CurrencyUtils.of("KRW", 0), item
                             );
                             emit(l -> l.onDonation(donation));
                         }
@@ -420,15 +419,6 @@ public class StreamChat {
             youtubeChats.add(chat);
         } catch (Exception e) {
             emit(l -> l.onError(DonationPlatform.YOUTUBE, videoId, e));
-        }
-    }
-
-    private static int parsePurchaseAmount(String amount) {
-        if (amount == null || amount.isEmpty()) return 0;
-        try {
-            return (int) Double.parseDouble(amount.replaceAll("[^0-9.]", ""));
-        } catch (NumberFormatException e) {
-            return 0;
         }
     }
 

@@ -36,6 +36,7 @@ public class YouTubeLiveChat {
     private String channelId;
     private String userId;
     private String continuation;
+    private long recommendedIntervalMs;
     private boolean isReplay;
     private final boolean isTopChatOnly;
     private String visitorData;
@@ -216,15 +217,22 @@ public class YouTubeLiveChat {
                     if (continuations != null) {
                         for (Object co : continuations) {
                             Map<String, Object> continuation = (Map<String, Object>) co;
-                            this.continuation = Util.getJSONValueString(
-                                    Util.getJSONMap(continuation, "invalidationContinuationData"), "continuation");
-                            if (this.continuation == null) {
-                                this.continuation = Util.getJSONValueString(
-                                        Util.getJSONMap(continuation, "timedContinuationData"), "continuation");
+                            Map<String, Object> invalidation = Util.getJSONMap(continuation, "invalidationContinuationData");
+                            Map<String, Object> timed = Util.getJSONMap(continuation, "timedContinuationData");
+                            Map<String, Object> reload = Util.getJSONMap(continuation, "reloadContinuationData");
+
+                            if (invalidation != null) {
+                                this.continuation = Util.getJSONValueString(invalidation, "continuation");
+                                long timeout = Util.getJSONValueLong(invalidation, "timeoutMs");
+                                if (timeout > 0) this.recommendedIntervalMs = timeout;
                             }
-                            if (this.continuation == null) {
-                                this.continuation = Util.getJSONValueString(
-                                        Util.getJSONMap(continuation, "reloadContinuationData"), "continuation");
+                            if (this.continuation == null && timed != null) {
+                                this.continuation = Util.getJSONValueString(timed, "continuation");
+                                long timeout = Util.getJSONValueLong(timed, "timeoutMs");
+                                if (timeout > 0) this.recommendedIntervalMs = timeout;
+                            }
+                            if (this.continuation == null && reload != null) {
+                                this.continuation = Util.getJSONValueString(reload, "continuation");
                             }
                         }
                     }
@@ -693,6 +701,10 @@ public class YouTubeLiveChat {
      */
     public String getChannelId() {
         return this.channelId;
+    }
+
+    public long getRecommendedIntervalMs() {
+        return this.recommendedIntervalMs;
     }
 
     /**

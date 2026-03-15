@@ -1,6 +1,7 @@
 import com.bbobbogi.stream4j.chzzk.Chzzk;
 import com.bbobbogi.stream4j.chzzk.chat.*;
 import com.bbobbogi.stream4j.cime.*;
+import com.bbobbogi.stream4j.common.CurrencyUtils;
 import com.bbobbogi.stream4j.soop.*;
 import com.bbobbogi.stream4j.youtube.*;
 import com.bbobbogi.stream4j.util.SharedHttpClient;
@@ -222,11 +223,13 @@ public class DonationMonitorTest {
                         public void onDonationChat(DonationMessage msg) {
                             String nickname = msg.isAnonymous() ? "익명" : (msg.getProfile() != null && msg.getProfile().getNickname() != null) ? msg.getProfile().getNickname() : "익명";
                             System.out.println("[" + now("Chzzk") + "][Donation] " + channelName
-                                    + " | " + nickname + " | " + msg.getPayAmount() + "원 | " + msg.getContent());
+                                    + " | " + nickname + " | " + CurrencyUtils.format(CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, msg.getPayAmount())) + " | " + msg.getContent());
 
+                            CurrencyUtils.ParsedAmount pa = CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, msg.getPayAmount());
                             Map<String, Object> parsed = new LinkedHashMap<>();
                             parsed.put("nickname", nickname);
-                            parsed.put("amount", msg.getPayAmount());
+                            parsed.put("currency", pa.currencyCode());
+                            parsed.put("amount", pa.amount());
                             parsed.put("content", msg.getContent());
                             parsed.put("anonymous", msg.isAnonymous());
                             saveEvent("Chzzk", "Donation", channelName, msg.getRawJson(), parsed);
@@ -236,16 +239,18 @@ public class DonationMonitorTest {
                         @Override
                         public void onMissionDonationChat(MissionDonationMessage msg) {
                             String nickname = msg.getNickname() != null ? msg.getNickname() : "익명";
+                            CurrencyUtils.ParsedAmount pa = CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, msg.getPayAmount());
                             System.out.println("[" + now("Chzzk") + "][MissionChat] " + channelName
                                     + " | " + nickname + " | status=" + msg.getMissionStatusRaw()
-                                    + " | " + msg.getPayAmount() + "원 | " + msg.getMissionText());
+                                    + " | " + CurrencyUtils.format(pa) + " | " + msg.getMissionText());
 
                             Map<String, Object> parsed = new LinkedHashMap<>();
                             parsed.put("nickname", nickname);
                             parsed.put("statusRaw", msg.getMissionStatusRaw());
                             parsed.put("statusEnum", String.valueOf(msg.getMissionStatus()));
                             parsed.put("success", msg.isMissionSucceed());
-                            parsed.put("amount", msg.getPayAmount());
+                            parsed.put("currency", pa.currencyCode());
+                            parsed.put("amount", pa.amount());
                             parsed.put("missionText", msg.getMissionText());
                             saveEvent("Chzzk", "MissionChat", channelName, msg.getRawJson(), parsed);
                             chzzkLastActivity.put(channelId, System.currentTimeMillis());
@@ -254,16 +259,19 @@ public class DonationMonitorTest {
                         @Override
                         public void onMissionDonation(MissionDonationMessage msg) {
                             String nickname = msg.getNickname() != null ? msg.getNickname() : "익명";
+                            CurrencyUtils.ParsedAmount pa = CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, msg.getPayAmount());
+                            CurrencyUtils.ParsedAmount totalPa = CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, msg.getTotalPayAmount());
                             System.out.println("[" + now("Chzzk") + "][미션생성] " + channelName
                                     + " | " + nickname + " | " + msg.getMissionStatusRaw()
-                                    + " | " + msg.getPayAmount() + "원 | " + msg.getMissionText());
+                                    + " | " + CurrencyUtils.format(pa) + " | " + msg.getMissionText());
 
                             Map<String, Object> parsed = new LinkedHashMap<>();
                             parsed.put("nickname", nickname);
                             parsed.put("statusRaw", msg.getMissionStatusRaw());
                             parsed.put("success", msg.isMissionSucceed());
-                            parsed.put("amount", msg.getPayAmount());
-                            parsed.put("totalPayAmount", msg.getTotalPayAmount());
+                            parsed.put("currency", pa.currencyCode());
+                            parsed.put("amount", pa.amount());
+                            parsed.put("totalPayAmount", totalPa.amount());
                             parsed.put("missionText", msg.getMissionText());
                             parsed.put("participationCount", msg.getParticipationCount());
                             parsed.put("missionDonationId", msg.getMissionDonationId());
@@ -277,13 +285,15 @@ public class DonationMonitorTest {
                         @Override
                         public void onMissionDonationParticipation(MissionParticipationDonationMessage msg) {
                             String nickname = msg.getNickname() != null ? msg.getNickname() : "익명";
+                            CurrencyUtils.ParsedAmount pa = CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, msg.getPayAmount());
                             System.out.println("[" + now("Chzzk") + "][미션참여] " + channelName
-                                    + " | " + nickname + " | " + msg.getPayAmount() + "원 | " + msg.getMissionText());
+                                    + " | " + nickname + " | " + CurrencyUtils.format(pa) + " | " + msg.getMissionText());
 
                             Map<String, Object> parsed = new LinkedHashMap<>();
                             parsed.put("nickname", nickname);
                             parsed.put("statusRaw", msg.getMissionStatusRaw());
-                            parsed.put("amount", msg.getPayAmount());
+                            parsed.put("currency", pa.currencyCode());
+                            parsed.put("amount", pa.amount());
                             parsed.put("missionText", msg.getMissionText());
                             fetchMissionDetails(channelId, channelName, msg.getRelatedMissionDonationId(), parsed);
                             saveEvent("Chzzk", "MissionParticipation", channelName, msg.getRawJson(), parsed);
@@ -293,12 +303,14 @@ public class DonationMonitorTest {
                         @Override
                         public void onPartyDonationChat(PartyDonationMessage msg) {
                             String nickname = msg.isAnonymous() ? "익명" : (msg.getProfile() != null && msg.getProfile().getNickname() != null) ? msg.getProfile().getNickname() : "익명";
+                            CurrencyUtils.ParsedAmount pa = CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, msg.getPayAmount());
                             System.out.println("[" + now("Chzzk") + "][파티후원] " + channelName
-                                    + " | " + nickname + " | " + msg.getPayAmount() + "원 | " + msg.getPartyName() + " | " + msg.getContent());
+                                    + " | " + nickname + " | " + CurrencyUtils.format(pa) + " | " + msg.getPartyName() + " | " + msg.getContent());
 
                             Map<String, Object> parsed = new LinkedHashMap<>();
                             parsed.put("nickname", nickname);
-                            parsed.put("amount", msg.getPayAmount());
+                            parsed.put("currency", pa.currencyCode());
+                            parsed.put("amount", pa.amount());
                             parsed.put("partyName", msg.getPartyName());
                             parsed.put("content", msg.getContent());
                             parsed.put("anonymous", msg.isAnonymous());
@@ -671,13 +683,15 @@ public class DonationMonitorTest {
                                 case VIDEO -> "영상풍선";
                                 case AD_BALLOON -> "AD풍선";
                             };
+                            CurrencyUtils.ParsedAmount pa = CurrencyUtils.of(CurrencyUtils.SOOP_BALLOON, msg.getAmount());
                             System.out.println("[" + now("SOOP") + "][Donation] " + channelName
-                                    + " | " + msg.getFromUsername() + " | " + msg.getAmount() + "개 | " + typeLabel);
+                                    + " | " + msg.getFromUsername() + " | " + CurrencyUtils.format(pa) + " | " + typeLabel);
                             Map<String, Object> parsed = new LinkedHashMap<>();
                             parsed.put("type", msg.getType().name());
                             parsed.put("from", msg.getFrom());
                             parsed.put("fromUsername", msg.getFromUsername());
-                            parsed.put("amount", msg.getAmount());
+                            parsed.put("currency", pa.currencyCode());
+                            parsed.put("amount", pa.amount());
                             parsed.put("fanClubOrdinal", msg.getFanClubOrdinal());
                             saveEvent("SOOP", "DONATION", channelName, null, parsed);
                         }
@@ -734,14 +748,16 @@ public class DonationMonitorTest {
                     }
                 }
 
+                CurrencyUtils.ParsedAmount pa = CurrencyUtils.of(CurrencyUtils.CIME_BEAM, amt);
                 parsed.put("donationId", donationId);
                 parsed.put("message", msg);
-                parsed.put("amount", amt);
+                parsed.put("currency", pa.currencyCode());
+                parsed.put("amount", pa.amount());
                 parsed.put("anonymous", anon);
                 parsed.put("nickname", nickname);
 
                 System.out.println("[" + now("CiMe") + "][Donation] " + channelName
-                        + " | " + nickname + " | " + amt + "원 | " + msg);
+                        + " | " + nickname + " | " + CurrencyUtils.format(pa) + " | " + msg);
             }
         } catch (Exception e) {
             System.out.println("[" + now("CiMe") + "][파싱에러] DONATION_CHAT: " + e.getMessage());
@@ -767,9 +783,11 @@ public class DonationMonitorTest {
                 int videoStart = extra.has("vStart") ? extra.get("vStart").getAsInt() : 0;
                 int videoEnd = extra.has("vEnd") ? extra.get("vEnd").getAsInt() : 0;
 
+                CurrencyUtils.ParsedAmount pa = CurrencyUtils.of(CurrencyUtils.CIME_BEAM, amt);
                 parsed.put("donationId", donationId);
                 parsed.put("message", msg);
-                parsed.put("amount", amt);
+                parsed.put("currency", pa.currencyCode());
+                parsed.put("amount", pa.amount());
                 parsed.put("anonymous", anon);
                 parsed.put("videoId", videoId);
                 parsed.put("videoType", videoType);
@@ -778,7 +796,7 @@ public class DonationMonitorTest {
                 parsed.put("videoEnd", videoEnd);
 
                 System.out.println("[" + now("CiMe") + "][영상후원] " + channelName
-                        + " | " + (anon ? "익명" : "후원자") + " | " + amt + "원 | " + videoTitle + " | " + msg);
+                        + " | " + (anon ? "익명" : "후원자") + " | " + CurrencyUtils.format(pa) + " | " + videoTitle + " | " + msg);
             }
         } catch (Exception e) {
             System.out.println("[" + now("CiMe") + "][파싱에러] DONATION_VIDEO: " + e.getMessage());
@@ -1200,24 +1218,30 @@ public class DonationMonitorTest {
 
                             @Override
                             public void onSuperChat(ChatItem item) {
+                                CurrencyUtils.ParsedAmount pa = CurrencyUtils.parse(item.getPurchaseAmount());
                                 System.out.println("[" + now("YouTube") + "][SuperChat] " + vid
-                                        + " | " + item.getAuthorName() + " | " + item.getPurchaseAmount() + " | " + item.getMessage());
+                                        + " | " + item.getAuthorName() + " | " + CurrencyUtils.format(pa) + " | " + item.getMessage());
                                 Map<String, Object> parsed = new LinkedHashMap<>();
                                 parsed.put("type", "SUPER_CHAT");
                                 parsed.put("author", item.getAuthorName());
-                                parsed.put("amount", item.getPurchaseAmount());
+                                parsed.put("currency", pa.currencyCode());
+                                parsed.put("amount", pa.amount());
+                                parsed.put("rawAmount", pa.raw());
                                 parsed.put("message", item.getMessage());
                                 saveEvent("YouTube", "SuperChat", vid, null, parsed);
                             }
 
                             @Override
                             public void onSuperSticker(ChatItem item) {
+                                CurrencyUtils.ParsedAmount pa = CurrencyUtils.parse(item.getPurchaseAmount());
                                 System.out.println("[" + now("YouTube") + "][SuperSticker] " + vid
-                                        + " | " + item.getAuthorName() + " | " + item.getPurchaseAmount());
+                                        + " | " + item.getAuthorName() + " | " + CurrencyUtils.format(pa));
                                 Map<String, Object> parsed = new LinkedHashMap<>();
                                 parsed.put("type", "SUPER_STICKER");
                                 parsed.put("author", item.getAuthorName());
-                                parsed.put("amount", item.getPurchaseAmount());
+                                parsed.put("currency", pa.currencyCode());
+                                parsed.put("amount", pa.amount());
+                                parsed.put("rawAmount", pa.raw());
                                 saveEvent("YouTube", "SuperSticker", vid, null, parsed);
                             }
 
