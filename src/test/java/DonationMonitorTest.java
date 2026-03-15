@@ -339,6 +339,21 @@ public class DonationMonitorTest {
                         }
 
                         @Override
+                        public void onSubscriptionGiftReceiver(SubscriptionGiftReceiverEvent msg) {
+                            System.out.println("[" + now("Chzzk") + "][구독선물수신] " + channelName
+                                    + " | " + msg.getReceiverNickname() + " | " + msg.getGiftTierName());
+
+                            Map<String, Object> parsed = new LinkedHashMap<>();
+                            parsed.put("giftId", msg.getGiftId());
+                            parsed.put("receiverNickname", msg.getReceiverNickname());
+                            parsed.put("receiverUserIdHash", msg.getReceiverUserIdHash());
+                            parsed.put("giftTierName", msg.getGiftTierName());
+                            parsed.put("selectionType", msg.getSelectionTypeRaw());
+                            saveEvent("Chzzk", "SubscriptionGiftReceiver", channelName, msg.getRawJson(), parsed);
+                            chzzkLastActivity.put(channelId, System.currentTimeMillis());
+                        }
+
+                        @Override
                         public void onBroadcastEnd(ChzzkChat c) {
                             System.out.println("[" + now("Chzzk") + "][방송종료] " + channelName);
                             chzzkConnections.remove(channelId);
