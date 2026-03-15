@@ -271,9 +271,9 @@ public class ToonationChat {
         public void onClosed(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
             synchronized (lock) {
                 if (ToonationChat.this.webSocket == null) return;
+                ToonationChat.this.webSocket = null;
             }
-
-            closeAsync().join();
+            stopPing();
 
             for (ToonationChatEventListener listener : listeners) {
                 listener.onConnectionClosed(code, reason, true, autoReconnect);
@@ -289,9 +289,10 @@ public class ToonationChat {
         public void onFailure(@NotNull WebSocket webSocket, @NotNull Throwable t, @Nullable Response response) {
             synchronized (lock) {
                 if (ToonationChat.this.webSocket == null) return;
+                ToonationChat.this.webSocket = null;
             }
-
-            closeAsync().join();
+            stopPing();
+            webSocket.cancel();
 
             for (ToonationChatEventListener listener : listeners) {
                 listener.onError(t instanceof Exception ? (Exception) t : new RuntimeException(t));

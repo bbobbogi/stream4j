@@ -92,6 +92,10 @@ public class SOOPChat {
             entered = false;
             reconnecting = false;
 
+            if (client != null) {
+                client.stopPing();
+            }
+
             if (client != null && !client.isClosed() && !client.isClosing()) {
                 try {
                     client.closeBlocking();

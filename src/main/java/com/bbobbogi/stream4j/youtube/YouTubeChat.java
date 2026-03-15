@@ -137,7 +137,7 @@ public class YouTubeChat {
         }, delayMs, TimeUnit.MILLISECONDS);
     }
 
-    private void stopPolling() {
+    private synchronized void stopPolling() {
         if (pollTask != null) { pollTask.cancel(false); pollTask = null; }
         if (poller != null) { poller.shutdownNow(); poller = null; }
     }

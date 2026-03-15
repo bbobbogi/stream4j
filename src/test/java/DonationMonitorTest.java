@@ -372,9 +372,7 @@ public class DonationMonitorTest {
                             chzzkConnectedIds.remove(channelId);
                             chzzkLastActivity.remove(channelId);
                             chzzkChannelNames.remove(channelId);
-                            CompletableFuture.runAsync(() -> {
-                                try { c.closeBlocking(); } catch (Exception ignored) {}
-                            });
+                            c.closeAsync();
                             chzzkReplaceQueue.offer(new String[]{channelId, channelName});
                         }
 

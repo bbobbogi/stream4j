@@ -56,6 +56,10 @@ class SOOPChatWebSocketClient extends WebSocketClient {
         chat.handleError(ex);
     }
 
+    void stopPing() {
+        pingScheduler.shutdownNow();
+    }
+
     void startPing() {
         pingScheduler.scheduleAtFixedRate(() -> {
             if (isOpen()) {
