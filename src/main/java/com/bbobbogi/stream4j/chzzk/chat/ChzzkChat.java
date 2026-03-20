@@ -106,7 +106,7 @@ public class ChzzkChat {
     }
 
     private boolean isDebug() {
-        return debug || isDebug();
+        return debug;
     }
 
     /**
@@ -279,33 +279,36 @@ public class ChzzkChat {
     }
 
     private void reconnectWithRetry(int attempt) {
-        try {
-            ManagedWebSocket ws = managedWs;
-            managedWs = null;
+        for (int i = attempt; i <= MAX_RECONNECT_ATTEMPTS; i++) {
+            try {
+                ManagedWebSocket ws = managedWs;
+                managedWs = null;
 
-            shutdownExecutor();
-            if (ws != null) {
-                ws.closeBlocking();
-            }
-
-            reconnecting = true;
-            connectFromChatId(channelId, chatId, autoReconnect).join();
-        } catch (Exception e) {
-            Throwable cause = e instanceof java.util.concurrent.CompletionException && e.getCause() != null ? e.getCause() : e;
-            if (cause instanceof NonRetryableException) {
-                for (ChatEventListener listener : listeners) {
-                    listener.onError(cause instanceof Exception ? (Exception) cause : new RuntimeException(cause));
+                shutdownExecutor();
+                if (ws != null) {
+                    ws.closeBlocking();
                 }
+
+                reconnecting = true;
+                connectFromChatId(channelId, chatId, autoReconnect).join();
                 return;
-            }
-            if (attempt < MAX_RECONNECT_ATTEMPTS && autoReconnect) {
-                long delay = Math.min(RECONNECT_BASE_DELAY_MS * (1L << attempt), RECONNECT_MAX_DELAY_MS);
-                if (isDebug()) System.out.println("[Chzzk] Reconnect failed (attempt " + (attempt + 1) + "), retrying in " + delay + "ms: " + cause.getMessage());
-                try { Thread.sleep(delay); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); return; }
-                reconnectWithRetry(attempt + 1);
-            } else {
-                for (ChatEventListener listener : listeners) {
-                    listener.onError(cause instanceof Exception ? (Exception) cause : new RuntimeException(cause));
+            } catch (Exception e) {
+                Throwable cause = e instanceof java.util.concurrent.CompletionException && e.getCause() != null ? e.getCause() : e;
+                if (cause instanceof NonRetryableException) {
+                    for (ChatEventListener listener : listeners) {
+                        listener.onError(cause instanceof Exception ? (Exception) cause : new RuntimeException(cause));
+                    }
+                    return;
+                }
+                if (i < MAX_RECONNECT_ATTEMPTS && autoReconnect) {
+                    long delay = Math.min(RECONNECT_BASE_DELAY_MS * (1L << i), RECONNECT_MAX_DELAY_MS);
+                    if (isDebug()) System.out.println("[Chzzk] Reconnect failed (attempt " + (i + 1) + "), retrying in " + delay + "ms: " + cause.getMessage());
+                    try { Thread.sleep(delay); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); return; }
+                } else {
+                    for (ChatEventListener listener : listeners) {
+                        listener.onError(cause instanceof Exception ? (Exception) cause : new RuntimeException(cause));
+                    }
+                    return;
                 }
             }
         }
