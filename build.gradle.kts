@@ -11,7 +11,7 @@ fun getEnvOrProperty(envKey: String, defaultValue: String = ""): String {
 }
 
 group = "com.bbobbogi"
-version = getEnvOrProperty("VERSION", "0.0.15-SNAPSHOT")
+version = getEnvOrProperty("VERSION", "0.2.0-SNAPSHOT")
 
 repositories {
     mavenCentral()

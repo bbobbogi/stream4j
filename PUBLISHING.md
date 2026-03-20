@@ -41,7 +41,7 @@ export GITHUB_TOKEN=your-personal-access-token
 ```kotlin
 repositories {
     maven {
-        url = uri("https://maven.pkg.github.com/bbobbogi/chzzk4j")
+        url = uri("https://maven.pkg.github.com/bbobbogi/stream4j")
         credentials {
             username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
             password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
@@ -50,7 +50,7 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.bbobbogi:chzzk4j:VERSION")
+    implementation("com.bbobbogi:stream4j:VERSION")
 }
 ```
 
@@ -60,14 +60,14 @@ dependencies {
 <repositories>
     <repository>
         <id>github</id>
-        <url>https://maven.pkg.github.com/bbobbogi/chzzk4j</url>
+        <url>https://maven.pkg.github.com/bbobbogi/stream4j</url>
     </repository>
 </repositories>
 
 <dependencies>
     <dependency>
-        <groupId>io.github.bbobbogi</groupId>
-        <artifactId>chzzk4j</artifactId>
+        <groupId>com.bbobbogi</groupId>
+        <artifactId>stream4j</artifactId>
         <version>VERSION</version>
     </dependency>
 </dependencies>
@@ -122,9 +122,9 @@ dependencies {
 4. **테스트 결과 검증** - 테스트 결과 디렉토리 확인
 5. **빌드 수행**
 6. **빌드 아티팩트 검증**
-   - Main JAR (chzzk4j-VERSION.jar)
-   - Sources JAR (chzzk4j-VERSION-sources.jar)
-   - Javadoc JAR (chzzk4j-VERSION-javadoc.jar)
+   - Main JAR (stream4j-VERSION.jar)
+   - Sources JAR (stream4j-VERSION-sources.jar)
+   - Javadoc JAR (stream4j-VERSION-javadoc.jar)
 
 **배포:**
 - 모든 검증 통과 후 GitHub Packages에 배포
@@ -216,6 +216,6 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.bbobbogi:chzzk4j:Tag")
+    implementation("com.github.bbobbogi:stream4j:Tag")
 }
 ```

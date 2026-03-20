@@ -12,7 +12,7 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.bbobbogi:chzzk4j:0.0.12")
+    implementation("com.bbobbogi:stream4j:0.2.0-SNAPSHOT")
 }
 ```
 
