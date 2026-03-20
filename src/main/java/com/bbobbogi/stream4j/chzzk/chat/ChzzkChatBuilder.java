@@ -4,16 +4,21 @@ import com.bbobbogi.stream4j.chzzk.Chzzk;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * {@link ChzzkChat} 인스턴스를 생성하기 위한 빌더 클래스입니다.
  */
 public class ChzzkChatBuilder {
 
+    private static final Pattern CHZZK_CHANNEL_URL_PATTERN = Pattern.compile("^(?:https?://)?(?:m\\.)?chzzk\\.naver\\.com/(?:live/)?([a-f0-9]{32})(?:/.*)?$");
+
     private ArrayList<ChatEventListener> listeners = new ArrayList<>();
     private String channelId;
     private Chzzk chzzk;
     private boolean autoReconnect = true;
+    private boolean debug = false;
 
     /**
      * ChzzkChatBuilder를 생성합니다.
@@ -23,7 +28,21 @@ public class ChzzkChatBuilder {
      */
     public ChzzkChatBuilder(Chzzk chzzk, String channelId) {
         this.chzzk = chzzk;
-        this.channelId = channelId;
+        this.channelId = resolveChannelId(channelId);
+    }
+
+    public static String resolveChannelId(String input) {
+        if (input == null) {
+            return null;
+        }
+
+        String trimmed = input.trim();
+        Matcher matcher = CHZZK_CHANNEL_URL_PATTERN.matcher(trimmed);
+        if (matcher.matches()) {
+            return matcher.group(1);
+        }
+
+        return trimmed;
     }
 
     /**
@@ -50,6 +69,11 @@ public class ChzzkChatBuilder {
         return this;
     }
 
+    public ChzzkChatBuilder withDebugMode() {
+        this.debug = true;
+        return this;
+    }
+
     /**
      * {@link ChzzkChat} 인스턴스를 생성합니다.
      *
@@ -57,7 +81,7 @@ public class ChzzkChatBuilder {
      * @throws IOException API 요청 실패 시
      */
     public ChzzkChat build() throws IOException {
-        ChzzkChat chat = new ChzzkChat(chzzk, channelId, autoReconnect);
+        ChzzkChat chat = new ChzzkChat(chzzk, channelId, autoReconnect, debug);
 
         for (ChatEventListener listener : listeners) {
             chat.addListener(listener);

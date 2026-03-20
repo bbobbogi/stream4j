@@ -145,7 +145,7 @@ public class StreamChat {
                             Donation donation = new Donation(
                                     DonationPlatform.CHZZK, DonationType.CHAT, DonationStatus.SUCCESS,
                                     msg.getUserIdHash(), nickname != null ? nickname : "익명",
-                                    msg.getContent(), CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, msg.getPayAmount()), msg
+                                    msg.getContent(), msg.isAnonymous(), CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, msg.getPayAmount()), msg
                             );
                             emit(l -> l.onDonation(donation));
                         }
@@ -157,7 +157,7 @@ public class StreamChat {
                                     DonationPlatform.CHZZK, DonationType.MISSION, DonationStatus.fromMissionStatus(msg.getMissionStatusRaw()),
                                     msg.getUserIdHash(), nickname != null ? nickname : "익명",
                                     msg.getMissionText() != null ? msg.getMissionText() : "",
-                                    CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, msg.getTotalPayAmount()), msg
+                                    msg.isAnonymous(), CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, msg.getTotalPayAmount()), msg
                             );
                             emit(l -> l.onDonation(donation));
                         }
@@ -169,7 +169,7 @@ public class StreamChat {
                                     DonationPlatform.CHZZK, DonationType.MISSION, DonationStatus.fromMissionStatus(msg.getMissionStatusRaw()),
                                     msg.getUserIdHash(), nickname != null ? nickname : "익명",
                                     msg.getMissionText() != null ? msg.getMissionText() : "",
-                                    CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, msg.getPayAmount()), msg
+                                    msg.isAnonymous(), CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, msg.getPayAmount()), msg
                             );
                             emit(l -> l.onDonation(donation));
                         }
@@ -180,7 +180,7 @@ public class StreamChat {
                             Donation donation = new Donation(
                                     DonationPlatform.CHZZK, DonationType.PARTY, DonationStatus.SUCCESS,
                                     msg.getUserIdHash(), nickname != null ? nickname : "익명",
-                                    msg.getContent(), CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, msg.getPayAmount()), msg
+                                    msg.getContent(), msg.isAnonymous(), CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, msg.getPayAmount()), msg
                             );
                             emit(l -> l.onDonation(donation));
                         }
@@ -191,7 +191,7 @@ public class StreamChat {
                                     DonationPlatform.CHZZK, DonationType.PARTY, DonationStatus.fromPartyStatus(info.getStatusRaw()),
                                     null, info.getHostChannelNickname(),
                                     info.getPartyName() != null ? info.getPartyName() : "",
-                                    CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, info.getTotalDonationAmount()), info
+                                    false, CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, info.getTotalDonationAmount()), info
                             );
                             emit(l -> l.onDonation(donation));
                         }
@@ -201,7 +201,7 @@ public class StreamChat {
                             Donation donation = new Donation(
                                     DonationPlatform.CHZZK, DonationType.PARTY, DonationStatus.FINISH,
                                     null, "",
-                                    "", CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, 0), event
+                                    "", false, CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, 0), event
                             );
                             emit(l -> l.onDonation(donation));
                         }
@@ -212,7 +212,7 @@ public class StreamChat {
                                     DonationPlatform.CHZZK, DonationType.PARTY, DonationStatus.CONFIRM,
                                     null, event.getChannelName() != null ? event.getChannelName() : "",
                                     "rank=" + event.getRank() + " " + (event.getRankName() != null ? event.getRankName() : ""),
-                                    CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, 0), event
+                                    false, CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, 0), event
                             );
                             emit(l -> l.onDonation(donation));
                         }
@@ -223,7 +223,7 @@ public class StreamChat {
                             Donation donation = new Donation(
                                     DonationPlatform.CHZZK, DonationType.SUBSCRIPTION, DonationStatus.SUCCESS,
                                     msg.getUserIdHash(), nickname != null ? nickname : "익명",
-                                    msg.getContent(), CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, 0), msg
+                                    msg.getContent(), msg.isAnonymous(), CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, 0), msg
                             );
                             emit(l -> l.onDonation(donation));
                         }
@@ -309,7 +309,7 @@ public class StreamChat {
 
             Donation donation = new Donation(
                     DonationPlatform.CIME, type, DonationStatus.SUCCESS,
-                    null, nickname, message, CurrencyUtils.of(CurrencyUtils.CIME_BEAM, amount), rawJson
+                    null, nickname, message, false, CurrencyUtils.of(CurrencyUtils.CIME_BEAM, amount), rawJson
             );
             emit(l -> l.onDonation(donation));
         } catch (Exception e) {
@@ -337,7 +337,7 @@ public class StreamChat {
                             Donation donation = new Donation(
                                     DonationPlatform.SOOP, DonationType.CHAT, DonationStatus.SUCCESS,
                                     msg.getFrom(), msg.getFromUsername() != null ? msg.getFromUsername() : "익명",
-                                    "", CurrencyUtils.of(CurrencyUtils.SOOP_BALLOON, msg.getAmount()), msg
+                                    "", false, CurrencyUtils.of(CurrencyUtils.SOOP_BALLOON, msg.getAmount()), msg
                             );
                             emit(l -> l.onDonation(donation));
                         }
@@ -347,7 +347,7 @@ public class StreamChat {
                             Donation donation = new Donation(
                                     DonationPlatform.SOOP, DonationType.SUBSCRIPTION, DonationStatus.SUCCESS,
                                     from, fromUsername != null ? fromUsername : "익명",
-                                    monthCount + "개월 " + tier + "티어", CurrencyUtils.of(CurrencyUtils.SOOP_BALLOON, 0), null
+                                    monthCount + "개월 " + tier + "티어", false, CurrencyUtils.of(CurrencyUtils.SOOP_BALLOON, 0), null
                             );
                             emit(l -> l.onDonation(donation));
                         }
@@ -394,7 +394,7 @@ public class StreamChat {
                             Donation donation = new Donation(
                                     DonationPlatform.TOONATION, type, DonationStatus.SUCCESS,
                                     msg.getAccount(), nickname,
-                                    message, CurrencyUtils.of(CurrencyUtils.TOONATION_WON, msg.getAmount()), msg
+                                    message, msg.isAnonymous(), CurrencyUtils.of(CurrencyUtils.TOONATION_WON, msg.getAmount()), msg
                             );
                             emit(l -> l.onDonation(donation));
                         }
@@ -439,7 +439,7 @@ public class StreamChat {
                                     DonationPlatform.YOUTUBE, DonationType.CHAT, DonationStatus.SUCCESS,
                                     item.getAuthorChannelID(), item.getAuthorName() != null ? item.getAuthorName() : "익명",
                                     item.getMessage() != null ? item.getMessage() : "",
-                                    CurrencyUtils.parse(item.getPurchaseAmount()), item
+                                    false, CurrencyUtils.parse(item.getPurchaseAmount()), item
                             );
                             emit(l -> l.onDonation(donation));
                         }
@@ -449,7 +449,7 @@ public class StreamChat {
                             Donation donation = new Donation(
                                     DonationPlatform.YOUTUBE, DonationType.CHAT, DonationStatus.SUCCESS,
                                     item.getAuthorChannelID(), item.getAuthorName() != null ? item.getAuthorName() : "익명",
-                                    "[스티커]", CurrencyUtils.parse(item.getPurchaseAmount()), item
+                                    "[스티커]", false, CurrencyUtils.parse(item.getPurchaseAmount()), item
                             );
                             emit(l -> l.onDonation(donation));
                         }
@@ -460,7 +460,7 @@ public class StreamChat {
                                     DonationPlatform.YOUTUBE, DonationType.SUBSCRIPTION, DonationStatus.SUCCESS,
                                     item.getAuthorChannelID(), item.getAuthorName() != null ? item.getAuthorName() : "익명",
                                     item.getMessage() != null ? item.getMessage() : "",
-                                    CurrencyUtils.of("KRW", 0), item
+                                    false, CurrencyUtils.of("KRW", 0), item
                             );
                             emit(l -> l.onDonation(donation));
                         }

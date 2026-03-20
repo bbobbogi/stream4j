@@ -22,6 +22,7 @@ public record Donation(
         @Nullable String userId,
         @NotNull String nickname,
         @NotNull String message,
+        boolean anonymous,
         @NotNull CurrencyUtils.ParsedAmount parsedAmount,
         @Nullable Object raw
 ) {

@@ -8,10 +8,14 @@ import okhttp3.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class SOOPChatBuilder {
 
     private static final String LOGIN_API = "https://login.sooplive.co.kr/app/LoginAction.php";
+    private static final Pattern SOOP_PLAY_URL_PATTERN = Pattern.compile("^(?:https?://)?play\\.sooplive\\.co\\.kr/([^/?#]+)(?:/.*)?$");
+    private static final Pattern SOOP_STATION_URL_PATTERN = Pattern.compile("^(?:https?://)?(?:www\\.)?sooplive\\.co\\.kr/station/([^/?#]+)(?:/.*)?$");
 
     private final String streamerId;
     private final ArrayList<SOOPChatEventListener> listeners = new ArrayList<>();
@@ -22,7 +26,26 @@ public class SOOPChatBuilder {
     private OkHttpClient httpClient;
 
     public SOOPChatBuilder(String streamerId) {
-        this.streamerId = streamerId;
+        this.streamerId = resolveStreamerId(streamerId);
+    }
+
+    public static String resolveStreamerId(String input) {
+        if (input == null) {
+            return null;
+        }
+
+        String trimmed = input.trim();
+        Matcher playMatcher = SOOP_PLAY_URL_PATTERN.matcher(trimmed);
+        if (playMatcher.matches()) {
+            return playMatcher.group(1);
+        }
+
+        Matcher stationMatcher = SOOP_STATION_URL_PATTERN.matcher(trimmed);
+        if (stationMatcher.matches()) {
+            return stationMatcher.group(1);
+        }
+
+        return trimmed;
     }
 
     public SOOPChatBuilder withChatListener(SOOPChatEventListener listener) {

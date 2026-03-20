@@ -1,6 +1,8 @@
 package com.bbobbogi.stream4j.cime;
 
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * {@link CiMeChat} 인스턴스를 생성하기 위한 빌더 클래스입니다.
@@ -21,6 +23,8 @@ import java.util.ArrayList;
  */
 public class CiMeChatBuilder {
 
+    private static final Pattern CIME_SLUG_URL_PATTERN = Pattern.compile("^(?:https?://)?(?:www\\.)?ci\\.me/@([^/?#]+)(?:/.*)?$");
+
     private final ArrayList<CiMeChatEventListener> listeners = new ArrayList<>();
     private final String channelSlug;
     private boolean autoReconnect = true;
@@ -32,7 +36,25 @@ public class CiMeChatBuilder {
      * @param channelSlug 채널 슬러그 (ci.me URL에서 사용하는 채널 식별자)
      */
     public CiMeChatBuilder(String channelSlug) {
-        this.channelSlug = channelSlug;
+        this.channelSlug = resolveSlug(channelSlug);
+    }
+
+    public static String resolveSlug(String input) {
+        if (input == null) {
+            return null;
+        }
+
+        String trimmed = input.trim();
+        Matcher matcher = CIME_SLUG_URL_PATTERN.matcher(trimmed);
+        if (matcher.matches()) {
+            return matcher.group(1);
+        }
+
+        if (trimmed.startsWith("@")) {
+            return trimmed.substring(1);
+        }
+
+        return trimmed;
     }
 
     /**

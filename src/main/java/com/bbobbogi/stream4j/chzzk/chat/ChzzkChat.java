@@ -44,6 +44,7 @@ public class ChzzkChat {
     String chatId;
 
     boolean autoReconnect = false;
+    boolean debug = false;
 
     private final Gson gson = new Gson().newBuilder().disableHtmlEscaping().create();
     private String sid;
@@ -97,10 +98,15 @@ public class ChzzkChat {
         return channelId;
     }
 
-    ChzzkChat(Chzzk chzzk, String channelId, boolean autoReconnect) {
+    ChzzkChat(Chzzk chzzk, String channelId, boolean autoReconnect, boolean debug) {
         this.chzzk = chzzk;
         this.channelId = channelId;
         this.autoReconnect = autoReconnect;
+        this.debug = debug;
+    }
+
+    private boolean isDebug() {
+        return debug || isDebug();
     }
 
     /**
@@ -174,7 +180,7 @@ public class ChzzkChat {
         return CompletableFuture.runAsync(() -> {
             try {
                 JsonElement chatIdRaw = RawApiUtils.getContentJson(chzzk.getHttpClient(),
-                                RawApiUtils.httpGetRequest(Chzzk.API_URL + "/service/v3/channels/" + channelId + "/live-detail").build(), chzzk.isDebug)
+                                RawApiUtils.httpGetRequest(Chzzk.API_URL + "/service/v3/channels/" + channelId + "/live-detail").build(), isDebug())
                         .getAsJsonObject()
                         .get("chatChannelId");
 
@@ -215,7 +221,7 @@ public class ChzzkChat {
                 accessToken = RawApiUtils.getContentJson(
                         chzzk.getHttpClient(),
                         RawApiUtils.httpGetRequest(accessTokenUrl).build(),
-                        chzzk.isDebug
+                        isDebug()
                 ).getAsJsonObject().get("accessToken").getAsString();
 
                 int serverId = 0;
@@ -294,7 +300,7 @@ public class ChzzkChat {
             }
             if (attempt < MAX_RECONNECT_ATTEMPTS && autoReconnect) {
                 long delay = Math.min(RECONNECT_BASE_DELAY_MS * (1L << attempt), RECONNECT_MAX_DELAY_MS);
-                if (chzzk.isDebug) System.out.println("[Chzzk] Reconnect failed (attempt " + (attempt + 1) + "), retrying in " + delay + "ms: " + cause.getMessage());
+                if (isDebug()) System.out.println("[Chzzk] Reconnect failed (attempt " + (attempt + 1) + "), retrying in " + delay + "ms: " + cause.getMessage());
                 try { Thread.sleep(delay); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); return; }
                 reconnectWithRetry(attempt + 1);
             } else {
@@ -336,7 +342,7 @@ public class ChzzkChat {
     }
 
     private void handleWsOpen() {
-        if (chzzk.isDebug) System.out.println("Connected to websocket! Connecting to chat...");
+        if (isDebug()) System.out.println("Connected to websocket! Connecting to chat...");
 
         shutdownExecutor();
         synchronized (this) {
@@ -359,7 +365,7 @@ public class ChzzkChat {
 
     private void handleWsMessage(String message) {
         try {
-            if (chzzk.isDebug) System.out.println("Message: " + message);
+            if (isDebug()) System.out.println("Message: " + message);
 
             JsonObject parsedMessage = JsonParser.parseString(message).getAsJsonObject();
             var cmdId = parsedMessage.get("cmd").getAsInt();
@@ -368,7 +374,7 @@ public class ChzzkChat {
             if (messageClass == WsMessageClientboundConnected.class) {
                 WsMessageClientboundConnected msg = gson.fromJson(parsedMessage, WsMessageClientboundConnected.class);
                 if (msg.retCode == 0) {
-                    if (chzzk.isDebug) System.out.println("Successfully connected!");
+                    if (isDebug()) System.out.println("Successfully connected!");
                     sid = msg.bdy.sid;
 
                     Runnable task = () -> {
@@ -376,7 +382,7 @@ public class ChzzkChat {
 
                         if (now - lastSendPingTime >= 60000 ||
                                 now - lastRecivedMessageTime >= 20000) {
-                            if (chzzk.isDebug) {
+                            if (isDebug()) {
                                 System.out.println("need client ping: current = " + (now / 1000) +
                                         ", ping = " + (lastSendPingTime / 1000) +
                                         ", recived message = " + (lastRecivedMessageTime / 1000));
@@ -401,7 +407,7 @@ public class ChzzkChat {
                     throw new ChatFailedConnectException(msg.retCode, msg.retMsg);
                 }
             } else if (cmdId == WsMessageTypes.Commands.PING) {
-                if (chzzk.isDebug) {
+                if (isDebug()) {
                     System.out.println("pong");
                     System.out.println(gson.toJson(new WsMessageServerboundPong()));
                 }
@@ -460,7 +466,7 @@ public class ChzzkChat {
             listener.onConnectionClosed(code, reason, true, shouldReconnect);
         }
 
-        if (chzzk.isDebug) {
+        if (isDebug()) {
             System.out.println("Websocket connection closed.");
             System.out.println("Code: " + code);
             System.out.println("Reason: " + reason);
