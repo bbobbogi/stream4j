@@ -8,8 +8,12 @@ import com.bbobbogi.stream4j.util.RawApiUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 public class ChzzkTestBase {
     protected Properties properties = new Properties();
@@ -92,5 +96,63 @@ public class ChzzkTestBase {
             System.out.println("추천 스트리머 목록 조회 실패: " + e.getMessage());
             return Optional.empty();
         }
+    }
+
+    /**
+     * Chzzk 인기 라이브 목록에서 라이브 중인 채널 목록을 반환합니다.
+     *
+     * @param maxChannels 최대 채널 수
+     * @return [channelId, channelName] 배열의 리스트
+     */
+    protected List<String[]> findLiveChannels(int maxChannels) {
+        List<String[]> channels = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+        int concurrentUserCount = 0;
+        int liveId = 0;
+
+        while (channels.size() < maxChannels) {
+            try {
+                String url = Chzzk.API_URL + "/service/v1/lives?sortType=POPULAR&size=50"
+                        + "&concurrentUserCount=" + concurrentUserCount
+                        + (liveId > 0 ? "&liveId=" + liveId : "");
+
+                JsonElement contentJson = RawApiUtils.getContentJson(
+                        chzzk.getHttpClient(),
+                        RawApiUtils.httpGetRequest(url).build(),
+                        chzzk.isDebug);
+
+                JsonObject content = contentJson.getAsJsonObject();
+                JsonArray data = content.getAsJsonArray("data");
+                if (data == null || data.isEmpty()) break;
+
+                for (JsonElement element : data) {
+                    try {
+                        JsonObject live = element.getAsJsonObject();
+                        JsonObject channel = live.getAsJsonObject("channel");
+                        if (channel == null) continue;
+
+                        String id = channel.get("channelId").getAsString();
+                        String name = channel.get("channelName").getAsString();
+                        if (seen.add(id)) {
+                            channels.add(new String[]{id, name});
+                        }
+
+                        if (channels.size() >= maxChannels) return channels;
+                    } catch (Exception e) {
+                        System.out.println("[Chzzk] 채널 파싱 스킵: " + e.getMessage());
+                    }
+                }
+
+                JsonObject page = content.getAsJsonObject("page");
+                if (page == null || !page.has("next") || page.get("next").isJsonNull()) break;
+                JsonObject next = page.getAsJsonObject("next");
+                concurrentUserCount = next.get("concurrentUserCount").getAsInt();
+                liveId = next.get("liveId").getAsInt();
+            } catch (Exception e) {
+                System.out.println("[Chzzk] 채널 목록 조회 실패: " + e.getMessage());
+                break;
+            }
+        }
+        return channels;
     }
 }

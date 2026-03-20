@@ -24,7 +24,6 @@ dependencies {
     implementation(libs.jetbrains.annotations)
     implementation(libs.okhttp)
     implementation(libs.gson)
-    implementation(libs.java.websocket)
     implementation(libs.selenium)
 }
 

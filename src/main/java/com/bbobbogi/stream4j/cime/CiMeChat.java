@@ -1,5 +1,6 @@
 package com.bbobbogi.stream4j.cime;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import okhttp3.OkHttpClient;
@@ -7,18 +8,22 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
-import org.java_websocket.drafts.Draft_6455;
-import org.java_websocket.protocols.Protocol;
+import okhttp3.WebSocket;
+import com.bbobbogi.stream4j.util.ManagedWebSocket;
 import com.bbobbogi.stream4j.util.SharedHttpClient;
 
 import java.io.IOException;
-import java.net.URI;
+import com.bbobbogi.stream4j.util.NonRetryableException;
 import java.nio.channels.AlreadyConnectedException;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Date;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * ci.me 채팅 클라이언트 클래스입니다.
@@ -55,9 +60,16 @@ public class CiMeChat {
     boolean reconnecting;
     boolean isDebug;
     boolean autoReconnect;
+    private static final int MAX_RECONNECT_ATTEMPTS = 10;
+    private static final long RECONNECT_BASE_DELAY_MS = 1000;
+    private static final long RECONNECT_MAX_DELAY_MS = 30000;
 
-    private final Object lock = new Object();
-    private CiMeChatWebsocketClient client;
+    private static final int SEEN_IDS_MAX_SIZE = 200;
+
+    private volatile ManagedWebSocket managedWs;
+    private volatile ScheduledExecutorService tokenRefreshScheduler;
+    private final Gson gson = new Gson();
+    private final Set<String> seenMessageIds = ConcurrentHashMap.newKeySet();
     ArrayList<CiMeChatEventListener> listeners = new ArrayList<>();
 
     private final String channelSlug;
@@ -74,9 +86,8 @@ public class CiMeChat {
      * @return 연결되어 있으면 {@code true}, 그렇지 않으면 {@code false}
      */
     public boolean isConnectedToChat() {
-        synchronized (lock) {
-            return client != null && client.isOpen();
-        }
+        ManagedWebSocket ws = managedWs;
+        return ws != null && ws.isConnected();
     }
 
     /**
@@ -119,14 +130,13 @@ public class CiMeChat {
         connectAsync().join();
     }
 
-    private void connectInternal() throws IOException, InterruptedException {
-        synchronized (lock) {
-            if (client != null && client.isOpen()) {
-                throw new AlreadyConnectedException();
-            }
+    private void connectInternal() throws IOException {
+        if (managedWs != null && managedWs.isConnected()) {
+            throw new AlreadyConnectedException();
         }
 
         reconnecting = false;
+        broadcastEnded = false;
 
         // 1. Chat token 발급
         String token = fetchChatToken();
@@ -134,26 +144,64 @@ public class CiMeChat {
         if (isDebug) System.out.println("[CiMe] Token fetched successfully");
 
         // 2. Token을 WebSocket 서브프로토콜로 사용하여 연결
-        Draft_6455 draft = new Draft_6455(
-                Collections.emptyList(),
-                Collections.singletonList(new Protocol(token))
-        );
+        ManagedWebSocket ws = new ManagedWebSocket(new ManagedWebSocket.Callback() {
+            @Override
+            public void onOpen(WebSocket webSocket, Response response) {
+                if (isDebug) System.out.println("[CiMe] WebSocket connected!");
+                for (CiMeChatEventListener listener : listeners) {
+                    listener.onConnect(CiMeChat.this, reconnecting);
+                }
+            }
 
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Origin", "https://ci.me");
+            @Override
+            public void onMessage(WebSocket webSocket, String message) {
+                handleWsMessage(message);
+            }
 
-        CiMeChatWebsocketClient newClient = new CiMeChatWebsocketClient(
-                this,
-                URI.create(IVS_CHAT_WS_URL),
-                draft,
-                headers
-        );
+            @Override
+            public void onClosed(int code, String reason) {
+                boolean shouldReconnect = autoReconnect;
+                for (CiMeChatEventListener listener : listeners) {
+                    listener.onConnectionClosed(code, reason, true, shouldReconnect);
+                }
+                if (isDebug) {
+                    System.out.println("[CiMe] WebSocket closed.");
+                    System.out.println("Code: " + code);
+                    System.out.println("Reason: " + reason);
+                    System.out.println("Reconnect: " + shouldReconnect);
+                }
+                if (shouldReconnect) {
+                    reconnectAsync();
+                }
+            }
 
-        synchronized (lock) {
-            client = newClient;
-        }
+            @Override
+            public void onFailure(Throwable t) {
+                for (CiMeChatEventListener listener : listeners) {
+                    listener.onError(t instanceof Exception ? (Exception) t : new RuntimeException(t));
+                }
+                boolean shouldReconnect = autoReconnect;
+                for (CiMeChatEventListener listener : listeners) {
+                    listener.onConnectionClosed(1006, t.getMessage(), true, shouldReconnect);
+                }
+                if (shouldReconnect) {
+                    reconnectAsync();
+                }
+            }
+        });
 
-        newClient.connectBlocking();
+        managedWs = ws;
+
+        Request request = new Request.Builder()
+                .url(IVS_CHAT_WS_URL)
+                .addHeader("Sec-WebSocket-Protocol", token)
+                .addHeader("Origin", "https://ci.me")
+                .build();
+
+        OkHttpClient wsClient = SharedHttpClient.newBuilder()
+                .pingInterval(30, TimeUnit.SECONDS)
+                .build();
+        ws.connect(request, wsClient);
     }
 
     /**
@@ -176,6 +224,9 @@ public class CiMeChat {
 
         try (Response response = SharedHttpClient.get().newCall(request).execute()) {
             if (!response.isSuccessful()) {
+                if (response.code() == 404 || response.code() == 403) {
+                    throw new NonRetryableException("[CiMe] " + channelSlug + " 연결 불가: HTTP " + response.code());
+                }
                 throw new IOException("[CiMe] Failed to fetch chat token: HTTP " + response.code());
             }
 
@@ -194,7 +245,149 @@ public class CiMeChat {
             }
 
             JsonObject data = json.getAsJsonObject("data");
-            return data.get("token").getAsString();
+            String token = data.get("token").getAsString();
+            scheduleTokenRefresh(token);
+            return token;
+        }
+    }
+
+    private long parseJwtExpiration(String token) {
+        try {
+            String[] parts = token.split("\\.");
+            if (parts.length < 2) return 0;
+            String payload = new String(java.util.Base64.getUrlDecoder().decode(parts[1]), java.nio.charset.StandardCharsets.UTF_8);
+            JsonObject jwt = JsonParser.parseString(payload).getAsJsonObject();
+            if (jwt.has("exp")) {
+                return jwt.get("exp").getAsLong();
+            }
+        } catch (Exception e) {
+            if (isDebug) System.out.println("[CiMe] Failed to parse JWT expiration: " + e.getMessage());
+        }
+        return 0;
+    }
+
+    private static final int TOKEN_REFRESH_MAX_ATTEMPTS = 3;
+    private static final long TOKEN_REFRESH_BEFORE_EXPIRY_SECONDS = 300;
+    private static final long TOKEN_REFRESH_RETRY_INTERVAL_SECONDS = 120;
+
+    private void scheduleTokenRefresh(String token) {
+        stopTokenRefreshScheduler();
+        long expSeconds = parseJwtExpiration(token);
+        if (expSeconds <= 0) return;
+
+        long nowSeconds = System.currentTimeMillis() / 1000;
+        long ttlSeconds = expSeconds - nowSeconds;
+        long firstAttemptIn = Math.max(ttlSeconds - TOKEN_REFRESH_BEFORE_EXPIRY_SECONDS, 30);
+
+        if (isDebug) System.out.println("[CiMe] Token TTL=" + ttlSeconds + "s, first refresh attempt in " + firstAttemptIn + "s");
+
+        tokenRefreshScheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "cime-token-refresh");
+            t.setDaemon(true);
+            return t;
+        });
+        tokenRefreshScheduler.schedule(() -> attemptTokenRefresh(1), firstAttemptIn, TimeUnit.SECONDS);
+    }
+
+    private volatile boolean broadcastEnded;
+
+    private void attemptTokenRefresh(int attempt) {
+        if (managedWs == null || broadcastEnded) return;
+        try {
+            if (isDebug) System.out.println("[CiMe] Token refresh attempt " + attempt + "/" + TOKEN_REFRESH_MAX_ATTEMPTS);
+            String newToken = fetchChatToken();
+
+            if (managedWs == null || broadcastEnded) return;
+
+            final ManagedWebSocket oldWs = managedWs;
+            final ManagedWebSocket[] newWsHolder = new ManagedWebSocket[1];
+
+            newWsHolder[0] = new ManagedWebSocket(new ManagedWebSocket.Callback() {
+                @Override
+                public void onOpen(WebSocket webSocket, okhttp3.Response response) {
+                    if (broadcastEnded) {
+                        newWsHolder[0].closeAsync();
+                        return;
+                    }
+                    if (isDebug) System.out.println("[CiMe] New connection established, closing old");
+                    managedWs = newWsHolder[0];
+                    if (oldWs != null) {
+                        oldWs.closeAsync();
+                    }
+                }
+
+                @Override
+                public void onMessage(WebSocket webSocket, String text) {
+                    handleWsMessage(text);
+                }
+
+                @Override
+                public void onClosed(int code, String reason) {
+                    if (managedWs != newWsHolder[0]) return;
+                    boolean shouldReconnect = autoReconnect;
+                    for (CiMeChatEventListener listener : listeners) {
+                        listener.onConnectionClosed(code, reason, true, shouldReconnect);
+                    }
+                    if (shouldReconnect) {
+                        reconnectAsync();
+                    }
+                }
+
+                @Override
+                public void onFailure(Throwable t) {
+                    if (managedWs != newWsHolder[0]) return;
+                    for (CiMeChatEventListener listener : listeners) {
+                        listener.onError(t instanceof Exception ? (Exception) t : new RuntimeException(t));
+                    }
+                    boolean shouldReconnect = autoReconnect;
+                    for (CiMeChatEventListener listener : listeners) {
+                        listener.onConnectionClosed(1006, t.getMessage(), true, shouldReconnect);
+                    }
+                    if (shouldReconnect) {
+                        reconnectAsync();
+                    }
+                }
+            });
+
+            Request request = new Request.Builder()
+                    .url(IVS_CHAT_WS_URL)
+                    .addHeader("Sec-WebSocket-Protocol", newToken)
+                    .addHeader("Origin", "https://ci.me")
+                    .build();
+
+            OkHttpClient wsClient = SharedHttpClient.newBuilder()
+                    .pingInterval(30, TimeUnit.SECONDS)
+                    .build();
+            newWsHolder[0].connect(request, wsClient);
+
+        } catch (Exception e) {
+            if (isDebug) System.out.println("[CiMe] Token refresh failed (attempt " + attempt + "): " + e.getMessage());
+            if (attempt < TOKEN_REFRESH_MAX_ATTEMPTS && !broadcastEnded
+                    && tokenRefreshScheduler != null && !tokenRefreshScheduler.isShutdown()) {
+                tokenRefreshScheduler.schedule(
+                        () -> attemptTokenRefresh(attempt + 1),
+                        TOKEN_REFRESH_RETRY_INTERVAL_SECONDS, TimeUnit.SECONDS);
+            }
+        }
+    }
+
+    private void trimSeenIds() {
+        if (seenMessageIds.size() > SEEN_IDS_MAX_SIZE) {
+            int excess = seenMessageIds.size() - SEEN_IDS_MAX_SIZE / 2;
+            var it = seenMessageIds.iterator();
+            while (excess > 0 && it.hasNext()) {
+                it.next();
+                it.remove();
+                excess--;
+            }
+        }
+    }
+
+    private void stopTokenRefreshScheduler() {
+        ScheduledExecutorService scheduler = tokenRefreshScheduler;
+        tokenRefreshScheduler = null;
+        if (scheduler != null) {
+            scheduler.shutdownNow();
         }
     }
 
@@ -205,32 +398,37 @@ public class CiMeChat {
      * @return 비동기 작업을 위한 CompletableFuture
      */
     public CompletableFuture<Void> reconnectAsync() {
-        return CompletableFuture.runAsync(() -> {
-            try {
-                CiMeChatWebsocketClient c;
-                synchronized (lock) {
-                    c = client;
-                    client = null;
-                }
+        return CompletableFuture.runAsync(() -> reconnectWithRetry(0));
+    }
 
-                if (c != null && !c.isClosed() && !c.isClosing()) {
-                    try {
-                        c.closeBlocking();
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
+    private void reconnectWithRetry(int attempt) {
+        try {
+            stopTokenRefreshScheduler();
+            ManagedWebSocket ws = managedWs;
+            managedWs = null;
 
-                reconnecting = true;
+            if (ws != null) {
+                ws.closeBlocking();
+            }
 
-                // 새 토큰을 발급받아 재연결
-                connectInternal();
-            } catch (Exception e) {
+            reconnecting = true;
+            connectInternal();
+        } catch (NonRetryableException e) {
+            for (CiMeChatEventListener listener : listeners) {
+                listener.onError(e);
+            }
+        } catch (Exception e) {
+            if (attempt < MAX_RECONNECT_ATTEMPTS && autoReconnect) {
+                long delay = Math.min(RECONNECT_BASE_DELAY_MS * (1L << attempt), RECONNECT_MAX_DELAY_MS);
+                if (isDebug) System.out.println("[CiMe] Reconnect failed (attempt " + (attempt + 1) + "), retrying in " + delay + "ms: " + e.getMessage());
+                try { Thread.sleep(delay); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); return; }
+                reconnectWithRetry(attempt + 1);
+            } else {
                 for (CiMeChatEventListener listener : listeners) {
                     listener.onError(e);
                 }
             }
-        });
+        }
     }
 
     /**
@@ -247,21 +445,148 @@ public class CiMeChat {
      */
     public CompletableFuture<Void> closeAsync() {
         return CompletableFuture.runAsync(() -> {
-            CiMeChatWebsocketClient c;
-            synchronized (lock) {
-                c = client;
-                client = null;
+            stopTokenRefreshScheduler();
+            ManagedWebSocket ws = managedWs;
+            managedWs = null;
+            if (ws != null) {
+                ws.closeBlocking();
             }
-            if (c != null) {
-                if (!c.isClosed() && !c.isClosing()) {
+        });
+    }
+
+    private void handleWsMessage(String message) {
+        try {
+            if (isDebug) System.out.println("[CiMe] Message: " + message);
+
+            JsonObject parsed = JsonParser.parseString(message).getAsJsonObject();
+
+            if (!parsed.has("Type")) return;
+
+            String type = parsed.get("Type").getAsString();
+
+            if ("MESSAGE".equals(type)) {
+                String msgId = parsed.has("Id") ? parsed.get("Id").getAsString() : null;
+                if (msgId != null && !seenMessageIds.add(msgId)) return;
+                trimSeenIds();
+                processMessage(parsed);
+            } else if ("EVENT".equals(type)) {
+                String eventId = parsed.has("Id") ? parsed.get("Id").getAsString() : null;
+                if (eventId != null && !seenMessageIds.add(eventId)) return;
+                trimSeenIds();
+                processEvent(parsed);
+            } else if ("ERROR".equals(type)) {
+                String errorMessage;
+                if (parsed.has("ErrorMessage")) {
+                    errorMessage = parsed.get("ErrorMessage").getAsString();
+                } else if (parsed.has("Message")) {
+                    errorMessage = parsed.get("Message").getAsString();
+                } else {
+                    errorMessage = parsed.toString();
+                }
+                int errorCode = parsed.has("ErrorCode") ? parsed.get("ErrorCode").getAsInt() : 0;
+                boolean isTokenExpired = errorMessage != null && errorMessage.contains("expired");
+                if (isDebug) System.out.println("[CiMe] Server error (code=" + errorCode + "): " + errorMessage);
+                if (!isTokenExpired) {
+                    for (CiMeChatEventListener listener : listeners) {
+                        listener.onError(new RuntimeException("[CiMe] Server error: " + errorMessage));
+                    }
+                }
+                CompletableFuture.runAsync(() -> {
+                    ManagedWebSocket ws = managedWs;
+                    managedWs = null;
+                    if (ws != null) {
+                        ws.closeBlocking();
+                    }
+                    boolean shouldReconnect = isTokenExpired || autoReconnect;
+                    if (!isTokenExpired) {
+                        for (CiMeChatEventListener listener : listeners) {
+                            listener.onConnectionClosed(1008, "Server error: " + errorMessage, true, shouldReconnect);
+                        }
+                    }
+                    if (shouldReconnect) {
+                        reconnectAsync();
+                    }
+                });
+            }
+        } catch (Exception ex) {
+            for (CiMeChatEventListener listener : listeners) {
+                listener.onError(ex);
+            }
+        }
+    }
+
+    private void processMessage(JsonObject parsed) {
+        CiMeChatMessage msg = new CiMeChatMessage();
+        msg.rawJson = parsed.toString();
+        msg.id = parsed.has("Id") ? parsed.get("Id").getAsString() : null;
+        msg.type = "MESSAGE";
+        msg.content = parsed.has("Content") ? parsed.get("Content").getAsString() : "";
+
+        // SendTime 파싱 (ISO 8601 형식)
+        if (parsed.has("SendTime") && !parsed.get("SendTime").isJsonNull()) {
+            try {
+                String sendTimeStr = parsed.get("SendTime").getAsString();
+                Instant instant = Instant.parse(sendTimeStr);
+                msg.sendTime = Date.from(instant);
+            } catch (Exception e) {
+                if (isDebug) System.out.println("[CiMe] Failed to parse SendTime: " + e.getMessage());
+            }
+        }
+
+        // Sender 파싱
+        if (parsed.has("Sender") && !parsed.get("Sender").isJsonNull()) {
+            JsonObject sender = parsed.getAsJsonObject("Sender");
+            msg.senderUserId = sender.has("UserId") ? sender.get("UserId").getAsString() : null;
+
+            // Sender.Attributes.user는 JSON 문자열로 인코딩되어 있음
+            if (sender.has("Attributes") && !sender.get("Attributes").isJsonNull()) {
+                JsonObject senderAttrs = sender.getAsJsonObject("Attributes");
+                if (senderAttrs.has("user") && !senderAttrs.get("user").isJsonNull()) {
                     try {
-                        c.closeBlocking();
-                        return;
-                    } catch (InterruptedException ignored) {
+                        String userJsonStr = senderAttrs.get("user").getAsString();
+                        msg.user = gson.fromJson(userJsonStr, CiMeChatMessage.CiMeUser.class);
+                    } catch (Exception e) {
+                        if (isDebug)
+                            System.out.println("[CiMe] Failed to parse user: " + e.getMessage());
                     }
                 }
             }
-        });
+        }
+
+        for (CiMeChatEventListener listener : listeners) {
+            listener.onChat(msg);
+        }
+    }
+
+    /** 필터링할 이벤트 이름 목록 (리스너에 전달하지 않음) */
+    private static final Set<String> IGNORED_EVENTS = Set.of(
+            "MIDROLL_START",
+            "BAN_USER",
+            "aws:DISCONNECT_USER",
+            "UPDATE_CHAT_NOTICE",
+            "LIVE_STARTED",
+            "GRANT_MANAGER",
+            "REVOKE_MANAGER",
+            "CHAT_MODE_NOTICE",
+            "UPDATE_CHAT_MODE"
+    );
+
+    private void processEvent(JsonObject parsed) {
+        String eventName = parsed.has("EventName") ? parsed.get("EventName").getAsString() : "UNKNOWN";
+
+        if (IGNORED_EVENTS.contains(eventName)) {
+            if (isDebug) System.out.println("[CiMe] Ignored event: " + eventName);
+            return;
+        }
+
+        for (CiMeChatEventListener listener : listeners) {
+            if ("LIVE_ENDED".equals(eventName)) {
+                broadcastEnded = true;
+                stopTokenRefreshScheduler();
+                listener.onBroadcastEnd(this);
+            }
+            listener.onEvent(eventName, parsed.toString());
+        }
     }
 
     /**

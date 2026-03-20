@@ -8,18 +8,14 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okhttp3.OkHttpClient;
-import org.java_websocket.drafts.Draft_6455;
-import org.java_websocket.protocols.Protocol;
+import okhttp3.WebSocket;
+import com.bbobbogi.stream4j.util.ManagedWebSocket;
 import com.bbobbogi.stream4j.util.SharedHttpClient;
 
-import javax.net.ssl.SSLContext;
 import java.io.IOException;
-import java.net.URI;
+import com.bbobbogi.stream4j.util.NonRetryableException;
 import java.nio.channels.AlreadyConnectedException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -27,7 +23,6 @@ public class SOOPChat {
 
     private static final String LIVE_DETAIL_API = "https://live.sooplive.co.kr/afreeca/player_live_api.php?bjid=";
     private static final String LOGIN_API = "https://login.sooplive.co.kr/app/LoginAction.php";
-    private final Object lock = new Object();
     final ArrayList<SOOPChatEventListener> listeners = new ArrayList<>();
     private final String streamerId;
     private final boolean autoReconnect;
@@ -36,7 +31,7 @@ public class SOOPChat {
     private final long reconnectDelayMs;
     private OkHttpClient httpClient;
 
-    private SOOPChatWebSocketClient webSocketClient;
+    private volatile ManagedWebSocket managedWs;
     private String chatNo;
 
     volatile boolean reconnecting;
@@ -61,9 +56,8 @@ public class SOOPChat {
     }
 
     public boolean isConnected() {
-        synchronized (lock) {
-            return webSocketClient != null && webSocketClient.isOpen();
-        }
+        ManagedWebSocket ws = managedWs;
+        return ws != null && ws.isConnected();
     }
 
     public CompletableFuture<Void> connectAsync() {
@@ -82,26 +76,15 @@ public class SOOPChat {
 
     public CompletableFuture<Void> closeAsync() {
         return CompletableFuture.runAsync(() -> {
-            SOOPChatWebSocketClient client;
-            synchronized (lock) {
-                client = webSocketClient;
-                webSocketClient = null;
-            }
+            ManagedWebSocket ws = managedWs;
+            managedWs = null;
 
             connected = false;
             entered = false;
             reconnecting = false;
 
-            if (client != null) {
-                client.stopPing();
-            }
-
-            if (client != null && !client.isClosed() && !client.isClosing()) {
-                try {
-                    client.closeBlocking();
-                } catch (InterruptedException ignored) {
-                    Thread.currentThread().interrupt();
-                }
+            if (ws != null) {
+                ws.closeBlocking();
             }
         });
     }
@@ -111,33 +94,39 @@ public class SOOPChat {
     }
 
     public CompletableFuture<Void> reconnectAsync() {
-        return CompletableFuture.runAsync(() -> {
-            try {
-                SOOPChatWebSocketClient client;
-                synchronized (lock) {
-                    client = webSocketClient;
-                    webSocketClient = null;
-                }
+        return CompletableFuture.runAsync(() -> reconnectWithRetry(0));
+    }
 
-                connected = false;
-                entered = false;
+    private void reconnectWithRetry(int attempt) {
+        try {
+            ManagedWebSocket ws = managedWs;
+            managedWs = null;
 
-                if (client != null && !client.isClosed() && !client.isClosing()) {
-                    try {
-                        client.closeBlocking();
-                    } catch (InterruptedException ignored) {
-                        Thread.currentThread().interrupt();
-                    }
-                }
+            connected = false;
+            entered = false;
 
-                reconnecting = true;
-                connectInternal();
-            } catch (Exception e) {
+            if (ws != null) {
+                ws.closeBlocking();
+            }
+
+            reconnecting = true;
+            connectInternal();
+        } catch (NonRetryableException e) {
+            for (SOOPChatEventListener listener : listeners) {
+                listener.onError(e);
+            }
+        } catch (Exception e) {
+            if (attempt < maxReconnectAttempts && autoReconnect) {
+                long delay = Math.min(reconnectDelayMs * (1L << attempt), 30000);
+                if (debug) System.out.println("[SOOP] Reconnect failed (attempt " + (attempt + 1) + "), retrying in " + delay + "ms: " + e.getMessage());
+                try { Thread.sleep(delay); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); return; }
+                reconnectWithRetry(attempt + 1);
+            } else {
                 for (SOOPChatEventListener listener : listeners) {
                     listener.onError(e);
                 }
             }
-        });
+        }
     }
 
     public void reconnectBlocking() {
@@ -145,10 +134,8 @@ public class SOOPChat {
     }
 
     private void connectInternal() throws Exception {
-        synchronized (lock) {
-            if (webSocketClient != null && webSocketClient.isOpen()) {
-                throw new AlreadyConnectedException();
-            }
+        if (managedWs != null && managedWs.isConnected()) {
+            throw new AlreadyConnectedException();
         }
 
         LiveInfo liveInfo = fetchLiveInfo();
@@ -159,38 +146,47 @@ public class SOOPChat {
                 case -14 -> "구독자 전용 방송 (티어 " + liveInfo.minTier + " 이상)";
                 default -> "RESULT=" + liveInfo.result;
             };
-            throw new IOException("[SOOP] " + streamerId + " 연결 불가: " + reason);
+            throw new NonRetryableException("[SOOP] " + streamerId + " 연결 불가: " + reason);
         }
 
         chatNo = liveInfo.chatNo;
         String chatUrl = buildChatUrl(liveInfo.chatDomain, liveInfo.chatPort);
 
-        Draft_6455 draft = new Draft_6455(
-                Collections.emptyList(),
-                Collections.singletonList(new Protocol("chat"))
-        );
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Sec-WebSocket-Protocol", "chat");
-
-        SOOPChatWebSocketClient client = new SOOPChatWebSocketClient(
-                this,
-                URI.create(chatUrl),
-                draft,
-                headers
-        );
-        SSLContext sslContext = SSLContext.getDefault();
-        client.setSocketFactory(sslContext.getSocketFactory());
-
-        synchronized (lock) {
-            webSocketClient = client;
-        }
-
         if (debug) {
             System.out.println("[SOOP] Connecting to " + chatUrl);
         }
 
-        client.connectBlocking();
+        ManagedWebSocket ws = new ManagedWebSocket(new ManagedWebSocket.Callback() {
+            @Override
+            public void onOpen(WebSocket webSocket, Response response) {
+                managedWs.send(SOOPPacket.buildConnectPacket());
+            }
+
+            @Override
+            public void onMessage(WebSocket webSocket, String text) {
+                handleMessage(text);
+            }
+
+            @Override
+            public void onClosed(int code, String reason) {
+                handleClose(reason, true);
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                handleError(t instanceof Exception ? (Exception) t : new RuntimeException(t));
+                handleClose(t.getMessage(), true);
+            }
+        });
+
+        managedWs = ws;
+
+        Request request = new Request.Builder()
+                .url(chatUrl)
+                .addHeader("Sec-WebSocket-Protocol", "chat")
+                .build();
+
+        ws.connect(request, httpClient);
     }
 
     private LiveInfo fetchLiveInfo() throws IOException {
@@ -278,23 +274,15 @@ public class SOOPChat {
             case SOOPPacket.TYPE_CONNECT:
                 connected = true;
                 reconnectAttempts = 0;
+                managedWs.send(SOOPPacket.buildJoinPacket(chatNo));
                 for (SOOPChatEventListener listener : listeners) {
                     listener.onConnect(this, reconnecting);
-                }
-                synchronized (lock) {
-                    if (webSocketClient != null) {
-                        webSocketClient.sendPacket(SOOPPacket.buildJoinPacket(chatNo));
-                    }
                 }
                 break;
 
             case SOOPPacket.TYPE_JOIN:
                 entered = true;
-                synchronized (lock) {
-                    if (webSocketClient != null) {
-                        webSocketClient.startPing();
-                    }
-                }
+                managedWs.startPing(SOOPPacket.buildPingPacket(), 60, 180);
                 break;
 
             case SOOPPacket.TYPE_CHAT:
@@ -339,21 +327,41 @@ public class SOOPChat {
                 break;
 
             case SOOPPacket.TYPE_DISCONNECT:
-                closeAsync();
+                String bjStat = getField(fields, 0);
+                if ("0".equals(bjStat)) {
+                    if (debug) System.out.println("[SOOP] Broadcast ended (svc_SETBJSTAT=0)");
+                    ManagedWebSocket endWs = managedWs;
+                    managedWs = null;
+                    connected = false;
+                    entered = false;
+                    for (SOOPChatEventListener listener : listeners) {
+                        listener.onBroadcastEnd(SOOPChat.this);
+                    }
+                    for (SOOPChatEventListener listener : listeners) {
+                        listener.onConnectionClosed(1000, "Broadcast ended", false, false);
+                    }
+                    if (endWs != null) {
+                        endWs.closeAsync();
+                    }
+                } else {
+                    if (debug) System.out.println("[SOOP] BJ stat update (0007): " + bjStat);
+                }
                 break;
 
             default:
+                if (debug) System.out.println("[SOOP] Unhandled packet(" + typeCode + "): " + packet);
+                for (SOOPChatEventListener listener : listeners) {
+                    listener.onUnhandledPacket(typeCode, fields);
+                }
                 break;
         }
     }
 
     void handleClose(String reason, boolean remote) {
-        synchronized (lock) {
-            if (webSocketClient == null) {
-                return;
-            }
-            webSocketClient = null;
+        if (managedWs == null) {
+            return;
         }
+        managedWs = null;
 
         boolean shouldReconnect = remote && autoReconnect && reconnectAttempts < maxReconnectAttempts;
 

@@ -12,8 +12,10 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Tag;
@@ -34,6 +36,8 @@ public class DonationMonitorTest {
 
     private final ChzzkTestBase chzzkBase = new ChzzkTestBase();
     private final CiMeTestBase cimeBase = new CiMeTestBase();
+    private final SOOPTestBase soopBase = new SOOPTestBase();
+    private final YouTubeTestBase youtubeBase = new YouTubeTestBase();
 
     private static final int CONNECT_INTERVAL_SECONDS = 5;
     private static final int MAX_CHANNELS = 50;
@@ -56,105 +60,53 @@ public class DonationMonitorTest {
     private final Map<String, Long> soopLastActivity = new ConcurrentHashMap<>();
     private final Map<String, String> soopChannelNames = new ConcurrentHashMap<>();
     private final LinkedBlockingQueue<String[]> soopReplaceQueue = new LinkedBlockingQueue<>();
+    private final Map<String, YouTubeChat> youtubeConnections = new ConcurrentHashMap<>();
+    private final Set<String> youtubeConnectedIds = ConcurrentHashMap.newKeySet();
+    private final Map<String, Long> youtubeLastActivity = new ConcurrentHashMap<>();
+    private final Map<String, String> youtubeChannelNames = new ConcurrentHashMap<>();
+    private final LinkedBlockingQueue<String[]> youtubeReplaceQueue = new LinkedBlockingQueue<>();
 
-    private final ExecutorService replaceWorker = Executors.newSingleThreadExecutor(r -> {
-        Thread t = new Thread(r, "replace-worker");
-        t.setDaemon(true);
-        return t;
-    });
+    private final Map<String, Long> blacklist = new ConcurrentHashMap<>();
+    private static final long BLACKLIST_TTL_MS = 30 * 60 * 1000;
+
+    private final ExecutorService chzzkReplaceWorker = newDaemonExecutor("chzzk-replace");
+    private final ExecutorService cimeReplaceWorker = newDaemonExecutor("cime-replace");
+    private final ExecutorService soopReplaceWorker = newDaemonExecutor("soop-replace");
+    private final ExecutorService youtubeReplaceWorker = newDaemonExecutor("youtube-replace");
+
+    private static ExecutorService newDaemonExecutor(String name) {
+        return Executors.newSingleThreadExecutor(r -> {
+            Thread t = new Thread(r, name);
+            t.setDaemon(true);
+            return t;
+        });
+    }
     private PrintWriter chzzkEventLog;
     private PrintWriter cimeEventLog;
     private PrintWriter soopEventLog;
-    private final List<YouTubeChat> youtubeChats = new ArrayList<>();
     private PrintWriter youtubeEventLog;
+
+    private boolean isBlacklisted(String id) {
+        Long until = blacklist.get(id);
+        if (until == null) return false;
+        if (System.currentTimeMillis() > until) {
+            blacklist.remove(id);
+            return false;
+        }
+        return true;
+    }
+
+    private void addToBlacklist(String id) {
+        blacklist.put(id, System.currentTimeMillis() + BLACKLIST_TTL_MS);
+    }
 
     private static String now(String platform) {
         return platform + "|" + LocalDateTime.now().format(TIME_FMT);
     }
 
-    private List<String[]> findChzzkLiveChannels() {
-        List<String[]> channels = new ArrayList<>();
-        Set<String> seen = new HashSet<>();
-        int concurrentUserCount = 0;
-        int liveId = 0;
 
-        while (channels.size() < MAX_CHANNELS) {
-            try {
-                String url = Chzzk.API_URL + "/service/v1/lives?sortType=POPULAR&size=50"
-                        + "&concurrentUserCount=" + concurrentUserCount
-                        + (liveId > 0 ? "&liveId=" + liveId : "");
 
-                JsonElement contentJson = RawApiUtils.getContentJson(
-                        chzzkBase.chzzk.getHttpClient(),
-                        RawApiUtils.httpGetRequest(url).build(),
-                        chzzkBase.chzzk.isDebug);
 
-                JsonObject content = contentJson.getAsJsonObject();
-                JsonArray data = content.getAsJsonArray("data");
-                if (data == null || data.isEmpty()) break;
-
-                for (JsonElement element : data) {
-                    try {
-                        JsonObject live = element.getAsJsonObject();
-                        JsonObject channel = live.getAsJsonObject("channel");
-                        if (channel == null) continue;
-
-                        String id = channel.get("channelId").getAsString();
-                        String name = channel.get("channelName").getAsString();
-                        if (seen.add(id)) {
-                            channels.add(new String[]{id, name});
-                        }
-
-                        if (channels.size() >= MAX_CHANNELS) return channels;
-                    } catch (Exception e) {
-                        System.out.println("[" + now("Chzzk") + "][에러] 채널 파싱 스킵: " + e.getMessage());
-                    }
-                }
-
-                JsonObject page = content.getAsJsonObject("page");
-                if (page == null || !page.has("next") || page.get("next").isJsonNull()) break;
-                JsonObject next = page.getAsJsonObject("next");
-                concurrentUserCount = next.get("concurrentUserCount").getAsInt();
-                liveId = next.get("liveId").getAsInt();
-            } catch (Exception e) {
-                System.out.println("[" + now("Chzzk") + "][에러] 채널 목록 조회 실패: " + e.getMessage());
-                break;
-            }
-        }
-        return channels;
-    }
-
-    private List<String[]> findSOOPLiveChannels() {
-        List<String[]> channels = new ArrayList<>();
-        Set<String> seen = new HashSet<>();
-        try {
-            Request request = new Request.Builder()
-                    .url("https://live.sooplive.co.kr/api/main_broad_list_api.php?selectType=action&selectValue=all&orderType=view_cnt&pageNo=1&lang=ko_KR&_=" + System.currentTimeMillis())
-                    .get()
-                    .build();
-            try (Response response = SharedHttpClient.get().newCall(request).execute()) {
-                if (!response.isSuccessful() || response.body() == null) return channels;
-                String body = response.body().string();
-                JsonObject json = JsonParser.parseString(body).getAsJsonObject();
-                JsonArray broads = json.has("broad") ? json.getAsJsonArray("broad") : null;
-                if (broads == null) return channels;
-                for (JsonElement el : broads) {
-                    try {
-                        JsonObject b = el.getAsJsonObject();
-                        String userId = b.has("user_id") ? b.get("user_id").getAsString() : null;
-                        String userNick = b.has("user_nick") ? b.get("user_nick").getAsString() : userId;
-                        if (userId != null && seen.add(userId)) {
-                            channels.add(new String[]{userId, userNick});
-                        }
-                        if (channels.size() >= MAX_CHANNELS) break;
-                    } catch (Exception ignored) {}
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("[" + now("SOOP") + "][에러] 라이브 목록 조회 실패: " + e.getMessage());
-        }
-        return channels;
-    }
 
     private synchronized void saveEvent(String platform, String eventType, String channelName, String rawJson, Map<String, Object> parsed) {
         PrintWriter eventLog;
@@ -319,6 +271,40 @@ public class DonationMonitorTest {
                         }
 
                         @Override
+                        public void onPartyDonationInfo(PartyDonationInfo info) {
+                            System.out.println("[" + now("Chzzk") + "][파티정보] " + channelName
+                                    + " | " + info.getPartyName() + " | 상태=" + info.getStatusRaw()
+                                    + " | 멤버=" + info.getMemberCount() + " | 총액=" + info.getTotalDonationAmount());
+                            Map<String, Object> parsed = new LinkedHashMap<>();
+                            parsed.put("partyName", info.getPartyName());
+                            parsed.put("statusRaw", info.getStatusRaw());
+                            parsed.put("memberCount", info.getMemberCount());
+                            parsed.put("totalDonationAmount", info.getTotalDonationAmount());
+                            parsed.put("hostChannelNickname", info.getHostChannelNickname());
+                            saveEvent("Chzzk", "PartyInfo", channelName, info.getRawJson(), parsed);
+                        }
+
+                        @Override
+                        public void onPartyDonationFinish(PartyDonationFinishEvent event) {
+                            System.out.println("[" + now("Chzzk") + "][파티종료] " + channelName
+                                    + " | confirmNeeded=" + event.isConfirmNeeded());
+                            Map<String, Object> parsed = new LinkedHashMap<>();
+                            parsed.put("confirmNeeded", event.isConfirmNeeded());
+                            saveEvent("Chzzk", "PartyFinish", channelName, event.getRawJson(), parsed);
+                        }
+
+                        @Override
+                        public void onPartyDonationConfirm(PartyDonationConfirmEvent event) {
+                            System.out.println("[" + now("Chzzk") + "][파티확정] " + channelName
+                                    + " | rank=" + event.getRank() + " | " + event.getChannelName() + " | " + event.getRankName());
+                            Map<String, Object> parsed = new LinkedHashMap<>();
+                            parsed.put("rank", event.getRank());
+                            parsed.put("channelName", event.getChannelName());
+                            parsed.put("rankName", event.getRankName());
+                            saveEvent("Chzzk", "PartyConfirm", channelName, event.getRawJson(), parsed);
+                        }
+
+                        @Override
                         public void onSubscriptionChat(SubscriptionMessage msg) {
                             String nickname = (msg.getProfile() != null && msg.getProfile().getNickname() != null) ? msg.getProfile().getNickname() : "익명";
                             System.out.println("[" + now("Chzzk") + "][구독] " + channelName
@@ -395,6 +381,8 @@ public class DonationMonitorTest {
             chzzkChannelNames.put(channelId, channelName);
         } catch (Exception e) {
             System.out.println("[" + now("Chzzk") + "][에러] " + channelName + " 연결 실패: " + e.getMessage());
+            addToBlacklist(channelId);
+            chzzkReplaceQueue.offer(new String[]{channelId, channelName});
         }
     }
 
@@ -447,10 +435,9 @@ public class DonationMonitorTest {
         }
     }
 
-    private void processReplaceQueues() {
+    private void processChzzkReplaceQueue() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
-                // 큐에 대기 중인 항목 처리
                 String[] item = chzzkReplaceQueue.poll(5, TimeUnit.SECONDS);
                 if (item != null) {
                     List<String[]> batch = new ArrayList<>();
@@ -458,23 +445,57 @@ public class DonationMonitorTest {
                     chzzkReplaceQueue.drainTo(batch);
                     replaceChzzkChannels(batch);
                 }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+    }
 
-                item = cimeReplaceQueue.poll(0, TimeUnit.SECONDS);
+    private void processCiMeReplaceQueue() {
+        while (!Thread.currentThread().isInterrupted()) {
+            try {
+                String[] item = cimeReplaceQueue.poll(5, TimeUnit.SECONDS);
                 if (item != null) {
                     List<String[]> batch = new ArrayList<>();
                     batch.add(item);
                     cimeReplaceQueue.drainTo(batch);
                     replaceCiMeChannels(batch);
                 }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+    }
 
-                item = soopReplaceQueue.poll(0, TimeUnit.SECONDS);
+    private void processSOOPReplaceQueue() {
+        while (!Thread.currentThread().isInterrupted()) {
+            try {
+                String[] item = soopReplaceQueue.poll(5, TimeUnit.SECONDS);
                 if (item != null) {
                     List<String[]> batch = new ArrayList<>();
                     batch.add(item);
                     soopReplaceQueue.drainTo(batch);
                     replaceSOOPChannels(batch);
                 }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+    }
 
+    private void processYouTubeReplaceQueue() {
+        while (!Thread.currentThread().isInterrupted()) {
+            try {
+                String[] item = youtubeReplaceQueue.poll(5, TimeUnit.SECONDS);
+                if (item != null) {
+                    List<String[]> batch = new ArrayList<>();
+                    batch.add(item);
+                    youtubeReplaceQueue.drainTo(batch);
+                    replaceYouTubeChannels(batch);
+                }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;
@@ -487,12 +508,12 @@ public class DonationMonitorTest {
         System.out.println("[" + now("Chzzk") + "] " + batch.size() + "개 종료, " + need + "개 보충 필요 (" + chzzkConnections.size() + "/" + MAX_CHANNELS + ")");
         if (need <= 0) return;
 
-        List<String[]> liveChannels = findChzzkLiveChannels();
+        List<String[]> liveChannels = chzzkBase.findLiveChannels(MAX_CHANNELS);
         Collections.shuffle(liveChannels);
         int connected = 0;
         for (String[] ch : liveChannels) {
             if (connected >= need) break;
-            if (!chzzkConnectedIds.contains(ch[0])) {
+            if (!chzzkConnectedIds.contains(ch[0]) && !isBlacklisted(ch[0])) {
                 connectChzzkChannel(ch[0], ch[1]);
                 connected++;
                 try { Thread.sleep(CONNECT_INTERVAL_SECONDS * 1000L); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); return; }
@@ -511,7 +532,7 @@ public class DonationMonitorTest {
         int connected = 0;
         for (String[] ch : liveChannels) {
             if (connected >= need) break;
-            if (!cimeConnectedSlugs.contains(ch[0])) {
+            if (!cimeConnectedSlugs.contains(ch[0]) && !isBlacklisted(ch[0])) {
                 connectCiMeChannel(ch[0], ch[1]);
                 connected++;
                 try { Thread.sleep(CONNECT_INTERVAL_SECONDS * 1000L); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); return; }
@@ -525,18 +546,137 @@ public class DonationMonitorTest {
         System.out.println("[" + now("SOOP") + "] " + batch.size() + "개 종료, " + need + "개 보충 필요 (" + soopConnections.size() + "/" + MAX_CHANNELS + ")");
         if (need <= 0) return;
 
-        List<String[]> liveChannels = findSOOPLiveChannels();
+        List<String[]> liveChannels = soopBase.findLiveChannels(MAX_CHANNELS);
         Collections.shuffle(liveChannels);
         int connected = 0;
         for (String[] ch : liveChannels) {
             if (connected >= need) break;
-            if (!soopConnectedIds.contains(ch[0])) {
+            if (!soopConnectedIds.contains(ch[0]) && !isBlacklisted(ch[0])) {
                 connectSOOPChannel(ch[0], ch[1]);
                 connected++;
                 try { Thread.sleep(CONNECT_INTERVAL_SECONDS * 1000L); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); return; }
             }
         }
         System.out.println("[" + now("SOOP") + "] 보충 완료: " + soopConnections.size() + "/" + MAX_CHANNELS + "개");
+    }
+
+    private void replaceYouTubeChannels(List<String[]> batch) {
+        int need = MAX_CHANNELS - youtubeConnections.size();
+        System.out.println("[" + now("YouTube") + "] " + batch.size() + "개 종료, " + need + "개 보충 필요 (" + youtubeConnections.size() + "/" + MAX_CHANNELS + ")");
+        if (need <= 0) return;
+
+        List<String[]> liveChannels = youtubeBase.findLiveChannels(MAX_CHANNELS);
+        Collections.shuffle(liveChannels);
+        int connected = 0;
+        for (String[] ch : liveChannels) {
+            if (connected >= need) break;
+            if (!youtubeConnectedIds.contains(ch[0]) && !isBlacklisted(ch[0])) {
+                connectYouTubeChannel(ch[0], ch[1]);
+                connected++;
+                try { Thread.sleep(CONNECT_INTERVAL_SECONDS * 1000L); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); return; }
+            }
+        }
+        System.out.println("[" + now("YouTube") + "] 보충 완료: " + youtubeConnections.size() + "/" + MAX_CHANNELS + "개");
+    }
+
+    private void connectYouTubeChannel(String videoId, String channelName) {
+        if (youtubeConnectedIds.contains(videoId)) return;
+        String displayName = (channelName != null && !channelName.isEmpty()) ? channelName : videoId;
+        try {
+            YouTubeChat chat = new YouTubeChatBuilder(videoId)
+                    .withAutoReconnect(false)
+                    .withChatListener(new YouTubeChatEventListener() {
+                        @Override
+                        public void onConnect(YouTubeChat chat, boolean isReconnecting) {
+                            System.out.println("[" + now("YouTube") + "][연결] " + displayName + " (" + videoId + ")");
+                        }
+
+                        @Override
+                        public void onError(Exception ex) {
+                            System.out.println("[" + now("YouTube") + "][에러] " + displayName + " — " + ex.getMessage());
+                        }
+
+                        @Override
+                        public void onChat(ChatItem item) {
+                            youtubeLastActivity.put(videoId, System.currentTimeMillis());
+                        }
+
+                        @Override
+                        public void onSuperChat(ChatItem item) {
+                            youtubeLastActivity.put(videoId, System.currentTimeMillis());
+                            CurrencyUtils.ParsedAmount pa = CurrencyUtils.parse(item.getPurchaseAmount());
+                            System.out.println("[" + now("YouTube") + "][SuperChat] " + displayName
+                                    + " | " + item.getAuthorName() + " | " + CurrencyUtils.format(pa) + " | " + item.getMessage());
+                            Map<String, Object> parsed = new LinkedHashMap<>();
+                            parsed.put("type", "SUPER_CHAT");
+                            parsed.put("author", item.getAuthorName());
+                            parsed.put("currency", pa.currencyCode());
+                            parsed.put("amount", pa.amount());
+                            parsed.put("rawAmount", pa.raw());
+                            parsed.put("message", item.getMessage());
+                            saveEvent("YouTube", "SuperChat", displayName, null, parsed);
+                        }
+
+                        @Override
+                        public void onSuperSticker(ChatItem item) {
+                            youtubeLastActivity.put(videoId, System.currentTimeMillis());
+                            CurrencyUtils.ParsedAmount pa = CurrencyUtils.parse(item.getPurchaseAmount());
+                            System.out.println("[" + now("YouTube") + "][SuperSticker] " + displayName
+                                    + " | " + item.getAuthorName() + " | " + CurrencyUtils.format(pa));
+                            Map<String, Object> parsed = new LinkedHashMap<>();
+                            parsed.put("type", "SUPER_STICKER");
+                            parsed.put("author", item.getAuthorName());
+                            parsed.put("currency", pa.currencyCode());
+                            parsed.put("amount", pa.amount());
+                            parsed.put("rawAmount", pa.raw());
+                            saveEvent("YouTube", "SuperSticker", displayName, null, parsed);
+                        }
+
+                        @Override
+                        public void onNewMember(ChatItem item) {
+                            youtubeLastActivity.put(videoId, System.currentTimeMillis());
+                            String memberMsg = item.getMessage() != null ? item.getMessage() : "";
+                            System.out.println("[" + now("YouTube") + "][멤버십] " + displayName
+                                    + " | " + item.getAuthorName() + (memberMsg.isEmpty() ? "" : " | " + memberMsg));
+                            Map<String, Object> parsed = new LinkedHashMap<>();
+                            parsed.put("type", "NEW_MEMBER");
+                            parsed.put("author", item.getAuthorName());
+                            parsed.put("message", memberMsg);
+                            saveEvent("YouTube", "NewMember", displayName, null, parsed);
+                        }
+
+                        @Override
+                        public void onBroadcastEnd(YouTubeChat chat) {
+                            System.out.println("[" + now("YouTube") + "][방송종료] " + displayName);
+                            youtubeConnections.remove(videoId);
+                            youtubeConnectedIds.remove(videoId);
+                            youtubeLastActivity.remove(videoId);
+                            youtubeChannelNames.remove(videoId);
+                            chat.closeAsync();
+                            youtubeReplaceQueue.offer(new String[]{videoId, displayName});
+                        }
+
+                        @Override
+                        public void onConnectionClosed(int code, String reason, boolean remote, boolean tryReconnect) {
+                            System.out.println("[" + now("YouTube") + "][연결종료] " + displayName + " | code=" + code + " reason=" + reason);
+                            if (youtubeConnections.remove(videoId) == null) return;
+                            youtubeConnectedIds.remove(videoId);
+                            youtubeLastActivity.remove(videoId);
+                            youtubeChannelNames.remove(videoId);
+                            youtubeReplaceQueue.offer(new String[]{videoId, displayName});
+                        }
+                    })
+                    .build();
+            chat.connectBlocking();
+            youtubeConnections.put(videoId, chat);
+            youtubeConnectedIds.add(videoId);
+            youtubeLastActivity.put(videoId, System.currentTimeMillis());
+            youtubeChannelNames.put(videoId, displayName);
+        } catch (Exception e) {
+            System.out.println("[" + now("YouTube") + "][에러] " + displayName + " 연결 실패: " + e.getMessage());
+            addToBlacklist(videoId);
+            youtubeReplaceQueue.offer(new String[]{videoId, displayName});
+        }
     }
 
     private void connectCiMeChannel(String channelSlug, String channelName) {
@@ -644,6 +784,8 @@ public class DonationMonitorTest {
             cimeChannelNames.put(channelSlug, channelName);
         } catch (Exception e) {
             System.out.println("[" + now("CiMe") + "][에러] " + channelName + " 연결 실패: " + e.getMessage());
+            addToBlacklist(channelSlug);
+            cimeReplaceQueue.offer(new String[]{channelSlug, channelName});
         }
     }
 
@@ -706,6 +848,18 @@ public class DonationMonitorTest {
                             saveEvent("SOOP", "SUBSCRIBE", channelName, null, parsed);
                         }
                         @Override
+                        public void onBroadcastEnd(SOOPChat chat) {
+                            System.out.println("[" + now("SOOP") + "][방송종료] " + channelName);
+                        }
+                        @Override
+                        public void onUnhandledPacket(String typeCode, String[] fields) {
+                            if ("0004".equals(typeCode) || "0127".equals(typeCode)) return;
+                            Map<String, Object> parsed = new LinkedHashMap<>();
+                            parsed.put("typeCode", typeCode);
+                            parsed.put("fields", java.util.Arrays.asList(fields));
+                            saveEvent("SOOP", "UNHANDLED_PACKET", channelName, null, parsed);
+                        }
+                        @Override
                         public void onConnectionClosed(int code, String reason, boolean remote, boolean tryingToReconnect) {
                             System.out.println("[" + now("SOOP") + "][연결종료] " + channelName + " | reason=" + reason);
                             if (soopConnections.remove(streamerId) == null) return;
@@ -723,6 +877,8 @@ public class DonationMonitorTest {
             soopChannelNames.put(streamerId, channelName);
         } catch (Exception e) {
             System.out.println("[" + now("SOOP") + "][에러] " + channelName + " 연결 실패: " + e.getMessage());
+            addToBlacklist(streamerId);
+            soopReplaceQueue.offer(new String[]{streamerId, channelName});
         }
     }
 
@@ -1030,11 +1186,17 @@ public class DonationMonitorTest {
     }
 
     private void startMonitorThreads() {
-        replaceWorker.submit(this::processReplaceQueues);
+        chzzkReplaceWorker.submit(this::processChzzkReplaceQueue);
+        cimeReplaceWorker.submit(this::processCiMeReplaceQueue);
+        soopReplaceWorker.submit(this::processSOOPReplaceQueue);
+        youtubeReplaceWorker.submit(this::processYouTubeReplaceQueue);
     }
 
     private void stopMonitorThreads() {
-        replaceWorker.shutdownNow();
+        chzzkReplaceWorker.shutdownNow();
+        cimeReplaceWorker.shutdownNow();
+        soopReplaceWorker.shutdownNow();
+        youtubeReplaceWorker.shutdownNow();
     }
 
     private void cleanupChzzk() {
@@ -1061,8 +1223,16 @@ public class DonationMonitorTest {
         if (soopEventLog != null) soopEventLog.close();
     }
 
+    private void cleanupYouTube() {
+        System.out.println("[" + now("YouTube") + "] " + youtubeConnections.size() + "개 연결 해제 중...");
+        for (YouTubeChat chat : youtubeConnections.values()) {
+            try { chat.closeBlocking(); } catch (Exception ignored) {}
+        }
+        if (youtubeEventLog != null) youtubeEventLog.close();
+    }
+
     private void initChzzk() throws Exception {
-        List<String[]> liveChannels = findChzzkLiveChannels();
+        List<String[]> liveChannels = chzzkBase.findLiveChannels(MAX_CHANNELS);
         if (liveChannels.isEmpty()) {
             System.out.println("[" + now("Chzzk") + "] 라이브 중인 채널이 없습니다.");
             return;
@@ -1112,7 +1282,7 @@ public class DonationMonitorTest {
     }
 
     private void initSOOP() throws Exception {
-        List<String[]> liveChannels = findSOOPLiveChannels();
+        List<String[]> liveChannels = soopBase.findLiveChannels(MAX_CHANNELS);
         if (liveChannels.isEmpty()) {
             System.out.println("[" + now("SOOP") + "] 라이브 중인 채널이 없습니다.");
             return;
@@ -1136,54 +1306,21 @@ public class DonationMonitorTest {
         System.out.println("[" + now("SOOP") + "] 초기 연결 완료: " + soopConnections.size() + "개 채널");
     }
 
-    private static final String[] YOUTUBE_SEARCH_QUERIES = {
-            "%EA%B2%8C%EC%9E%84",
-            "%EB%B2%84%EC%B8%84%EC%96%BC",
-            "%EB%B0%A9%EC%86%A1",
-            "%EC%97%AC%EC%BA%A0",
-            "%EB%82%A8%EC%BA%A0",
-            "%EC%B1%84%ED%8C%85"
-    };
 
-    private List<String> findYouTubeLiveVideoIds() {
-        List<String> videoIds = new ArrayList<>();
-        Set<String> seen = new HashSet<>();
-        for (String query : YOUTUBE_SEARCH_QUERIES) {
-            if (videoIds.size() >= MAX_CHANNELS) break;
-            try {
-                Request request = new Request.Builder()
-                        .url("https://www.youtube.com/results?search_query=" + query + "&sp=CAMSAkAB")
-                        .header("Accept-Language", "ko")
-                        .header("Cookie", "CONSENT=YES+")
-                        .get()
-                        .build();
-                try (Response response = SharedHttpClient.get().newCall(request).execute()) {
-                    if (!response.isSuccessful() || response.body() == null) continue;
-                    String html = response.body().string();
-                    java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("\"videoId\":\"([^\"]{11})\"")
-                            .matcher(html);
-                    while (matcher.find() && videoIds.size() < MAX_CHANNELS) {
-                        String vid = matcher.group(1);
-                        if (seen.add(vid)) videoIds.add(vid);
-                    }
-                }
-            } catch (Exception e) {
-                System.out.println("[" + now("YouTube") + "][에러] 검색 실패 (" + query + "): " + e.getMessage());
-            }
-        }
-        return videoIds;
-    }
 
     private void initYouTube() throws Exception {
         String configuredIds = chzzkBase.properties.getProperty("YOUTUBE_VIDEO_IDS", "");
-        List<String> videoIds;
+        List<String[]> channels;
         if (!configuredIds.isEmpty()) {
-            videoIds = Arrays.stream(configuredIds.split(",")).map(String::trim).filter(s -> !s.isEmpty()).collect(java.util.stream.Collectors.toList());
+            channels = Arrays.stream(configuredIds.split(","))
+                    .map(String::trim).filter(s -> !s.isEmpty())
+                    .map(id -> new String[]{id, id})
+                    .collect(java.util.stream.Collectors.toList());
         } else {
-            videoIds = findYouTubeLiveVideoIds();
+            channels = youtubeBase.findLiveChannels(MAX_CHANNELS);
         }
 
-        if (videoIds.isEmpty()) {
+        if (channels.isEmpty()) {
             System.out.println("[" + now("YouTube") + "] 라이브 중인 채널이 없습니다.");
             return;
         }
@@ -1194,81 +1331,15 @@ public class DonationMonitorTest {
         youtubeEventLog = new PrintWriter(new BufferedWriter(new FileWriter(logFile, true)));
 
         System.out.println("[" + now("YouTube") + "] === YouTube 후원 모니터링 ===");
-        System.out.println("[" + now("YouTube") + "] 채널 수: " + videoIds.size());
+        System.out.println("[" + now("YouTube") + "] 채널 수: " + channels.size());
         System.out.println("[" + now("YouTube") + "] 로그: " + logFile.getAbsolutePath());
 
-        for (String videoId : videoIds) {
-            try {
-                String vid = videoId;
-                YouTubeChat chat = new YouTubeChatBuilder(vid)
-                        .withAutoReconnect(true)
-                        .withChatListener(new YouTubeChatEventListener() {
-                            @Override
-                            public void onConnect(YouTubeChat chat, boolean isReconnecting) {
-                                System.out.println("[" + now("YouTube") + "][연결] " + vid);
-                            }
-
-                            @Override
-                            public void onError(Exception ex) {}
-
-                            @Override
-                            public void onChat(ChatItem item) {}
-
-                            @Override
-                            public void onSuperChat(ChatItem item) {
-                                CurrencyUtils.ParsedAmount pa = CurrencyUtils.parse(item.getPurchaseAmount());
-                                System.out.println("[" + now("YouTube") + "][SuperChat] " + vid
-                                        + " | " + item.getAuthorName() + " | " + CurrencyUtils.format(pa) + " | " + item.getMessage());
-                                Map<String, Object> parsed = new LinkedHashMap<>();
-                                parsed.put("type", "SUPER_CHAT");
-                                parsed.put("author", item.getAuthorName());
-                                parsed.put("currency", pa.currencyCode());
-                                parsed.put("amount", pa.amount());
-                                parsed.put("rawAmount", pa.raw());
-                                parsed.put("message", item.getMessage());
-                                saveEvent("YouTube", "SuperChat", vid, null, parsed);
-                            }
-
-                            @Override
-                            public void onSuperSticker(ChatItem item) {
-                                CurrencyUtils.ParsedAmount pa = CurrencyUtils.parse(item.getPurchaseAmount());
-                                System.out.println("[" + now("YouTube") + "][SuperSticker] " + vid
-                                        + " | " + item.getAuthorName() + " | " + CurrencyUtils.format(pa));
-                                Map<String, Object> parsed = new LinkedHashMap<>();
-                                parsed.put("type", "SUPER_STICKER");
-                                parsed.put("author", item.getAuthorName());
-                                parsed.put("currency", pa.currencyCode());
-                                parsed.put("amount", pa.amount());
-                                parsed.put("rawAmount", pa.raw());
-                                saveEvent("YouTube", "SuperSticker", vid, null, parsed);
-                            }
-
-                            @Override
-                            public void onNewMember(ChatItem item) {
-                                System.out.println("[" + now("YouTube") + "][멤버십] " + vid
-                                        + " | " + item.getAuthorName() + " | " + item.getMessage());
-                                Map<String, Object> parsed = new LinkedHashMap<>();
-                                parsed.put("type", "NEW_MEMBER");
-                                parsed.put("author", item.getAuthorName());
-                                parsed.put("message", item.getMessage());
-                                saveEvent("YouTube", "NewMember", vid, null, parsed);
-                            }
-
-                            @Override
-                            public void onBroadcastEnd(YouTubeChat chat) {
-                                System.out.println("[" + now("YouTube") + "][방송종료] " + vid);
-                            }
-                        })
-                        .build();
-                chat.connectBlocking();
-                youtubeChats.add(chat);
-            } catch (Exception e) {
-                System.out.println("[" + now("YouTube") + "][에러] " + videoId + " 연결 실패: " + e.getMessage());
-            }
+        for (String[] ch : channels) {
+            connectYouTubeChannel(ch[0], ch[1]);
             Thread.sleep(CONNECT_INTERVAL_SECONDS * 1000L);
         }
 
-        System.out.println("[" + now("YouTube") + "] 초기 연결 완료: " + youtubeChats.size() + "개 채널");
+        System.out.println("[" + now("YouTube") + "] 초기 연결 완료: " + youtubeConnections.size() + "개 채널");
     }
 
     @Test
@@ -1306,11 +1377,11 @@ public class DonationMonitorTest {
         soopInit.join();
         youtubeInit.join();
 
-        Assumptions.assumeTrue(!chzzkConnections.isEmpty() || !cimeConnections.isEmpty() || !soopConnections.isEmpty() || !youtubeChats.isEmpty(),
+        Assumptions.assumeTrue(!chzzkConnections.isEmpty() || !cimeConnections.isEmpty() || !soopConnections.isEmpty() || !youtubeConnections.isEmpty(),
                 "연결된 채널이 없어 테스트를 건너뛱니다.");
 
         System.out.println();
-        System.out.println("=== 모니터링 시작 (Chzzk: " + chzzkConnections.size() + " / CiMe: " + cimeConnections.size() + " / SOOP: " + soopConnections.size() + " / YouTube: " + youtubeChats.size() + ") ===");
+        System.out.println("=== 모니터링 시작 (Chzzk: " + chzzkConnections.size() + " / CiMe: " + cimeConnections.size() + " / SOOP: " + soopConnections.size() + " / YouTube: " + youtubeConnections.size() + ") ===");
         System.out.println("=== 종료: Ctrl+C ===");
 
         startMonitorThreads();
@@ -1324,10 +1395,7 @@ public class DonationMonitorTest {
             cleanupChzzk();
             cleanupCiMe();
             cleanupSOOP();
-            for (YouTubeChat yt : youtubeChats) {
-                try { yt.closeBlocking(); } catch (Exception ignored) {}
-            }
-            if (youtubeEventLog != null) youtubeEventLog.close();
+            cleanupYouTube();
         }
     }
 }

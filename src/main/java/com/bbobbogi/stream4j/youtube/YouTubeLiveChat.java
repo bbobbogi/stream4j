@@ -38,6 +38,7 @@ public class YouTubeLiveChat {
     private String continuation;
     private long recommendedIntervalMs;
     private boolean isReplay;
+    private boolean liveEnded;
     private final boolean isTopChatOnly;
     private String visitorData;
     private ChatItem bannerItem;
@@ -82,7 +83,18 @@ public class YouTubeLiveChat {
             throw new IOException(exception.getLocalizedMessage());
         }
         if (this.continuation == null) {
-            throw new IllegalArgumentException("Invalid " + type.toString().toLowerCase() + " id:" + id);
+            String reason;
+            try {
+                LiveBroadcastDetails info = getBroadcastInfo();
+                if (info != null && Boolean.TRUE.equals(info.isLiveNow)) {
+                    reason = "Live but chat is not available for " + type.toString().toLowerCase() + " id:" + id;
+                } else {
+                    reason = "Not live or ended for " + type.toString().toLowerCase() + " id:" + id;
+                }
+            } catch (Exception e) {
+                reason = "Invalid " + type.toString().toLowerCase() + " id:" + id;
+            }
+            throw new IllegalArgumentException(reason);
         }
     }
 
@@ -208,6 +220,7 @@ public class YouTubeLiveChat {
                     }
                 }
             } else {
+                boolean foundInvalidation = false;
                 if (liveChatContinuation != null) {
                     List<Object> actions = Util.getJSONList(liveChatContinuation, "actions");
                     if (actions != null) {
@@ -222,6 +235,7 @@ public class YouTubeLiveChat {
                             Map<String, Object> reload = Util.getJSONMap(continuation, "reloadContinuationData");
 
                             if (invalidation != null) {
+                                foundInvalidation = true;
                                 this.continuation = Util.getJSONValueString(invalidation, "continuation");
                                 long timeout = Util.getJSONValueLong(invalidation, "timeoutMs");
                                 if (timeout > 0) this.recommendedIntervalMs = timeout;
@@ -237,6 +251,7 @@ public class YouTubeLiveChat {
                         }
                     }
                 }
+                this.liveEnded = !foundInvalidation;
             }
         } catch (IOException exception) {
             throw new IOException("Can't get youtube live chat!", exception);
@@ -705,6 +720,10 @@ public class YouTubeLiveChat {
 
     public long getRecommendedIntervalMs() {
         return this.recommendedIntervalMs;
+    }
+
+    public boolean isLiveEnded() {
+        return this.liveEnded;
     }
 
     /**

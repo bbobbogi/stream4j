@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
  *
  * @param platform       후원이 발생한 플랫폼
  * @param type           후원 종류
+ * @param status         후원 상태 ({@link DonationStatus})
  * @param userId         후원자 ID (플랫폼별 식별자)
  * @param nickname       후원자 닉네임
  * @param message        후원 메시지
@@ -17,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 public record Donation(
         @NotNull DonationPlatform platform,
         @NotNull DonationType type,
+        @NotNull DonationStatus status,
         @Nullable String userId,
         @NotNull String nickname,
         @NotNull String message,

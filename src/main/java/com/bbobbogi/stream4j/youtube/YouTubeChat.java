@@ -26,6 +26,9 @@ public class YouTubeChat {
     private ScheduledFuture<?> pollTask;
     private final Set<String> seenIds;
     private volatile boolean connected;
+    private volatile int consecutivePollErrors;
+    private static final int MAX_CONSECUTIVE_POLL_ERRORS = 3;
+    private static final long MAX_POLL_BACKOFF_MS = 30_000;
 
     YouTubeChat(String id, IdType idType, boolean topChatOnly, boolean autoReconnect, boolean debug, long pollIntervalMs, int seenIdsMaxSize) {
         this.id = id;
@@ -90,6 +93,7 @@ public class YouTubeChat {
         pollTask = poller.schedule(() -> {
             try {
                 liveChat.update();
+                consecutivePollErrors = 0;
 
                 for (ChatItem item : liveChat.getChatItems()) {
                     if (item.getId() == null || !seenIds.add(item.getId())) continue;
@@ -112,16 +116,28 @@ public class YouTubeChat {
                     }
                 }
 
+                if (liveChat.isLiveEnded()) {
+                    connected = false;
+                    for (YouTubeChatEventListener l : listeners) l.onBroadcastEnd(YouTubeChat.this);
+                    for (YouTubeChatEventListener l : listeners) l.onConnectionClosed(1000, "Broadcast ended", true, false);
+                    return;
+                }
+
                 long nextInterval = liveChat.getRecommendedIntervalMs();
                 if (nextInterval <= 0) nextInterval = pollIntervalMs;
                 schedulePoll(nextInterval);
 
             } catch (IOException e) {
-                if (debug) System.out.println("[YouTube] Poll error: " + e.getMessage());
+                consecutivePollErrors++;
+                if (debug) System.out.println("[YouTube] Poll error (" + consecutivePollErrors + "/" + MAX_CONSECUTIVE_POLL_ERRORS + "): " + e.getMessage());
 
-                if (autoReconnect) {
+                if (consecutivePollErrors < MAX_CONSECUTIVE_POLL_ERRORS) {
+                    long backoff = Math.min(pollIntervalMs * (1L << (consecutivePollErrors - 1)), MAX_POLL_BACKOFF_MS);
+                    schedulePoll(backoff);
+                } else if (autoReconnect) {
                     try {
                         liveChat.reset();
+                        consecutivePollErrors = 0;
                         schedulePoll(pollIntervalMs);
                     } catch (IOException resetEx) {
                         connected = false;
@@ -130,8 +146,20 @@ public class YouTubeChat {
                     }
                 } else {
                     connected = false;
-                    for (YouTubeChatEventListener l : listeners) l.onError(e);
-                    for (YouTubeChatEventListener l : listeners) l.onConnectionClosed(1006, e.getMessage(), true, false);
+                    boolean actuallyEnded = false;
+                    try {
+                        LiveBroadcastDetails info = liveChat.getBroadcastInfo();
+                        actuallyEnded = info == null || !Boolean.TRUE.equals(info.isLiveNow);
+                    } catch (Exception ignored) {
+                        actuallyEnded = true;
+                    }
+                    if (actuallyEnded) {
+                        for (YouTubeChatEventListener l : listeners) l.onBroadcastEnd(YouTubeChat.this);
+                        for (YouTubeChatEventListener l : listeners) l.onConnectionClosed(1000, "Broadcast ended", true, false);
+                    } else {
+                        for (YouTubeChatEventListener l : listeners) l.onError(e);
+                        for (YouTubeChatEventListener l : listeners) l.onConnectionClosed(1006, "Poll failed but broadcast still live: " + e.getMessage(), true, false);
+                    }
                 }
             }
         }, delayMs, TimeUnit.MILLISECONDS);

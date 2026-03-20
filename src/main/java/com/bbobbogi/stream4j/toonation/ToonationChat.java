@@ -6,18 +6,14 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.WebSocket;
-import okhttp3.WebSocketListener;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import com.bbobbogi.stream4j.util.ManagedWebSocket;
 import com.bbobbogi.stream4j.util.SharedHttpClient;
 
 import java.io.IOException;
+import com.bbobbogi.stream4j.util.NonRetryableException;
 import java.nio.channels.AlreadyConnectedException;
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,12 +34,9 @@ public class ToonationChat {
     boolean reconnecting;
     final ArrayList<ToonationChatEventListener> listeners = new ArrayList<>();
 
-    private final Object lock = new Object();
     private final String alertboxKey;
     private final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
-    private WebSocket webSocket;
-    private ScheduledExecutorService pingScheduler;
-    private ScheduledFuture<?> pingTask;
+    private volatile ManagedWebSocket managedWs;
 
     ToonationChat(String alertboxKey, boolean autoReconnect, boolean isDebug) {
         this.alertboxKey = alertboxKey;
@@ -52,9 +45,8 @@ public class ToonationChat {
     }
 
     public boolean isConnected() {
-        synchronized (lock) {
-            return webSocket != null;
-        }
+        ManagedWebSocket ws = managedWs;
+        return ws != null && ws.isConnected();
     }
 
     public boolean shouldAutoReconnect() {
@@ -80,10 +72,8 @@ public class ToonationChat {
     }
 
     private void connectInternal() throws IOException {
-        synchronized (lock) {
-            if (webSocket != null) {
-                throw new AlreadyConnectedException();
-            }
+        if (managedWs != null && managedWs.isConnected()) {
+            throw new AlreadyConnectedException();
         }
 
         reconnecting = false;
@@ -99,11 +89,84 @@ public class ToonationChat {
                 .readTimeout(0, TimeUnit.MILLISECONDS)
                 .build();
 
-        WebSocket ws = client.newWebSocket(request, new ToonationWebSocketListener());
+        ManagedWebSocket ws = new ManagedWebSocket(new ManagedWebSocket.Callback() {
+            @Override
+            public void onOpen(WebSocket webSocket, Response response) {
+                if (isDebug) System.out.println("[Toonation] WebSocket connected!");
+                managedWs.startPing("#ping", PING_INTERVAL_SECONDS, 60);
+                for (ToonationChatEventListener listener : listeners) {
+                    listener.onConnect(ToonationChat.this, reconnecting);
+                }
+            }
 
-        synchronized (lock) {
-            webSocket = ws;
-        }
+            @Override
+            public void onMessage(WebSocket webSocket, String text) {
+                if (text.isEmpty()) return;
+
+                if ("#ping".equals(text)) {
+                    managedWs.send("#pong");
+                    return;
+                } else if ("#pong".equals(text)) {
+                    return;
+                } else if ("#block".equals(text)) {
+                    for (ToonationChatEventListener listener : listeners) {
+                        listener.onBlocked(ToonationChat.this);
+                    }
+                    return;
+                }
+
+                try {
+                    if (isDebug) System.out.println("[Toonation] Message: " + text);
+
+                    ToonationDonationMessage msg = gson.fromJson(text, ToonationDonationMessage.class);
+                    if (msg == null || msg.getContent() == null) return;
+
+                    msg.setRawJson(text);
+
+                    if (msg.getCode() == DONATION_CODE) {
+                        for (ToonationChatEventListener listener : listeners) {
+                            listener.onDonation(ToonationChat.this, msg);
+                        }
+                    }
+                } catch (Exception ex) {
+                    if (isDebug) {
+                        System.out.println("[Toonation] Error parsing JSON: " + text);
+                        ex.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onClosed(int code, String reason) {
+                for (ToonationChatEventListener listener : listeners) {
+                    listener.onConnectionClosed(code, reason, true, autoReconnect);
+                }
+
+                if (autoReconnect) {
+                    reconnecting = true;
+                    reconnectAsync();
+                }
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                for (ToonationChatEventListener listener : listeners) {
+                    listener.onError(t instanceof Exception ? (Exception) t : new RuntimeException(t));
+                }
+                boolean shouldReconnect = autoReconnect;
+                for (ToonationChatEventListener listener : listeners) {
+                    listener.onConnectionClosed(1006, t.getMessage(), true, shouldReconnect);
+                }
+                if (shouldReconnect) {
+                    reconnecting = true;
+                    reconnectAsync();
+                }
+            }
+        });
+
+        managedWs = ws;
+
+        ws.connect(request, client);
     }
 
     private String fetchPayload() throws IOException {
@@ -124,10 +187,9 @@ public class ToonationChat {
             }
 
             if (html.contains("widget_malformed_url_desc")) {
-                throw new IOException("[Toonation] Invalid alertbox URL");
+                throw new NonRetryableException("[Toonation] Invalid alertbox URL");
             }
 
-            // unicode-escaped payload 먼저 시도, 실패 시 plain 시도
             Matcher m1 = PAYLOAD_PATTERN_UNICODE.matcher(html);
             if (m1.find()) {
                 return m1.group(1);
@@ -142,57 +204,41 @@ public class ToonationChat {
         }
     }
 
-    private void startPing() {
-        stopPing();
-        pingScheduler = Executors.newSingleThreadScheduledExecutor(r -> {
-            Thread t = new Thread(r, "toonation-ping");
-            t.setDaemon(true);
-            return t;
-        });
-        pingTask = pingScheduler.scheduleAtFixedRate(() -> {
-            WebSocket ws;
-            synchronized (lock) {
-                ws = webSocket;
-            }
-            if (ws != null) {
-                ws.send("#ping");
-            }
-        }, 0, PING_INTERVAL_SECONDS, TimeUnit.SECONDS);
-    }
-
-    private void stopPing() {
-        if (pingTask != null) {
-            pingTask.cancel(false);
-            pingTask = null;
-        }
-        if (pingScheduler != null) {
-            pingScheduler.shutdownNow();
-            pingScheduler = null;
-        }
-    }
+    private static final int MAX_RECONNECT_ATTEMPTS = 10;
+    private static final long RECONNECT_BASE_DELAY_MS = 1000;
+    private static final long RECONNECT_MAX_DELAY_MS = 30000;
 
     public CompletableFuture<Void> reconnectAsync() {
-        return CompletableFuture.runAsync(() -> {
-            try {
-                WebSocket ws;
-                synchronized (lock) {
-                    ws = webSocket;
-                    webSocket = null;
-                }
-                stopPing();
+        return CompletableFuture.runAsync(() -> reconnectWithRetry(0));
+    }
 
-                if (ws != null) {
-                    ws.cancel();
-                }
+    private void reconnectWithRetry(int attempt) {
+        try {
+            ManagedWebSocket ws = managedWs;
+            managedWs = null;
 
-                reconnecting = true;
-                connectInternal();
-            } catch (Exception e) {
+            if (ws != null) {
+                ws.closeBlocking();
+            }
+
+            reconnecting = true;
+            connectInternal();
+        } catch (NonRetryableException e) {
+            for (ToonationChatEventListener listener : listeners) {
+                listener.onError(e);
+            }
+        } catch (Exception e) {
+            if (attempt < MAX_RECONNECT_ATTEMPTS && autoReconnect) {
+                long delay = Math.min(RECONNECT_BASE_DELAY_MS * (1L << attempt), RECONNECT_MAX_DELAY_MS);
+                if (isDebug) System.out.println("[Toonation] Reconnect failed (attempt " + (attempt + 1) + "), retrying in " + delay + "ms: " + e.getMessage());
+                try { Thread.sleep(delay); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); return; }
+                reconnectWithRetry(attempt + 1);
+            } else {
                 for (ToonationChatEventListener listener : listeners) {
                     listener.onError(e);
                 }
             }
-        });
+        }
     }
 
     public void reconnectBlocking() {
@@ -201,107 +247,15 @@ public class ToonationChat {
 
     public CompletableFuture<Void> closeAsync() {
         return CompletableFuture.runAsync(() -> {
-            WebSocket ws;
-            synchronized (lock) {
-                ws = webSocket;
-                webSocket = null;
-            }
-            stopPing();
+            ManagedWebSocket ws = managedWs;
+            managedWs = null;
             if (ws != null) {
-                ws.cancel();
+                ws.closeBlocking();
             }
         });
     }
 
     public void closeBlocking() {
         closeAsync().join();
-    }
-
-    private class ToonationWebSocketListener extends WebSocketListener {
-
-        @Override
-        public void onOpen(@NotNull WebSocket webSocket, @NotNull Response response) {
-            if (isDebug) System.out.println("[Toonation] WebSocket connected!");
-
-            startPing();
-
-            for (ToonationChatEventListener listener : listeners) {
-                listener.onConnect(ToonationChat.this, reconnecting);
-            }
-        }
-
-        @Override
-        public void onMessage(@NotNull WebSocket webSocket, @NotNull String text) {
-            if (text.isEmpty()) return;
-
-            if ("#ping".equals(text)) {
-                webSocket.send("#pong");
-                return;
-            } else if ("#pong".equals(text)) {
-                return;
-            } else if ("#block".equals(text)) {
-                for (ToonationChatEventListener listener : listeners) {
-                    listener.onBlocked(ToonationChat.this);
-                }
-                return;
-            }
-
-            try {
-                if (isDebug) System.out.println("[Toonation] Message: " + text);
-
-                ToonationDonationMessage msg = gson.fromJson(text, ToonationDonationMessage.class);
-                if (msg == null || msg.getContent() == null) return;
-
-                msg.setRawJson(text);
-
-                if (msg.getCode() == DONATION_CODE) {
-                    for (ToonationChatEventListener listener : listeners) {
-                        listener.onDonation(ToonationChat.this, msg);
-                    }
-                }
-            } catch (Exception ex) {
-                if (isDebug) {
-                    System.out.println("[Toonation] Error parsing JSON: " + text);
-                    ex.printStackTrace();
-                }
-            }
-        }
-
-        @Override
-        public void onClosed(@NotNull WebSocket webSocket, int code, @NotNull String reason) {
-            synchronized (lock) {
-                if (ToonationChat.this.webSocket == null) return;
-                ToonationChat.this.webSocket = null;
-            }
-            stopPing();
-
-            for (ToonationChatEventListener listener : listeners) {
-                listener.onConnectionClosed(code, reason, true, autoReconnect);
-            }
-
-            if (autoReconnect) {
-                reconnecting = true;
-                reconnectAsync();
-            }
-        }
-
-        @Override
-        public void onFailure(@NotNull WebSocket webSocket, @NotNull Throwable t, @Nullable Response response) {
-            synchronized (lock) {
-                if (ToonationChat.this.webSocket == null) return;
-                ToonationChat.this.webSocket = null;
-            }
-            stopPing();
-            webSocket.cancel();
-
-            for (ToonationChatEventListener listener : listeners) {
-                listener.onError(t instanceof Exception ? (Exception) t : new RuntimeException(t));
-            }
-
-            if (autoReconnect) {
-                reconnecting = true;
-                reconnectAsync();
-            }
-        }
     }
 }

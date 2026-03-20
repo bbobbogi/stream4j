@@ -20,6 +20,9 @@ public interface SOOPChatEventListener {
     default void onBroadcastEnd(SOOPChat chat) {
     }
 
+    default void onUnhandledPacket(String typeCode, String[] fields) {
+    }
+
     default void onError(Exception ex) {
         ex.printStackTrace();
     }

@@ -143,7 +143,7 @@ public class StreamChat {
                         public void onDonationChat(DonationMessage msg) {
                             String nickname = msg.getProfile() != null ? msg.getProfile().getNickname() : null;
                             Donation donation = new Donation(
-                                    DonationPlatform.CHZZK, DonationType.CHAT,
+                                    DonationPlatform.CHZZK, DonationType.CHAT, DonationStatus.SUCCESS,
                                     msg.getUserIdHash(), nickname != null ? nickname : "익명",
                                     msg.getContent(), CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, msg.getPayAmount()), msg
                             );
@@ -154,10 +154,76 @@ public class StreamChat {
                         public void onMissionDonation(MissionDonationMessage msg) {
                             String nickname = msg.getNickname();
                             Donation donation = new Donation(
-                                    DonationPlatform.CHZZK, DonationType.MISSION,
+                                    DonationPlatform.CHZZK, DonationType.MISSION, DonationStatus.fromMissionStatus(msg.getMissionStatusRaw()),
                                     msg.getUserIdHash(), nickname != null ? nickname : "익명",
                                     msg.getMissionText() != null ? msg.getMissionText() : "",
                                     CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, msg.getTotalPayAmount()), msg
+                            );
+                            emit(l -> l.onDonation(donation));
+                        }
+
+                        @Override
+                        public void onMissionDonationParticipation(MissionParticipationDonationMessage msg) {
+                            String nickname = msg.getNickname();
+                            Donation donation = new Donation(
+                                    DonationPlatform.CHZZK, DonationType.MISSION, DonationStatus.fromMissionStatus(msg.getMissionStatusRaw()),
+                                    msg.getUserIdHash(), nickname != null ? nickname : "익명",
+                                    msg.getMissionText() != null ? msg.getMissionText() : "",
+                                    CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, msg.getPayAmount()), msg
+                            );
+                            emit(l -> l.onDonation(donation));
+                        }
+
+                        @Override
+                        public void onPartyDonationChat(PartyDonationMessage msg) {
+                            String nickname = msg.getProfile() != null ? msg.getProfile().getNickname() : null;
+                            Donation donation = new Donation(
+                                    DonationPlatform.CHZZK, DonationType.PARTY, DonationStatus.SUCCESS,
+                                    msg.getUserIdHash(), nickname != null ? nickname : "익명",
+                                    msg.getContent(), CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, msg.getPayAmount()), msg
+                            );
+                            emit(l -> l.onDonation(donation));
+                        }
+
+                        @Override
+                        public void onPartyDonationInfo(PartyDonationInfo info) {
+                            Donation donation = new Donation(
+                                    DonationPlatform.CHZZK, DonationType.PARTY, DonationStatus.fromPartyStatus(info.getStatusRaw()),
+                                    null, info.getHostChannelNickname(),
+                                    info.getPartyName() != null ? info.getPartyName() : "",
+                                    CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, info.getTotalDonationAmount()), info
+                            );
+                            emit(l -> l.onDonation(donation));
+                        }
+
+                        @Override
+                        public void onPartyDonationFinish(PartyDonationFinishEvent event) {
+                            Donation donation = new Donation(
+                                    DonationPlatform.CHZZK, DonationType.PARTY, DonationStatus.FINISH,
+                                    null, "",
+                                    "", CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, 0), event
+                            );
+                            emit(l -> l.onDonation(donation));
+                        }
+
+                        @Override
+                        public void onPartyDonationConfirm(PartyDonationConfirmEvent event) {
+                            Donation donation = new Donation(
+                                    DonationPlatform.CHZZK, DonationType.PARTY, DonationStatus.CONFIRM,
+                                    null, event.getChannelName() != null ? event.getChannelName() : "",
+                                    "rank=" + event.getRank() + " " + (event.getRankName() != null ? event.getRankName() : ""),
+                                    CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, 0), event
+                            );
+                            emit(l -> l.onDonation(donation));
+                        }
+
+                        @Override
+                        public void onSubscriptionChat(SubscriptionMessage msg) {
+                            String nickname = msg.getProfile() != null ? msg.getProfile().getNickname() : null;
+                            Donation donation = new Donation(
+                                    DonationPlatform.CHZZK, DonationType.SUBSCRIPTION, DonationStatus.SUCCESS,
+                                    msg.getUserIdHash(), nickname != null ? nickname : "익명",
+                                    msg.getContent(), CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, 0), msg
                             );
                             emit(l -> l.onDonation(donation));
                         }
@@ -242,7 +308,7 @@ public class StreamChat {
             }
 
             Donation donation = new Donation(
-                    DonationPlatform.CIME, type,
+                    DonationPlatform.CIME, type, DonationStatus.SUCCESS,
                     null, nickname, message, CurrencyUtils.of(CurrencyUtils.CIME_BEAM, amount), rawJson
             );
             emit(l -> l.onDonation(donation));
@@ -269,7 +335,7 @@ public class StreamChat {
                         @Override
                         public void onDonation(SOOPChat c, SOOPDonationMessage msg) {
                             Donation donation = new Donation(
-                                    DonationPlatform.SOOP, DonationType.CHAT,
+                                    DonationPlatform.SOOP, DonationType.CHAT, DonationStatus.SUCCESS,
                                     msg.getFrom(), msg.getFromUsername() != null ? msg.getFromUsername() : "익명",
                                     "", CurrencyUtils.of(CurrencyUtils.SOOP_BALLOON, msg.getAmount()), msg
                             );
@@ -279,7 +345,7 @@ public class StreamChat {
                         @Override
                         public void onSubscribe(SOOPChat c, String from, String fromUsername, int monthCount, int tier) {
                             Donation donation = new Donation(
-                                    DonationPlatform.SOOP, DonationType.SUBSCRIPTION,
+                                    DonationPlatform.SOOP, DonationType.SUBSCRIPTION, DonationStatus.SUCCESS,
                                     from, fromUsername != null ? fromUsername : "익명",
                                     monthCount + "개월 " + tier + "티어", CurrencyUtils.of(CurrencyUtils.SOOP_BALLOON, 0), null
                             );
@@ -326,7 +392,7 @@ public class StreamChat {
                             String message = msg.getMessage() != null ? msg.getMessage() : "";
                             DonationType type = msg.isVideoDonation() ? DonationType.VIDEO : DonationType.CHAT;
                             Donation donation = new Donation(
-                                    DonationPlatform.TOONATION, type,
+                                    DonationPlatform.TOONATION, type, DonationStatus.SUCCESS,
                                     msg.getAccount(), nickname,
                                     message, CurrencyUtils.of(CurrencyUtils.TOONATION_WON, msg.getAmount()), msg
                             );
@@ -370,7 +436,7 @@ public class StreamChat {
                         @Override
                         public void onSuperChat(ChatItem item) {
                             Donation donation = new Donation(
-                                    DonationPlatform.YOUTUBE, DonationType.CHAT,
+                                    DonationPlatform.YOUTUBE, DonationType.CHAT, DonationStatus.SUCCESS,
                                     item.getAuthorChannelID(), item.getAuthorName() != null ? item.getAuthorName() : "익명",
                                     item.getMessage() != null ? item.getMessage() : "",
                                     CurrencyUtils.parse(item.getPurchaseAmount()), item
@@ -381,7 +447,7 @@ public class StreamChat {
                         @Override
                         public void onSuperSticker(ChatItem item) {
                             Donation donation = new Donation(
-                                    DonationPlatform.YOUTUBE, DonationType.CHAT,
+                                    DonationPlatform.YOUTUBE, DonationType.CHAT, DonationStatus.SUCCESS,
                                     item.getAuthorChannelID(), item.getAuthorName() != null ? item.getAuthorName() : "익명",
                                     "[스티커]", CurrencyUtils.parse(item.getPurchaseAmount()), item
                             );
@@ -391,7 +457,7 @@ public class StreamChat {
                         @Override
                         public void onNewMember(ChatItem item) {
                             Donation donation = new Donation(
-                                    DonationPlatform.YOUTUBE, DonationType.SUBSCRIPTION,
+                                    DonationPlatform.YOUTUBE, DonationType.SUBSCRIPTION, DonationStatus.SUCCESS,
                                     item.getAuthorChannelID(), item.getAuthorName() != null ? item.getAuthorName() : "익명",
                                     item.getMessage() != null ? item.getMessage() : "",
                                     CurrencyUtils.of("KRW", 0), item
