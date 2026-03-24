@@ -165,7 +165,7 @@ public class ManagedWebSocket {
         });
     }
 
-    public void closeBlocking() {
+    public void close() {
         closeAsync().join();
     }
 

@@ -1,5 +1,7 @@
 package com.bbobbogi.stream4j.cime;
 
+import com.bbobbogi.stream4j.cime.chat.CiMeChatMessage;
+
 /**
  * ci.me 채팅 이벤트를 수신하기 위한 리스너 인터페이스입니다.
  */

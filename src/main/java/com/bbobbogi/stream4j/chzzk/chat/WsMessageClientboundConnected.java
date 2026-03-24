@@ -1,7 +1,7 @@
 package com.bbobbogi.stream4j.chzzk.chat;
 
-class WsMessageClientboundConnected extends WsMessageBase {
-    static class Body {
+public class WsMessageClientboundConnected extends WsMessageBase {
+    public static class Body {
         public String sid;
     }
 

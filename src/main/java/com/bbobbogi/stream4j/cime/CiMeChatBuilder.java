@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
  *         })
  *         .build();
  *
- * chat.connectBlocking();
+ * chat.connect();
  * </pre>
  */
 public class CiMeChatBuilder {

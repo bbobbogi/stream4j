@@ -1,11 +1,17 @@
 package com.bbobbogi.stream4j.common;
 
 import com.bbobbogi.stream4j.chzzk.Chzzk;
+import com.bbobbogi.stream4j.chzzk.*;
 import com.bbobbogi.stream4j.chzzk.chat.*;
 import com.bbobbogi.stream4j.cime.*;
+import com.bbobbogi.stream4j.cime.chat.CiMeChatMessage;
 import com.bbobbogi.stream4j.soop.*;
+import com.bbobbogi.stream4j.soop.chat.SOOPDonationMessage;
+import com.bbobbogi.stream4j.soop.chat.SOOPMissionEvent;
 import com.bbobbogi.stream4j.toonation.*;
+import com.bbobbogi.stream4j.toonation.chat.ToonationDonationMessage;
 import com.bbobbogi.stream4j.youtube.*;
+import com.bbobbogi.stream4j.youtube.chat.ChatItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,7 +78,7 @@ public class StreamChat {
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
     }
 
-    public void connectAllBlocking() {
+    public void connectAll() {
         connectAllAsync().join();
     }
 
@@ -81,27 +87,27 @@ public class StreamChat {
 
         for (ChzzkChat chat : chzzkChats.values()) {
             closeFutures.add(CompletableFuture.runAsync(() -> {
-                try { chat.closeBlocking(); } catch (Exception e) { logDebug("Error closing ChzzkChat", e); }
+                try { chat.close(); } catch (Exception e) { logDebug("Error closing ChzzkChat", e); }
             }));
         }
         for (CiMeChat chat : cimeChats.values()) {
             closeFutures.add(CompletableFuture.runAsync(() -> {
-                try { chat.closeBlocking(); } catch (Exception e) { logDebug("Error closing CiMeChat", e); }
+                try { chat.close(); } catch (Exception e) { logDebug("Error closing CiMeChat", e); }
             }));
         }
         for (SOOPChat chat : soopChats.values()) {
             closeFutures.add(CompletableFuture.runAsync(() -> {
-                try { chat.closeBlocking(); } catch (Exception e) { logDebug("Error closing SOOPChat", e); }
+                try { chat.close(); } catch (Exception e) { logDebug("Error closing SOOPChat", e); }
             }));
         }
         for (ToonationChat chat : toonationChats.values()) {
             closeFutures.add(CompletableFuture.runAsync(() -> {
-                try { chat.closeBlocking(); } catch (Exception e) { logDebug("Error closing ToonationChat", e); }
+                try { chat.close(); } catch (Exception e) { logDebug("Error closing ToonationChat", e); }
             }));
         }
         for (YouTubeChat chat : youtubeChats) {
             closeFutures.add(CompletableFuture.runAsync(() -> {
-                try { chat.closeBlocking(); } catch (Exception e) { logDebug("Error closing YouTubeChat", e); }
+                try { chat.close(); } catch (Exception e) { logDebug("Error closing YouTubeChat", e); }
             }));
         }
 
@@ -115,7 +121,7 @@ public class StreamChat {
                 });
     }
 
-    public void closeAllBlocking() {
+    public void closeAll() {
         closeAllAsync().join();
     }
 
@@ -127,7 +133,7 @@ public class StreamChat {
         try {
             ChzzkChat chat = chzzk.chat(channelId)
                     .withAutoReconnect(autoReconnect)
-                    .withChatListener(new ChatEventListener() {
+                    .withChatListener(new ChzzkChatEventListener() {
                         @Override
                         public void onConnect(ChzzkChat c, boolean isReconnecting) {
                             emit(l -> l.onConnect(DonationPlatform.CHZZK, channelId));
@@ -240,7 +246,7 @@ public class StreamChat {
                         }
                     })
                     .build();
-            chat.connectBlocking();
+            chat.connect();
             chzzkChats.put(channelId, chat);
         } catch (Exception e) {
             emit(l -> l.onError(DonationPlatform.CHZZK, channelId, e));
@@ -269,7 +275,7 @@ public class StreamChat {
                                 emit(l -> l.onBroadcastEnd(DonationPlatform.CIME, slug));
                                 CiMeChat removed = cimeChats.remove(slug);
                                 if (removed != null) {
-                                    try { removed.closeBlocking(); } catch (Exception e) { logDebug("Error closing CiMeChat on LIVE_ENDED", e); }
+                                    try { removed.close(); } catch (Exception e) { logDebug("Error closing CiMeChat on LIVE_ENDED", e); }
                                 }
                                 return;
                             }
@@ -284,7 +290,7 @@ public class StreamChat {
                         }
                     })
                     .build();
-            chat.connectBlocking();
+            chat.connect();
             cimeChats.put(slug, chat);
         } catch (Exception e) {
             emit(l -> l.onError(DonationPlatform.CIME, slug, e));
@@ -353,6 +359,51 @@ public class StreamChat {
                         }
 
                         @Override
+                        public void onNewSubscribe(SOOPChat c, String userId, String nickname, int duration) {
+                            Donation donation = new Donation(
+                                    DonationPlatform.SOOP, DonationType.SUBSCRIPTION, DonationStatus.SUCCESS,
+                                    userId, nickname != null ? nickname : "익명",
+                                    "신규 구독", false, CurrencyUtils.of(CurrencyUtils.SOOP_BALLOON, 0), null
+                            );
+                            emit(l -> l.onDonation(donation));
+                        }
+
+                        @Override
+                        public void onSubscriptionGift(SOOPChat c, String gifterUserId, String gifterNickname, String recipientUserId, String recipientNickname, int months) {
+                            Donation donation = new Donation(
+                                    DonationPlatform.SOOP, DonationType.SUBSCRIPTION, DonationStatus.SUCCESS,
+                                    gifterUserId, gifterNickname != null ? gifterNickname : "익명",
+                                    recipientNickname + "에게 " + months + "개월 구독권 선물", false, CurrencyUtils.of(CurrencyUtils.SOOP_BALLOON, 0), null
+                            );
+                            emit(l -> l.onDonation(donation));
+                        }
+
+                        @Override
+                        public void onMission(SOOPChat c, SOOPMissionEvent event) {
+                            switch (event.getType()) {
+                                case GIFT, CHALLENGE_GIFT -> {
+                                    Donation donation = new Donation(
+                                            DonationPlatform.SOOP, DonationType.MISSION, DonationStatus.PENDING,
+                                            event.getUserId(), event.getUserNick() != null ? event.getUserNick() : "익명",
+                                            event.getTitle(), false, CurrencyUtils.of(CurrencyUtils.SOOP_BALLOON, event.getGiftCount()), event
+                                    );
+                                    emit(l -> l.onDonation(donation));
+                                }
+                                case NOTICE, CHALLENGE_NOTICE -> {
+                                    DonationStatus status = "SUCCESS".equals(event.getMissionStatus())
+                                            ? DonationStatus.SUCCESS : DonationStatus.FAILED;
+                                    Donation donation = new Donation(
+                                            DonationPlatform.SOOP, DonationType.MISSION, status,
+                                            event.getBjId(), event.getBjNick() != null ? event.getBjNick() : "",
+                                            event.getTitle(), false, CurrencyUtils.of(CurrencyUtils.SOOP_BALLOON, 0), event
+                                    );
+                                    emit(l -> l.onDonation(donation));
+                                }
+                                default -> {}
+                            }
+                        }
+
+                        @Override
                         public void onConnectionClosed(int code, String reason, boolean remote, boolean tryingToReconnect) {
                             emit(l -> l.onDisconnect(DonationPlatform.SOOP, streamerId, reason));
                         }
@@ -369,7 +420,7 @@ public class StreamChat {
                         }
                     })
                     .build();
-            chat.connectBlocking();
+            chat.connect();
             soopChats.put(streamerId, chat);
         } catch (Exception e) {
             emit(l -> l.onError(DonationPlatform.SOOP, streamerId, e));
@@ -410,7 +461,7 @@ public class StreamChat {
                         }
                     })
                     .build();
-            chat.connectBlocking();
+            chat.connect();
             toonationChats.put(key, chat);
         } catch (Exception e) {
             emit(l -> l.onError(DonationPlatform.TOONATION, key, e));
@@ -481,7 +532,7 @@ public class StreamChat {
                         }
                     })
                     .build();
-            chat.connectBlocking();
+            chat.connect();
             youtubeChats.add(chat);
         } catch (Exception e) {
             emit(l -> l.onError(DonationPlatform.YOUTUBE, videoId, e));

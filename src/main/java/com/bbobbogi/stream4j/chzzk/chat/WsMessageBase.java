@@ -1,6 +1,6 @@
 package com.bbobbogi.stream4j.chzzk.chat;
 
-class WsMessageBase {
+public class WsMessageBase {
     public String cid;
     public String svcid = "game";
     public String ver = "2";

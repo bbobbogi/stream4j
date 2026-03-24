@@ -1,11 +1,11 @@
 package com.bbobbogi.stream4j.chzzk.chat;
 
-class WsMessageServerboundConnect extends WsMessageBase {
+public class WsMessageServerboundConnect extends WsMessageBase {
     public WsMessageServerboundConnect() {
         super(WsMessageTypes.Commands.CONNECT);
     }
 
-    static class Body {
+    public static class Body {
         public String accTkn;
         public String auth;
         public int devType = 2001;

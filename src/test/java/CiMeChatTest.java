@@ -1,6 +1,7 @@
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import com.bbobbogi.stream4j.cime.*;
+import com.bbobbogi.stream4j.cime.chat.CiMeChatMessage;
 
 import java.util.Optional;
 
@@ -56,8 +57,8 @@ public class CiMeChatTest extends CiMeTestBase {
                 })
                 .build();
 
-        chat.connectBlocking();
-        Thread.sleep(TEST_DURATION_MS);
-        chat.closeBlocking();
+         chat.connect();
+         Thread.sleep(TEST_DURATION_MS);
+         chat.close();
     }
 }

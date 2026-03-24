@@ -22,7 +22,7 @@ public class PartyDonationMessage extends DonationMessage {
     /**
      * PartyDonationMessage를 생성합니다.
      */
-    PartyDonationMessage() {
+    public PartyDonationMessage() {
     }
 
     /**

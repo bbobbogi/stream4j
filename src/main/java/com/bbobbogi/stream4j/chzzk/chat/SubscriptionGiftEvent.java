@@ -1,5 +1,8 @@
 package com.bbobbogi.stream4j.chzzk.chat;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * 구독권 선물 이벤트
  *
@@ -25,17 +28,17 @@ public class SubscriptionGiftEvent {
     String userIdHash;
     int senderTierNo;
     String giftType;
-    String failedUsers;
+    Object failedUsers;
     int completedQuantity;
     String type;
     String giftTierName;
 
-    String rawJson;
+    public String rawJson;
 
     /**
      * SubscriptionGiftEvent를 생성합니다.
      */
-    SubscriptionGiftEvent() {
+    public SubscriptionGiftEvent() {
     }
 
     /**
@@ -124,8 +127,15 @@ public class SubscriptionGiftEvent {
      *
      * @return 실패한 사용자 목록
      */
-    public String getFailedUsers() {
-        return failedUsers;
+    public List<String> getFailedUsers() {
+        if (failedUsers instanceof List<?> list) {
+            List<String> result = new ArrayList<>();
+            for (Object item : list) {
+                if (item != null) result.add(item.toString());
+            }
+            return result;
+        }
+        return List.of();
     }
 
     /**

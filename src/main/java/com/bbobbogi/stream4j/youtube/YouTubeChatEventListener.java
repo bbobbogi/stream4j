@@ -1,5 +1,7 @@
 package com.bbobbogi.stream4j.youtube;
 
+import com.bbobbogi.stream4j.youtube.chat.ChatItem;
+
 public interface YouTubeChatEventListener {
 
     default void onConnect(YouTubeChat chat, boolean isReconnecting) {}

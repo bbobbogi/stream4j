@@ -5,8 +5,8 @@ import com.google.gson.Gson;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
 
-class WsMessageClientboundRecentChat extends WsMessageBase {
-    static class Body {
+public class WsMessageClientboundRecentChat extends WsMessageBase {
+    public static class Body {
         static class RecentChat {
             // 최근 메시지 필드명 (실시간 채팅과 다름)
             public String userId;           // 실시간: uid

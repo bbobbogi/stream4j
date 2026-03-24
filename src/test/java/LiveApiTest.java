@@ -1,8 +1,8 @@
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import com.bbobbogi.stream4j.chzzk.types.channel.live.ChzzkLiveDetail;
-import com.bbobbogi.stream4j.chzzk.types.channel.live.ChzzkLiveStatus;
+import com.bbobbogi.stream4j.chzzk.types.ChzzkLiveDetail;
+import com.bbobbogi.stream4j.chzzk.types.ChzzkLiveInfo;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -14,7 +14,7 @@ public class LiveApiTest extends ChzzkTestBase {
 
     @Test
     public void testChzzkLiveStatusGet() {
-        AtomicReference<ChzzkLiveStatus> status = new AtomicReference<>();
+        AtomicReference<ChzzkLiveInfo> status = new AtomicReference<>();
         Assertions.assertDoesNotThrow(() -> {
             status.set(chzzk.getLiveStatus(CHANNEL_TO_TEST));
         });

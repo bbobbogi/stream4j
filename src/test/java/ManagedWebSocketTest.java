@@ -27,7 +27,7 @@ public class ManagedWebSocketTest {
     }
 
     @Test
-    void closeBlockingIsIdempotent() {
+    void closeIsIdempotent() {
         AtomicInteger callbackCount = new AtomicInteger();
         ManagedWebSocket ws = new ManagedWebSocket(new ManagedWebSocket.Callback() {
             @Override public void onOpen(WebSocket w, Response r) {}
@@ -37,7 +37,7 @@ public class ManagedWebSocketTest {
         });
 
         for (int i = 0; i < 10; i++) {
-            ws.closeBlocking();
+            ws.close();
         }
 
         assertFalse(ws.isConnected());
@@ -54,7 +54,7 @@ public class ManagedWebSocketTest {
         for (int i = 0; i < 8; i++) {
             pool.submit(() -> {
                 try {
-                    ws.closeBlocking();
+                    ws.close();
                     ws.send("ignored");
                 } finally {
                     latch.countDown();
@@ -87,11 +87,11 @@ public class ManagedWebSocketTest {
         Thread.sleep(500);
         int countBeforeClose = failureCount.get();
 
-        ws.closeBlocking();
+        ws.close();
         Thread.sleep(300);
 
         assertEquals(countBeforeClose, failureCount.get(),
-                "closeBlocking must not trigger additional failure callback");
+                "close must not trigger additional failure callback");
         assertFalse(ws.isConnected());
     }
 
@@ -103,7 +103,7 @@ public class ManagedWebSocketTest {
         for (int i = 0; i < iterations; i++) {
             ManagedWebSocket ws = new ManagedWebSocket(noopCallback());
             ws.startPing("ping", 1);
-            ws.closeBlocking();
+            ws.close();
         }
 
         Thread.sleep(500);
@@ -127,7 +127,7 @@ public class ManagedWebSocketTest {
             });
 
             ws.connect(REFUSED_REQUEST, CLIENT);
-            ws.closeBlocking();
+            ws.close();
             assertFalse(ws.isConnected(), "iteration " + i + ": must be disconnected after close");
         }
 
@@ -146,7 +146,7 @@ public class ManagedWebSocketTest {
             holder.ws = null;
 
             if (old != null) {
-                old.closeBlocking();
+                old.close();
             }
 
             ManagedWebSocket fresh = new ManagedWebSocket(noopCallback());
@@ -157,7 +157,7 @@ public class ManagedWebSocketTest {
         ManagedWebSocket last = holder.ws;
         holder.ws = null;
         if (last != null) {
-            last.closeBlocking();
+            last.close();
         }
 
         Thread.sleep(300);

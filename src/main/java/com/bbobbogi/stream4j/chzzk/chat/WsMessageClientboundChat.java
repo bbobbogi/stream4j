@@ -5,12 +5,12 @@ import com.google.gson.Gson;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
 
-class WsMessageClientboundChat extends WsMessageBase {
+public class WsMessageClientboundChat extends WsMessageBase {
     public WsMessageClientboundChat() {
         super(WsMessageTypes.Commands.CHAT);
     }
 
-    static class Chat {
+    public static class Chat {
         public String uid;
         public String msg;
         public int msgTypeCode;

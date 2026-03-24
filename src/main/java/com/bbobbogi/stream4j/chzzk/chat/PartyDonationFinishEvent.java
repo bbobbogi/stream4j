@@ -22,12 +22,12 @@ public class PartyDonationFinishEvent {
     boolean confirmNeeded;
     String type;
 
-    String rawJson;
+    public String rawJson;
 
     /**
      * PartyDonationFinishEvent를 생성합니다.
      */
-    PartyDonationFinishEvent() {
+    public PartyDonationFinishEvent() {
     }
 
     /**

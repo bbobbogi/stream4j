@@ -2,7 +2,7 @@ package com.bbobbogi.stream4j.common;
 
 import com.bbobbogi.stream4j.chzzk.Chzzk;
 import com.bbobbogi.stream4j.chzzk.ChzzkBuilder;
-import com.bbobbogi.stream4j.chzzk.chat.ChzzkChatBuilder;
+import com.bbobbogi.stream4j.chzzk.ChzzkChatBuilder;
 import com.bbobbogi.stream4j.cime.CiMeChatBuilder;
 import com.bbobbogi.stream4j.soop.SOOPChatBuilder;
 import com.bbobbogi.stream4j.toonation.ToonationChatBuilder;

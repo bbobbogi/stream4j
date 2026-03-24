@@ -1,5 +1,9 @@
 package com.bbobbogi.stream4j.soop;
 
+import com.bbobbogi.stream4j.common.PlatformChat;
+import com.bbobbogi.stream4j.soop.chat.SOOPDonationMessage;
+import com.bbobbogi.stream4j.soop.chat.SOOPMissionEvent;
+import com.bbobbogi.stream4j.soop.chat.SOOPPacket;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import okhttp3.FormBody;
@@ -19,7 +23,7 @@ import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-public class SOOPChat {
+public class SOOPChat implements PlatformChat {
 
     private static final String LIVE_DETAIL_API = "https://live.sooplive.co.kr/afreeca/player_live_api.php?bjid=";
     private static final String LOGIN_API = "https://login.sooplive.co.kr/app/LoginAction.php";
@@ -55,11 +59,13 @@ public class SOOPChat {
         this.httpClient = httpClient != null ? httpClient : SharedHttpClient.get();
     }
 
+    @Override
     public boolean isConnected() {
         ManagedWebSocket ws = managedWs;
         return ws != null && ws.isConnected();
     }
 
+    @Override
     public CompletableFuture<Void> connectAsync() {
         return CompletableFuture.runAsync(() -> {
             try {
@@ -70,10 +76,12 @@ public class SOOPChat {
         });
     }
 
-    public void connectBlocking() {
+    @Override
+    public void connect() {
         connectAsync().join();
     }
 
+    @Override
     public CompletableFuture<Void> closeAsync() {
         return CompletableFuture.runAsync(() -> {
             ManagedWebSocket ws = managedWs;
@@ -84,17 +92,24 @@ public class SOOPChat {
             reconnecting = false;
 
             if (ws != null) {
-                ws.closeBlocking();
+                ws.close();
             }
         });
     }
 
-    public void closeBlocking() {
+    @Override
+    public void close() {
         closeAsync().join();
     }
 
+    @Override
     public CompletableFuture<Void> reconnectAsync() {
         return CompletableFuture.runAsync(() -> reconnectWithRetry(0));
+    }
+
+    @Override
+    public void reconnect() {
+        reconnectAsync().join();
     }
 
     private void reconnectWithRetry(int attempt) {
@@ -106,7 +121,7 @@ public class SOOPChat {
             entered = false;
 
             if (ws != null) {
-                ws.closeBlocking();
+                ws.close();
             }
 
             reconnecting = true;
@@ -127,10 +142,6 @@ public class SOOPChat {
                 }
             }
         }
-    }
-
-    public void reconnectBlocking() {
-        reconnectAsync().join();
     }
 
     private void connectInternal() throws Exception {
@@ -174,6 +185,13 @@ public class SOOPChat {
 
             @Override
             public void onFailure(Throwable t) {
+                String message = t != null ? t.getMessage() : null;
+                if (message != null && message.contains("Idle timeout")) {
+                    if (checkBroadcastOffline()) {
+                        fireBroadcastEnd();
+                        return;
+                    }
+                }
                 handleError(t instanceof Exception ? (Exception) t : new RuntimeException(t));
                 handleClose(t.getMessage(), true);
             }
@@ -282,7 +300,7 @@ public class SOOPChat {
 
             case SOOPPacket.TYPE_JOIN:
                 entered = true;
-                managedWs.startPing(SOOPPacket.buildPingPacket(), 60, 180);
+                managedWs.startPing(SOOPPacket.buildPingPacket(), 60, 300);
                 break;
 
             case SOOPPacket.TYPE_CHAT:
@@ -326,6 +344,44 @@ public class SOOPChat {
                 emitSubscribe(fields);
                 break;
 
+            case SOOPPacket.TYPE_SUBSCRIPTION_NEW:
+                for (SOOPChatEventListener listener : listeners) {
+                    listener.onNewSubscribe(this,
+                            getField(fields, 2), getField(fields, 3),
+                            parseIntSafe(getField(fields, 4)));
+                }
+                break;
+
+            case SOOPPacket.TYPE_STATION_AD_BALLOON:
+                emitDonation(
+                        SOOPDonationMessage.Type.AD_BALLOON,
+                        getField(fields, 0), getField(fields, 1),
+                        getField(fields, 2), parseIntSafe(getField(fields, 3)), 0);
+                break;
+
+            case SOOPPacket.TYPE_SUBSCRIPTION_GIFT:
+                for (SOOPChatEventListener listener : listeners) {
+                    listener.onSubscriptionGift(this,
+                            getField(fields, 3), getField(fields, 4),
+                            getField(fields, 1), getField(fields, 2),
+                            parseIntSafe(getField(fields, 7)));
+                }
+                break;
+
+            case SOOPPacket.TYPE_MISSION:
+                String missionJson = getField(fields, 1);
+                if (missionJson != null) {
+                    SOOPMissionEvent missionEvent = SOOPMissionEvent.fromJson(missionJson);
+                    for (SOOPChatEventListener listener : listeners) {
+                        listener.onMission(this, missionEvent);
+                    }
+                }
+                break;
+
+            case SOOPPacket.TYPE_STREAM_CLOSED:
+                fireBroadcastEnd();
+                break;
+
             case SOOPPacket.TYPE_DISCONNECT:
                 String bjStat = getField(fields, 0);
                 if ("0".equals(bjStat)) {
@@ -349,12 +405,36 @@ public class SOOPChat {
                 break;
 
             default:
+                if (SOOPPacket.isIgnored(typeCode)) break;
                 if (debug) System.out.println("[SOOP] Unhandled packet(" + typeCode + "): " + packet);
                 for (SOOPChatEventListener listener : listeners) {
                     listener.onUnhandledPacket(typeCode, fields);
                 }
                 break;
         }
+    }
+
+    private boolean checkBroadcastOffline() {
+        try {
+            LiveInfo info = fetchLiveInfo();
+            return !info.online;
+        } catch (Exception e) {
+            return false; // 확인 불가 시 판단 보류 → 기존 재연결 흐름으로
+        }
+    }
+
+    private void fireBroadcastEnd() {
+        managedWs = null;
+        connected = false;
+        entered = false;
+        if (debug) System.out.println("[SOOP] Broadcast ended (idle timeout + offline confirmed)");
+        for (SOOPChatEventListener listener : listeners) {
+            listener.onBroadcastEnd(SOOPChat.this);
+        }
+        for (SOOPChatEventListener listener : listeners) {
+            listener.onConnectionClosed(1000, "Broadcast ended", false, false);
+        }
+        // closeAsync()는 ManagedWebSocket이 onFailure 리턴 후 자동 호출하므로 생략
     }
 
     void handleClose(String reason, boolean remote) {
@@ -376,7 +456,7 @@ public class SOOPChat {
             reconnectAttempts++;
             reconnecting = true;
             CompletableFuture.delayedExecutor(reconnectDelayMs, TimeUnit.MILLISECONDS)
-                    .execute(this::reconnectBlocking);
+                    .execute(this::reconnect);
         }
     }
 

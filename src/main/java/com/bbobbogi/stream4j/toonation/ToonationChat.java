@@ -18,7 +18,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ToonationChat {
+import com.bbobbogi.stream4j.common.PlatformChat;
+import com.bbobbogi.stream4j.toonation.chat.ToonationDonationMessage;
+
+public class ToonationChat implements PlatformChat {
 
     static final String ALERTBOX_URL = "https://toon.at/widget/alertbox/";
     static final String WS_URL = "wss://ws.toon.at/";
@@ -44,6 +47,7 @@ public class ToonationChat {
         this.isDebug = isDebug;
     }
 
+    @Override
     public boolean isConnected() {
         ManagedWebSocket ws = managedWs;
         return ws != null && ws.isConnected();
@@ -57,6 +61,7 @@ public class ToonationChat {
         return alertboxKey;
     }
 
+    @Override
     public CompletableFuture<Void> connectAsync() {
         return CompletableFuture.runAsync(() -> {
             try {
@@ -67,7 +72,8 @@ public class ToonationChat {
         });
     }
 
-    public void connectBlocking() {
+    @Override
+    public void connect() {
         connectAsync().join();
     }
 
@@ -208,8 +214,14 @@ public class ToonationChat {
     private static final long RECONNECT_BASE_DELAY_MS = 1000;
     private static final long RECONNECT_MAX_DELAY_MS = 30000;
 
+    @Override
     public CompletableFuture<Void> reconnectAsync() {
         return CompletableFuture.runAsync(() -> reconnectWithRetry(0));
+    }
+
+    @Override
+    public void reconnect() {
+        reconnectAsync().join();
     }
 
     private void reconnectWithRetry(int attempt) {
@@ -218,7 +230,7 @@ public class ToonationChat {
             managedWs = null;
 
             if (ws != null) {
-                ws.closeBlocking();
+                ws.close();
             }
 
             reconnecting = true;
@@ -241,21 +253,19 @@ public class ToonationChat {
         }
     }
 
-    public void reconnectBlocking() {
-        reconnectAsync().join();
-    }
-
+    @Override
     public CompletableFuture<Void> closeAsync() {
         return CompletableFuture.runAsync(() -> {
             ManagedWebSocket ws = managedWs;
             managedWs = null;
             if (ws != null) {
-                ws.closeBlocking();
+                ws.close();
             }
         });
     }
 
-    public void closeBlocking() {
+    @Override
+    public void close() {
         closeAsync().join();
     }
 }

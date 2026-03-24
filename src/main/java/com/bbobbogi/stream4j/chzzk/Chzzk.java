@@ -6,19 +6,17 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import com.bbobbogi.stream4j.util.SharedHttpClient;
 import org.jetbrains.annotations.NotNull;
-import com.bbobbogi.stream4j.chzzk.chat.ChzzkChat;
-import com.bbobbogi.stream4j.chzzk.chat.ChzzkChatBuilder;
 import com.bbobbogi.stream4j.chzzk.exception.ChannelNotExistsException;
 import com.bbobbogi.stream4j.chzzk.exception.NotExistsException;
 import com.bbobbogi.stream4j.chzzk.exception.NotLoggedInException;
 import com.bbobbogi.stream4j.chzzk.types.ChzzkFollowingStatusResponse;
 import com.bbobbogi.stream4j.chzzk.types.ChzzkUser;
-import com.bbobbogi.stream4j.chzzk.types.channel.ChzzkChannel;
-import com.bbobbogi.stream4j.chzzk.types.channel.emoticon.ChzzkChannelEmotePackData;
-import com.bbobbogi.stream4j.chzzk.types.channel.ChzzkChannelFollowingData;
-import com.bbobbogi.stream4j.chzzk.types.channel.ChzzkChannelRules;
-import com.bbobbogi.stream4j.chzzk.types.channel.live.*;
-import com.bbobbogi.stream4j.chzzk.types.channel.recommendation.ChzzkRecommendationChannels;
+import com.bbobbogi.stream4j.chzzk.types.ChzzkChannelInfo;
+import com.bbobbogi.stream4j.chzzk.types.ChzzkChannelEmotePackData;
+import com.bbobbogi.stream4j.chzzk.types.ChzzkChannelFollowingData;
+import com.bbobbogi.stream4j.chzzk.types.ChzzkChannelRules;
+import com.bbobbogi.stream4j.chzzk.types.*;
+import com.bbobbogi.stream4j.chzzk.types.ChzzkRecommendationChannels;
 import com.bbobbogi.stream4j.util.RawApiUtils;
 
 import java.io.IOException;
@@ -117,22 +115,22 @@ public class Chzzk {
     }
 
     /**
-     * Get {@link ChzzkChannel} by the channel id.
+     * Get {@link ChzzkChannelInfo} by the channel id.
      *
-     * @param channelId ID of {@link ChzzkChannel} that to get.
-     * @return {@link ChzzkChannel} to get
+     * @param channelId ID of {@link ChzzkChannelInfo} that to get.
+     * @return {@link ChzzkChannelInfo} to get
      * @throws IOException if the request to API failed
      * @throws ChannelNotExistsException if the channel doesn't exists
      */
-    public ChzzkChannel getChannel(String channelId) throws IOException, ChannelNotExistsException {
+    public ChzzkChannelInfo getChannel(String channelId) throws IOException, ChannelNotExistsException {
         JsonElement contentJson = RawApiUtils.getContentJson(
                 httpClient,
                 RawApiUtils.httpGetRequest(API_URL + "/service/v1/channels/" + channelId).build(),
                 isDebug);
 
-        ChzzkChannel channel = gson.fromJson(
+        ChzzkChannelInfo channel = gson.fromJson(
                 contentJson,
-                ChzzkChannel.class);
+                ChzzkChannelInfo.class);
         if (channel.getChannelId() == null) {
             throw new ChannelNotExistsException("The channel does not exists!");
         }
@@ -141,23 +139,23 @@ public class Chzzk {
     }
 
     /**
-     * Get {@link ChzzkLiveStatus} by the channel id.
-     * @param channelId ID of {@link ChzzkChannel}
-     * @return {@link ChzzkLiveStatus} of the channel
+     * Get {@link ChzzkLiveInfo} by the channel id.
+     * @param channelId ID of {@link ChzzkChannelInfo}
+     * @return {@link ChzzkLiveInfo} of the channel
      * @throws IOException if the request to API failed
      */
-    public @NotNull ChzzkLiveStatus getLiveStatus(@NotNull String channelId) throws IOException {
+    public @NotNull ChzzkLiveInfo getLiveStatus(@NotNull String channelId) throws IOException {
         JsonElement contentJson = RawApiUtils.getContentJson(
                 httpClient,
                 RawApiUtils.httpGetRequest(API_URL + "/polling/v2/channels/" + channelId + "/live-status").build(),
                 isDebug);
 
-        return gson.fromJson(contentJson, ChzzkLiveStatus.class);
+        return gson.fromJson(contentJson, ChzzkLiveInfo.class);
     }
 
     /**
      * Get {@link ChzzkLiveDetail} by the channel id.
-     * @param channelId ID of {@link ChzzkChannel}
+     * @param channelId ID of {@link ChzzkChannelInfo}
      * @return {@link ChzzkLiveDetail} of the channel
      * @throws IOException if the request to API failed
      */
@@ -173,7 +171,7 @@ public class Chzzk {
     /**
      * Get channel's {@link ChzzkChannelRules} by the channel id.
      *
-     * @param channelId ID of {@link ChzzkChannel}
+     * @param channelId ID of {@link ChzzkChannelInfo}
      * @return {@link ChzzkChannelRules} of the channel
      * @throws IOException        if the request to API failed
      * @throws NotExistsException if the channel doesn't exists or the rules of the channel doesn't available
@@ -223,7 +221,7 @@ public class Chzzk {
     /**
      * Get following status about channel.
      *
-     * @param channelId ID of {@link ChzzkChannel} to get following status
+     * @param channelId ID of {@link ChzzkChannelInfo} to get following status
      * @return user's {@link ChzzkChannelFollowingData} of the channel
      * @throws IOException if the request to API failed
      * @throws NotLoggedInException if this {@link Chzzk} didn't log in

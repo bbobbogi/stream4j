@@ -1,9 +1,14 @@
 import com.bbobbogi.stream4j.chzzk.Chzzk;
+import com.bbobbogi.stream4j.chzzk.*;
 import com.bbobbogi.stream4j.chzzk.chat.*;
 import com.bbobbogi.stream4j.cime.*;
+import com.bbobbogi.stream4j.cime.chat.CiMeChatMessage;
 import com.bbobbogi.stream4j.common.CurrencyUtils;
 import com.bbobbogi.stream4j.soop.*;
+import com.bbobbogi.stream4j.soop.chat.SOOPDonationMessage;
+import com.bbobbogi.stream4j.soop.chat.SOOPMissionEvent;
 import com.bbobbogi.stream4j.youtube.*;
+import com.bbobbogi.stream4j.youtube.chat.ChatItem;
 import com.bbobbogi.stream4j.util.SharedHttpClient;
 import com.bbobbogi.stream4j.util.RawApiUtils;
 import com.google.gson.Gson;
@@ -153,7 +158,7 @@ public class DonationMonitorTest {
         try {
             ChzzkChat chat = chzzkBase.loginChzzk.chat(channelId)
                     .withAutoReconnect(false)
-                    .withChatListener(new ChatEventListener() {
+                    .withChatListener(new ChzzkChatEventListener() {
                         @Override
                         public void onConnect(ChzzkChat chat, boolean isReconnecting) {
                             System.out.println("[" + now("Chzzk") + "][연결] " + channelName);
@@ -374,7 +379,7 @@ public class DonationMonitorTest {
                     })
                     .build();
 
-            chat.connectBlocking();
+            chat.connect();
             chzzkConnections.put(channelId, chat);
             chzzkConnectedIds.add(channelId);
             chzzkLastActivity.put(channelId, System.currentTimeMillis());
@@ -667,7 +672,7 @@ public class DonationMonitorTest {
                         }
                     })
                     .build();
-            chat.connectBlocking();
+            chat.connect();
             youtubeConnections.put(videoId, chat);
             youtubeConnectedIds.add(videoId);
             youtubeLastActivity.put(videoId, System.currentTimeMillis());
@@ -744,7 +749,7 @@ public class DonationMonitorTest {
                                 cimeChannelNames.remove(channelSlug);
                                 if (c != null) {
                                     try {
-                                        c.closeBlocking();
+                                        c.close();
                                     } catch (Exception ignored) {
                                     }
                                 }
@@ -777,7 +782,7 @@ public class DonationMonitorTest {
                     })
                     .build();
 
-            chat.connectBlocking();
+            chat.connect();
             cimeConnections.put(channelSlug, chat);
             cimeConnectedSlugs.add(channelSlug);
             cimeLastActivity.put(channelSlug, System.currentTimeMillis());
@@ -848,6 +853,48 @@ public class DonationMonitorTest {
                             saveEvent("SOOP", "SUBSCRIBE", channelName, null, parsed);
                         }
                         @Override
+                        public void onNewSubscribe(SOOPChat chat, String userId, String nickname, int duration) {
+                            soopLastActivity.put(streamerId, System.currentTimeMillis());
+                            System.out.println("[" + now("SOOP") + "][신규구독] " + channelName
+                                    + " | " + nickname + " (" + userId + ")");
+                            Map<String, Object> parsed = new LinkedHashMap<>();
+                            parsed.put("userId", userId);
+                            parsed.put("nickname", nickname);
+                            parsed.put("duration", duration);
+                            saveEvent("SOOP", "SUBSCRIPTION_NEW", channelName, null, parsed);
+                        }
+                        @Override
+                        public void onSubscriptionGift(SOOPChat chat, String gifterUserId, String gifterNickname, String recipientUserId, String recipientNickname, int months) {
+                            soopLastActivity.put(streamerId, System.currentTimeMillis());
+                            System.out.println("[" + now("SOOP") + "][구독선물] " + channelName
+                                    + " | " + gifterNickname + " → " + recipientNickname + " | " + months + "개월");
+                            Map<String, Object> parsed = new LinkedHashMap<>();
+                            parsed.put("gifterUserId", gifterUserId);
+                            parsed.put("gifterNickname", gifterNickname);
+                            parsed.put("recipientUserId", recipientUserId);
+                            parsed.put("recipientNickname", recipientNickname);
+                            parsed.put("months", months);
+                            saveEvent("SOOP", "SUBSCRIPTION_GIFT", channelName, null, parsed);
+                        }
+                        @Override
+                        public void onMission(SOOPChat chat, SOOPMissionEvent event) {
+                            soopLastActivity.put(streamerId, System.currentTimeMillis());
+                            System.out.println("[" + now("SOOP") + "][미션] " + channelName
+                                    + " | " + event.getTypeRaw() + " | " + event.getTitle()
+                                    + (event.getUserNick() != null ? " | " + event.getUserNick() : "")
+                                    + (event.getGiftCount() > 0 ? " | " + event.getGiftCount() + "개" : ""));
+                            Map<String, Object> parsed = new LinkedHashMap<>();
+                            parsed.put("type", event.getTypeRaw());
+                            parsed.put("title", event.getTitle());
+                            parsed.put("key", event.getKey());
+                            parsed.put("userId", event.getUserId());
+                            parsed.put("userNick", event.getUserNick());
+                            parsed.put("giftCount", event.getGiftCount());
+                            parsed.put("settleCount", event.getSettleCount());
+                            parsed.put("missionStatus", event.getMissionStatus());
+                            saveEvent("SOOP", "MISSION", channelName, null, parsed);
+                        }
+                        @Override
                         public void onBroadcastEnd(SOOPChat chat) {
                             System.out.println("[" + now("SOOP") + "][방송종료] " + channelName);
                         }
@@ -870,7 +917,7 @@ public class DonationMonitorTest {
                         }
                     })
                     .build();
-            chat.connectBlocking();
+            chat.connect();
             soopConnections.put(streamerId, chat);
             soopConnectedIds.add(streamerId);
             soopLastActivity.put(streamerId, System.currentTimeMillis());
@@ -1200,36 +1247,36 @@ public class DonationMonitorTest {
     }
 
     private void cleanupChzzk() {
-        System.out.println("[" + now("Chzzk") + "] " + chzzkConnections.size() + "개 연결 해제 중...");
-        for (ChzzkChat chat : chzzkConnections.values()) {
-            try { chat.closeBlocking(); } catch (Exception ignored) {}
-        }
-        if (chzzkEventLog != null) chzzkEventLog.close();
-    }
+         System.out.println("[" + now("Chzzk") + "] " + chzzkConnections.size() + "개 연결 해제 중...");
+         for (ChzzkChat chat : chzzkConnections.values()) {
+             try { chat.close(); } catch (Exception ignored) {}
+         }
+         if (chzzkEventLog != null) chzzkEventLog.close();
+     }
 
-    private void cleanupCiMe() {
-        System.out.println("[" + now("CiMe") + "] " + cimeConnections.size() + "개 연결 해제 중...");
-        for (CiMeChat chat : cimeConnections.values()) {
-            try { chat.closeBlocking(); } catch (Exception ignored) {}
-        }
-        if (cimeEventLog != null) cimeEventLog.close();
-    }
+     private void cleanupCiMe() {
+         System.out.println("[" + now("CiMe") + "] " + cimeConnections.size() + "개 연결 해제 중...");
+         for (CiMeChat chat : cimeConnections.values()) {
+             try { chat.close(); } catch (Exception ignored) {}
+         }
+         if (cimeEventLog != null) cimeEventLog.close();
+     }
 
-    private void cleanupSOOP() {
-        System.out.println("[" + now("SOOP") + "] " + soopConnections.size() + "개 연결 해제 중...");
-        for (SOOPChat chat : soopConnections.values()) {
-            try { chat.closeBlocking(); } catch (Exception ignored) {}
-        }
-        if (soopEventLog != null) soopEventLog.close();
-    }
+     private void cleanupSOOP() {
+         System.out.println("[" + now("SOOP") + "] " + soopConnections.size() + "개 연결 해제 중...");
+         for (SOOPChat chat : soopConnections.values()) {
+             try { chat.close(); } catch (Exception ignored) {}
+         }
+         if (soopEventLog != null) soopEventLog.close();
+     }
 
-    private void cleanupYouTube() {
-        System.out.println("[" + now("YouTube") + "] " + youtubeConnections.size() + "개 연결 해제 중...");
-        for (YouTubeChat chat : youtubeConnections.values()) {
-            try { chat.closeBlocking(); } catch (Exception ignored) {}
-        }
-        if (youtubeEventLog != null) youtubeEventLog.close();
-    }
+     private void cleanupYouTube() {
+         System.out.println("[" + now("YouTube") + "] " + youtubeConnections.size() + "개 연결 해제 중...");
+         for (YouTubeChat chat : youtubeConnections.values()) {
+             try { chat.close(); } catch (Exception ignored) {}
+         }
+         if (youtubeEventLog != null) youtubeEventLog.close();
+     }
 
     private void initChzzk() throws Exception {
         List<String[]> liveChannels = chzzkBase.findLiveChannels(MAX_CHANNELS);

@@ -24,12 +24,12 @@ public class SubscriptionGiftReceiverEvent {
     String type;
     String giftTierName;
 
-    String rawJson;
+    public String rawJson;
 
     /**
      * SubscriptionGiftReceiverEvent를 생성합니다.
      */
-    SubscriptionGiftReceiverEvent() {
+    public SubscriptionGiftReceiverEvent() {
     }
 
     /**

@@ -1,5 +1,6 @@
 import com.bbobbogi.stream4j.util.SharedHttpClient;
 import com.bbobbogi.stream4j.youtube.*;
+import com.bbobbogi.stream4j.youtube.chat.ChatItem;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.junit.jupiter.api.Assumptions;
@@ -97,8 +98,8 @@ public class YouTubeChatTest extends ChzzkTestBase {
                 })
                 .build();
 
-        chat.connectBlocking();
-        Thread.sleep(TEST_DURATION_MS);
-        chat.closeBlocking();
+        chat.connect();
+         Thread.sleep(TEST_DURATION_MS);
+         chat.close();
     }
 }

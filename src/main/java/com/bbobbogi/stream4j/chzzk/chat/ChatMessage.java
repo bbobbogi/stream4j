@@ -13,7 +13,7 @@ public class ChatMessage {
     /**
      * ChatMessage를 생성합니다.
      */
-    ChatMessage() {
+    public ChatMessage() {
     }
 
     /**
@@ -52,9 +52,9 @@ public class ChatMessage {
         String tierName = "";
 
         // Common donation fields (CHAT/DONATION 형태에서 extras 안에 포함)
-        String nickname;
+        public String nickname;
         String userIdHash;
-        boolean verifiedMark;
+        public boolean verifiedMark;
         boolean isAnonymous;
         String anonymousToken;
         String donationId;
@@ -154,13 +154,13 @@ public class ChatMessage {
         /**
          * Profile을 생성합니다.
          */
-        Profile() {
+        public Profile() {
         }
 
-        String nickname;
+        public String nickname;
         String profileImageUrl;
         String userRoleCode;
-        boolean verifiedMark;
+        public boolean verifiedMark;
 
         ActivityBadge[] activityBadges;
         StreamingProperty streamingProperty;
@@ -433,17 +433,17 @@ public class ChatMessage {
         }
     }
 
-    int msgTypeCode = 0;
-    String userIdHash;
-    String content;
+    public int msgTypeCode = 0;
+    public String userIdHash;
+    public String content;
     Date messageTime;
-    Date createTime;
-    String msgStatusType;
+    public Date createTime;
+    public String msgStatusType;
     int memberCount;
-    Extras extras = new Extras();
-    Profile profile = new Profile();
+    public Extras extras = new Extras();
+    public Profile profile = new Profile();
 
-    String rawJson;
+    public String rawJson;
 
     /**
      * 원본 JSON 문자열을 반환합니다.

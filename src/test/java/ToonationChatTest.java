@@ -1,4 +1,5 @@
 import com.bbobbogi.stream4j.toonation.*;
+import com.bbobbogi.stream4j.toonation.chat.ToonationDonationMessage;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
@@ -44,8 +45,8 @@ public class ToonationChatTest extends ChzzkTestBase {
                 })
                 .build();
 
-        chat.connectBlocking();
-        Thread.sleep(TEST_DURATION_MS);
-        chat.closeBlocking();
+         chat.connect();
+         Thread.sleep(TEST_DURATION_MS);
+         chat.close();
     }
 }

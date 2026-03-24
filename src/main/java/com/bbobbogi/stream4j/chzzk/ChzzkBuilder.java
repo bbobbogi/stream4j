@@ -1,13 +1,13 @@
 package com.bbobbogi.stream4j.chzzk;
 
 import com.bbobbogi.stream4j.chzzk.naver.Naver;
+import com.bbobbogi.stream4j.common.PlatformApiBuilder;
 
 /**
  * Class for creating instances of {@link Chzzk}.
  */
-public class ChzzkBuilder {
+public class ChzzkBuilder extends PlatformApiBuilder<Chzzk, ChzzkBuilder> {
     boolean isAnonymous = false;
-    boolean isDebug = false;
     String nidAuth;
     String nidSession;
 
@@ -16,17 +16,6 @@ public class ChzzkBuilder {
      */
     public ChzzkBuilder() {
         this.isAnonymous = true;
-    }
-
-    /**
-     * 디버그 모드를 활성화합니다.
-     *
-     * @return 현재 {@link ChzzkBuilder} 인스턴스
-     */
-    public ChzzkBuilder withDebugMode() {
-        isDebug = true;
-
-        return this;
     }
 
     /**
@@ -65,6 +54,7 @@ public class ChzzkBuilder {
      *
      * @return 생성된 {@link Chzzk} 인스턴스
      */
+    @Override
     public Chzzk build() {
         Chzzk chzzk = new Chzzk(this);
         chzzk.isDebug = this.isDebug;

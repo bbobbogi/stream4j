@@ -1,4 +1,5 @@
 import com.bbobbogi.stream4j.soop.*;
+import com.bbobbogi.stream4j.soop.chat.SOOPDonationMessage;
 import com.bbobbogi.stream4j.util.SharedHttpClient;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -88,8 +89,8 @@ public class SOOPChatTest extends ChzzkTestBase {
                 })
                 .build();
 
-        chat.connectBlocking();
-        Thread.sleep(TEST_DURATION_MS);
-        chat.closeBlocking();
+         chat.connect();
+         Thread.sleep(TEST_DURATION_MS);
+         chat.close();
     }
 }

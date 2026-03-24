@@ -1,5 +1,7 @@
 package com.bbobbogi.stream4j.toonation;
 
+import com.bbobbogi.stream4j.toonation.chat.ToonationDonationMessage;
+
 public interface ToonationChatEventListener {
 
     default void onConnect(ToonationChat chat, boolean isReconnecting) {}

@@ -29,7 +29,7 @@ public class MissionParticipationDonationMessage extends DonationMessage {
     /**
      * MissionParticipationDonationMessage를 생성합니다.
      */
-    MissionParticipationDonationMessage() {
+    public MissionParticipationDonationMessage() {
     }
 
     /**

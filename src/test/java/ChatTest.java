@@ -1,6 +1,7 @@
 import com.google.gson.Gson;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
+import com.bbobbogi.stream4j.chzzk.*;
 import com.bbobbogi.stream4j.chzzk.chat.*;
 import com.bbobbogi.stream4j.util.RawApiUtils;
 
@@ -21,7 +22,7 @@ public class ChatTest extends ChzzkTestBase {
         System.out.println("테스트에 사용할 채널 ID: " + channelId);
 
         ChzzkChat chat = loginChzzk.chat(channelId)
-                .withChatListener(new ChatEventListener() {
+                .withChatListener(new ChzzkChatEventListener() {
                     @Override
                     public void onConnect(ChzzkChat chat, boolean isReconnecting) {
                         System.out.println("Connect received!");
@@ -93,8 +94,8 @@ public class ChatTest extends ChzzkTestBase {
 
         System.out.println(new Gson().toJson(RawApiUtils.getContentJson(chzzk.getHttpClient(),
                 RawApiUtils.httpGetRequest("https://api.chzzk.naver.com/service/v2/channels/" + channelId + "/live-detail").build(), chzzk.isDebug)));
-        chat.connectBlocking();
-        Thread.sleep(TEST_DURATION_MS);
-        chat.closeBlocking();
+         chat.connect();
+         Thread.sleep(TEST_DURATION_MS);
+         chat.close();
     }
 }

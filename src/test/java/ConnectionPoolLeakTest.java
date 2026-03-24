@@ -1,5 +1,6 @@
 import org.junit.jupiter.api.Test;
 import com.bbobbogi.stream4j.chzzk.Chzzk;
+import com.bbobbogi.stream4j.chzzk.*;
 import com.bbobbogi.stream4j.chzzk.chat.*;
 import com.bbobbogi.stream4j.cime.*;
 import com.bbobbogi.stream4j.soop.*;
@@ -52,7 +53,7 @@ public class ConnectionPoolLeakTest extends ChzzkTestBase {
                     try {
                         ChzzkChat chat = (loginChzzk != null ? loginChzzk : chzzk).chat(channelId)
                                 .withAutoReconnect(false)
-                                .withChatListener(new ChatEventListener() {
+                                .withChatListener(new ChzzkChatEventListener() {
                                     @Override public void onConnect(ChzzkChat c, boolean r) {
                                         System.out.println("  [치지직 연결] " + c.getChannelId());
                                     }
@@ -60,7 +61,7 @@ public class ConnectionPoolLeakTest extends ChzzkTestBase {
                                     @Override public void onConnectionClosed(int code, String reason, boolean remote, boolean tryReconnect) {}
                                 })
                                 .build();
-                        chat.connectBlocking();
+                        chat.connect();
                         return chat;
                     } catch (Exception e) {
                         System.out.println("  [치지직 실패] " + channelId + ": " + e.getMessage());
@@ -81,7 +82,7 @@ public class ConnectionPoolLeakTest extends ChzzkTestBase {
             System.out.println("  연결: " + chats.size() + "/" + batch.size());
             Thread.sleep(CONNECT_WAIT_MS);
 
-            for (ChzzkChat c : chats) { try { c.closeBlocking(); } catch (Exception ignored) {} }
+            for (ChzzkChat c : chats) { try { c.close(); } catch (Exception ignored) {} }
             Thread.sleep(CLEANUP_WAIT_MS);
         }
 
@@ -107,7 +108,7 @@ public class ConnectionPoolLeakTest extends ChzzkTestBase {
                             @Override public void onConnect(SOOPChat c, boolean r) { System.out.println("  [SOOP 연결] " + sid); }
                             @Override public void onError(Exception ex) {}
                         }).build();
-                sc.connectBlocking();
+                sc.connect();
                 chats.add(sc);
             } catch (Exception e) {
                 System.out.println("  [SOOP 실패] " + sid + ": " + e.getMessage());
@@ -117,7 +118,7 @@ public class ConnectionPoolLeakTest extends ChzzkTestBase {
         System.out.println("  연결: " + chats.size() + "/" + streamerIds.size());
         Thread.sleep(CONNECT_WAIT_MS);
 
-        for (SOOPChat sc : chats) { try { sc.closeBlocking(); } catch (Exception ignored) {} }
+        for (SOOPChat sc : chats) { try { sc.close(); } catch (Exception ignored) {} }
         Thread.sleep(CLEANUP_WAIT_MS);
 
         assertNoLeak(baseline);
@@ -141,7 +142,7 @@ public class ConnectionPoolLeakTest extends ChzzkTestBase {
                             @Override public void onConnect(CiMeChat c, boolean r) { System.out.println("  [CiMe 연결] " + slug); }
                             @Override public void onError(Exception ex) {}
                         }).build();
-                cc.connectBlocking();
+                cc.connect();
                 chats.add(cc);
             } catch (Exception e) {
                 System.out.println("  [CiMe 실패] " + slug + ": " + e.getMessage());
@@ -151,7 +152,7 @@ public class ConnectionPoolLeakTest extends ChzzkTestBase {
         System.out.println("  연결: " + chats.size() + "/" + slugs.size());
         Thread.sleep(CONNECT_WAIT_MS);
 
-        for (CiMeChat cc : chats) { try { cc.closeBlocking(); } catch (Exception ignored) {} }
+        for (CiMeChat cc : chats) { try { cc.close(); } catch (Exception ignored) {} }
         Thread.sleep(CLEANUP_WAIT_MS);
 
         assertNoLeak(baseline);
@@ -175,7 +176,7 @@ public class ConnectionPoolLeakTest extends ChzzkTestBase {
                             @Override public void onConnect(YouTubeChat c, boolean r) { System.out.println("  [YouTube 연결] " + vid); }
                             @Override public void onError(Exception ex) {}
                         }).build();
-                yc.connectBlocking();
+                yc.connect();
                 chats.add(yc);
             } catch (Exception e) {
                 System.out.println("  [YouTube 실패] " + vid);
@@ -185,7 +186,7 @@ public class ConnectionPoolLeakTest extends ChzzkTestBase {
         System.out.println("  연결: " + chats.size() + "/" + videoIds.size());
         Thread.sleep(CONNECT_WAIT_MS);
 
-        for (YouTubeChat yc : chats) { try { yc.closeBlocking(); } catch (Exception ignored) {} }
+        for (YouTubeChat yc : chats) { try { yc.close(); } catch (Exception ignored) {} }
         Thread.sleep(CLEANUP_WAIT_MS);
 
         assertNoLeak(baseline);

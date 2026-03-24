@@ -1,5 +1,9 @@
 package com.bbobbogi.stream4j.youtube;
 
+import com.bbobbogi.stream4j.common.PlatformChat;
+import com.bbobbogi.stream4j.youtube.chat.*;
+import com.bbobbogi.stream4j.youtube.types.LiveBroadcastDetails;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,7 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.*;
 
-public class YouTubeChat {
+public class YouTubeChat implements PlatformChat {
     final ArrayList<YouTubeChatEventListener> listeners = new ArrayList<>();
 
     private static final int DEFAULT_SEEN_IDS_MAX_SIZE = 10000;
@@ -50,10 +54,12 @@ public class YouTubeChat {
         });
     }
 
+    @Override
     public boolean isConnected() { return connected; }
     public String getVideoId() { return liveChat != null ? liveChat.getVideoId() : null; }
     public String getChannelId() { return liveChat != null ? liveChat.getChannelId() : null; }
 
+    @Override
     public CompletableFuture<Void> connectAsync() {
         return CompletableFuture.runAsync(() -> {
             try {
@@ -64,7 +70,8 @@ public class YouTubeChat {
         });
     }
 
-    public void connectBlocking() { connectAsync().join(); }
+    @Override
+    public void connect() { connectAsync().join(); }
 
     private void connectInternal() throws IOException {
         liveChat = new YouTubeLiveChat(id, topChatOnly, idType);
@@ -170,6 +177,7 @@ public class YouTubeChat {
         if (poller != null) { poller.shutdownNow(); poller = null; }
     }
 
+    @Override
     public CompletableFuture<Void> closeAsync() {
         return CompletableFuture.runAsync(() -> {
             connected = false;
@@ -178,12 +186,14 @@ public class YouTubeChat {
         });
     }
 
-    public void closeBlocking() { closeAsync().join(); }
+    @Override
+    public void close() { closeAsync().join(); }
 
+    @Override
     public CompletableFuture<Void> reconnectAsync() {
         return CompletableFuture.runAsync(() -> {
             try {
-                closeBlocking();
+                close();
                 connectInternal();
                 for (YouTubeChatEventListener l : listeners) l.onConnect(this, true);
             } catch (Exception e) {
@@ -192,5 +202,6 @@ public class YouTubeChat {
         });
     }
 
-    public void reconnectBlocking() { reconnectAsync().join(); }
+    @Override
+    public void reconnect() { reconnectAsync().join(); }
 }

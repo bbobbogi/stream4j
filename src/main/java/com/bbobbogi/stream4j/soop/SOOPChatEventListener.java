@@ -1,5 +1,8 @@
 package com.bbobbogi.stream4j.soop;
 
+import com.bbobbogi.stream4j.soop.chat.SOOPDonationMessage;
+import com.bbobbogi.stream4j.soop.chat.SOOPMissionEvent;
+
 public interface SOOPChatEventListener {
 
     default void onConnect(SOOPChat chat, boolean isReconnecting) {
@@ -12,6 +15,15 @@ public interface SOOPChatEventListener {
     }
 
     default void onSubscribe(SOOPChat chat, String from, String fromUsername, int monthCount, int tier) {
+    }
+
+    default void onNewSubscribe(SOOPChat chat, String userId, String nickname, int duration) {
+    }
+
+    default void onSubscriptionGift(SOOPChat chat, String gifterUserId, String gifterNickname, String recipientUserId, String recipientNickname, int months) {
+    }
+
+    default void onMission(SOOPChat chat, SOOPMissionEvent event) {
     }
 
     default void onConnectionClosed(int code, String reason, boolean remote, boolean tryingToReconnect) {

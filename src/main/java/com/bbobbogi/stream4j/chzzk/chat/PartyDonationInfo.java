@@ -33,12 +33,12 @@ public class PartyDonationInfo {
     int totalDonationAmount;
     String status;
 
-    String rawJson;
+    public String rawJson;
 
     /**
      * PartyDonationInfo를 생성합니다.
      */
-    PartyDonationInfo() {
+    public PartyDonationInfo() {
     }
 
     /**

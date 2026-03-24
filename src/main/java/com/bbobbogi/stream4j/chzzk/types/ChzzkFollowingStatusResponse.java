@@ -1,6 +1,5 @@
 package com.bbobbogi.stream4j.chzzk.types;
 
-import com.bbobbogi.stream4j.chzzk.types.channel.ChzzkPartialChannel;
 
 /**
  * 팔로잉 상태 응답을 나타내는 클래스입니다.

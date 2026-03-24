@@ -8,7 +8,7 @@ public class SubscriptionMessage extends ChatMessage {
     /**
      * SubscriptionMessage를 생성합니다.
      */
-    SubscriptionMessage() {
+    public SubscriptionMessage() {
     }
 
     /**

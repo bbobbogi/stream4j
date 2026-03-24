@@ -1,5 +1,6 @@
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
+import com.bbobbogi.stream4j.chzzk.*;
 import com.bbobbogi.stream4j.chzzk.chat.*;
 
 import java.io.IOException;
@@ -30,7 +31,7 @@ public class ChatReconnectTest extends ChzzkTestBase {
         Random random = new Random();
 
         ChzzkChat chat = chzzk.chat(channelId)
-                        .withChatListener(new ChatEventListener() {
+                        .withChatListener(new ChzzkChatEventListener() {
                             @Override
                             public void onConnect(ChzzkChat chat, boolean isReconnecting) {
                                 int count = reconnectCount.incrementAndGet();
@@ -52,8 +53,8 @@ public class ChatReconnectTest extends ChzzkTestBase {
                             }
                         })
                         .build();
-        chat.connectBlocking();
-        Thread.sleep(TEST_DURATION_MS);
-        chat.closeBlocking();
+         chat.connect();
+         Thread.sleep(TEST_DURATION_MS);
+         chat.close();
     }
 }

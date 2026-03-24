@@ -1,5 +1,7 @@
 package com.bbobbogi.stream4j.youtube;
 
+import com.bbobbogi.stream4j.youtube.chat.IdType;
+
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

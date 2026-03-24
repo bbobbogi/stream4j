@@ -11,12 +11,12 @@ public class IimsPenaltyEvent {
     String userIdHash;
     String type;
 
-    String rawJson;
+    public String rawJson;
 
     /**
      * IimsPenaltyEvent를 생성합니다.
      */
-    IimsPenaltyEvent() {
+    public IimsPenaltyEvent() {
     }
 
     /**

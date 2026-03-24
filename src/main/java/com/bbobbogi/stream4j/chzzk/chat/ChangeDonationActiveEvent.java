@@ -23,12 +23,12 @@ public class ChangeDonationActiveEvent {
     String donationType;
     String type;
 
-    String rawJson;
+    public String rawJson;
 
     /**
      * ChangeDonationActiveEvent를 생성합니다.
      */
-    ChangeDonationActiveEvent() {
+    public ChangeDonationActiveEvent() {
     }
 
     /**

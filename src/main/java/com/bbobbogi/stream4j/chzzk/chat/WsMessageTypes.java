@@ -1,7 +1,7 @@
 package com.bbobbogi.stream4j.chzzk.chat;
 
-class WsMessageTypes {
-    static class Commands {
+public class WsMessageTypes {
+    public static class Commands {
         public static final int PING = 0;
         public static final int PONG = 10000;
         public static final int CONNECT = 100;
@@ -19,7 +19,7 @@ class WsMessageTypes {
         public static final int SEND_CHAT = 3101;
     }
 
-    static class ChatTypes {
+    public static class ChatTypes {
         public static final int TEXT = 1,
         IMAGE = 2, // ?
         STICKER = 3, // ?

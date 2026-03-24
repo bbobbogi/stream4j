@@ -22,12 +22,12 @@ public class PartyDonationConfirmEvent {
     String rankName;
     String type;
 
-    String rawJson;
+    public String rawJson;
 
     /**
      * PartyDonationConfirmEvent를 생성합니다.
      */
-    PartyDonationConfirmEvent() {
+    public PartyDonationConfirmEvent() {
     }
 
     /**

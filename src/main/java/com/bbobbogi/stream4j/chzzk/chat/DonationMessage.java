@@ -7,7 +7,7 @@ public class DonationMessage extends ChatMessage {
     /**
      * DonationMessage를 생성합니다.
      */
-    DonationMessage() {
+    public DonationMessage() {
         super();
     }
 

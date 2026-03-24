@@ -19,12 +19,12 @@ public class TemporaryRestrictEvent {
     String createdTime;
     String type;
 
-    String rawJson;
+    public String rawJson;
 
     /**
      * TemporaryRestrictEvent를 생성합니다.
      */
-    TemporaryRestrictEvent() {
+    public TemporaryRestrictEvent() {
     }
 
     /**

@@ -12,12 +12,12 @@ import java.io.IOException;
 import java.util.*;
 
 @SuppressWarnings("unchecked")
-class Util {
+public class Util {
 
     private static final Gson gson = new Gson();
     private static final MediaType JSON_MEDIA_TYPE = MediaType.get("application/json; charset=utf-8");
 
-    static String toJSON(Map<String, Object> json) {
+    public static String toJSON(Map<String, Object> json) {
         StringBuilder js = new StringBuilder();
         js.append("{");
         for (String key : json.keySet()) {
@@ -42,7 +42,7 @@ class Util {
         return js.substring(0, js.length() - 2) + "}";
     }
 
-    static Map<String, Object> toJSON(String json) {
+    public static Map<String, Object> toJSON(String json) {
         if (!json.startsWith("{")) {
             String preview = json.length() > 200 ? json.substring(0, 200) + "..." : json;
             throw new IllegalArgumentException("Expected JSON but got: " + preview);
@@ -50,7 +50,7 @@ class Util {
         return gson.fromJson(json, Map.class);
     }
 
-    static Map<String, Object> getJSONMap(Map<String, Object> json, String... keys) {
+    public static Map<String, Object> getJSONMap(Map<String, Object> json, String... keys) {
         Map<String, Object> map = json;
         for (String key : keys) {
             if (map.containsKey(key)) {
@@ -62,7 +62,7 @@ class Util {
         return map;
     }
 
-    static Map<String, Object> getJSONMap(Map<String, Object> json, Object... keys) {
+    public static Map<String, Object> getJSONMap(Map<String, Object> json, Object... keys) {
         Map<String, Object> map = json;
         List<Object> list = null;
         for (Object key : keys) {
@@ -86,7 +86,7 @@ class Util {
         return map;
     }
 
-    static List<Object> getJSONList(Map<String, Object> json, String listKey, String... keys) {
+    public static List<Object> getJSONList(Map<String, Object> json, String listKey, String... keys) {
         Map<String, Object> map = getJSONMap(json, keys);
         if (map != null && map.containsKey(listKey)) {
             return (List<Object>) map.get(listKey);
@@ -94,33 +94,33 @@ class Util {
         return null;
     }
 
-    static Object getJSONValue(Map<String, Object> json, String key) {
+    public static Object getJSONValue(Map<String, Object> json, String key) {
         if (json != null && json.containsKey(key)) {
             return json.get(key);
         }
         return null;
     }
 
-    static String getJSONValueString(Map<String, Object> json, String key) {
+    public static String getJSONValueString(Map<String, Object> json, String key) {
         Object value = getJSONValue(json, key);
         return value != null ? value.toString() : null;
     }
 
-    static boolean getJSONValueBoolean(Map<String, Object> json, String key) {
+    public static boolean getJSONValueBoolean(Map<String, Object> json, String key) {
         Object value = getJSONValue(json, key);
         return value != null && (boolean) value;
     }
 
-    static long getJSONValueLong(Map<String, Object> json, String key) {
+    public static long getJSONValueLong(Map<String, Object> json, String key) {
         Object value = getJSONValue(json, key);
         return value != null ? ((Double) value).longValue() : 0;
     }
 
-    static int getJSONValueInt(Map<String, Object> json, String key) {
+    public static int getJSONValueInt(Map<String, Object> json, String key) {
         return (int) getJSONValueLong(json, key);
     }
 
-    static String getPageContent(String url, Map<String, String> header) throws IOException {
+    public static String getPageContent(String url, Map<String, String> header) throws IOException {
         Request.Builder builder = new Request.Builder().url(url).get();
         for (Map.Entry<String, String> entry : header.entrySet()) {
             builder.header(entry.getKey(), entry.getValue());
@@ -134,7 +134,7 @@ class Util {
         return null;
     }
 
-    static String getPageContentWithJson(String url, String data, Map<String, String> header) throws IOException {
+    public static String getPageContentWithJson(String url, String data, Map<String, String> header) throws IOException {
         RequestBody body = RequestBody.create(data, JSON_MEDIA_TYPE);
         Request.Builder builder = new Request.Builder().url(url).post(body);
         for (Map.Entry<String, String> entry : header.entrySet()) {
@@ -150,7 +150,7 @@ class Util {
         }
     }
 
-    static void sendHttpRequestWithJson(String url, String data, Map<String, String> header) throws IOException {
+    public static void sendHttpRequestWithJson(String url, String data, Map<String, String> header) throws IOException {
         RequestBody body = RequestBody.create(data, JSON_MEDIA_TYPE);
         Request.Builder builder = new Request.Builder().url(url).post(body);
         for (Map.Entry<String, String> entry : header.entrySet()) {
@@ -165,7 +165,7 @@ class Util {
         }
     }
 
-    static String generateClientMessageId() {
+    public static String generateClientMessageId() {
         String base = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-";
         StringBuilder sb = new StringBuilder();
         Random random = new Random();
@@ -175,7 +175,7 @@ class Util {
         return sb.toString();
     }
 
-    static JsonElement searchJsonElementByKey(String key, JsonElement jsonElement) {
+    public static JsonElement searchJsonElementByKey(String key, JsonElement jsonElement) {
         JsonElement value = null;
         if (jsonElement.isJsonArray()) {
             for (JsonElement el : jsonElement.getAsJsonArray()) {

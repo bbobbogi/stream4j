@@ -4,15 +4,15 @@ import com.bbobbogi.stream4j.chzzk.exception.ChannelNotExistsException;
 import com.bbobbogi.stream4j.chzzk.exception.NotExistsException;
 import com.bbobbogi.stream4j.chzzk.exception.NotLoggedInException;
 import com.bbobbogi.stream4j.chzzk.types.ChzzkUser;
-import com.bbobbogi.stream4j.chzzk.types.channel.ChzzkChannel;
+import com.bbobbogi.stream4j.chzzk.types.ChzzkChannelInfo;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Assertions;
-import com.bbobbogi.stream4j.chzzk.types.channel.ChzzkChannelFollowingData;
-import com.bbobbogi.stream4j.chzzk.types.channel.ChzzkChannelRules;
-import com.bbobbogi.stream4j.chzzk.types.channel.recommendation.ChzzkRecommendationChannels;
+import com.bbobbogi.stream4j.chzzk.types.ChzzkChannelFollowingData;
+import com.bbobbogi.stream4j.chzzk.types.ChzzkChannelRules;
+import com.bbobbogi.stream4j.chzzk.types.ChzzkRecommendationChannels;
 
 // FOLLOWED_CHANNEL_1, FOLLOWED_CHANNEL_2 채널을 팔로우한 뒤 테스트 진행해주세요.
 // UNFOLLOWED_CHANNEL 채널은 팔로우 해제 후 테스트 진행해주세요.
@@ -36,7 +36,7 @@ public class ChannelApiTest extends ChzzkTestBase {
 
     @Test
     void gettingNormalChannelInfo() throws IOException {
-        AtomicReference<ChzzkChannel> channel = new AtomicReference<>();
+        AtomicReference<ChzzkChannelInfo> channel = new AtomicReference<>();
         Assertions.assertDoesNotThrow(() ->
                 channel.set(chzzk.getChannel(getFollowedChannel2())));
 

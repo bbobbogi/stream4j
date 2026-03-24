@@ -9,6 +9,8 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okhttp3.WebSocket;
+import com.bbobbogi.stream4j.cime.chat.CiMeChatMessage;
+import com.bbobbogi.stream4j.common.PlatformChat;
 import com.bbobbogi.stream4j.util.ManagedWebSocket;
 import com.bbobbogi.stream4j.util.SharedHttpClient;
 
@@ -49,10 +51,10 @@ import java.util.concurrent.TimeUnit;
  *         })
  *         .build();
  *
- * chat.connectBlocking();
+ * chat.connect();
  * </pre>
  */
-public class CiMeChat {
+public class CiMeChat implements PlatformChat {
     static final String CI_ME_API_URL = "https://ci.me/api/app";
     static final String IVS_CHAT_WS_URL = "wss://edge.ivschat.ap-northeast-2.amazonaws.com/";
 
@@ -90,6 +92,11 @@ public class CiMeChat {
         return ws != null && ws.isConnected();
     }
 
+    @Override
+    public boolean isConnected() {
+        return isConnectedToChat();
+    }
+
     /**
      * 자동 재연결 설정 여부를 반환합니다.
      *
@@ -113,6 +120,7 @@ public class CiMeChat {
      *
      * @return 비동기 작업을 위한 CompletableFuture
      */
+    @Override
     public CompletableFuture<Void> connectAsync() {
         return CompletableFuture.runAsync(() -> {
             try {
@@ -123,10 +131,8 @@ public class CiMeChat {
         });
     }
 
-    /**
-     * 동기로 채팅에 연결합니다.
-     */
-    public void connectBlocking() {
+    @Override
+    public void connect() {
         connectAsync().join();
     }
 
@@ -397,8 +403,14 @@ public class CiMeChat {
      *
      * @return 비동기 작업을 위한 CompletableFuture
      */
+    @Override
     public CompletableFuture<Void> reconnectAsync() {
         return CompletableFuture.runAsync(() -> reconnectWithRetry(0));
+    }
+
+    @Override
+    public void reconnect() {
+        reconnectAsync().join();
     }
 
     private void reconnectWithRetry(int attempt) {
@@ -408,7 +420,7 @@ public class CiMeChat {
             managedWs = null;
 
             if (ws != null) {
-                ws.closeBlocking();
+                ws.close();
             }
 
             reconnecting = true;
@@ -443,13 +455,14 @@ public class CiMeChat {
      *
      * @return 비동기 작업을 위한 CompletableFuture
      */
+    @Override
     public CompletableFuture<Void> closeAsync() {
         return CompletableFuture.runAsync(() -> {
             stopTokenRefreshScheduler();
             ManagedWebSocket ws = managedWs;
             managedWs = null;
             if (ws != null) {
-                ws.closeBlocking();
+                ws.close();
             }
         });
     }
@@ -495,7 +508,7 @@ public class CiMeChat {
                     ManagedWebSocket ws = managedWs;
                     managedWs = null;
                     if (ws != null) {
-                        ws.closeBlocking();
+                        ws.close();
                     }
                     boolean shouldReconnect = isTokenExpired || autoReconnect;
                     if (!isTokenExpired) {
@@ -589,10 +602,8 @@ public class CiMeChat {
         }
     }
 
-    /**
-     * 동기로 연결을 종료합니다.
-     */
-    public void closeBlocking() {
+    @Override
+    public void close() {
         closeAsync().join();
     }
 
