@@ -1,0 +1,14 @@
+package io.github.bbobbogi.stream4j.youtube.chat;
+
+public class ChatItemDelete {
+    protected String targetId;
+    protected String message;
+
+    public String getTargetId() {
+        return targetId;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+}

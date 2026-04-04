@@ -1,6 +1,9 @@
-signing.keyId=KEY ID
-signing.password=SIGNING PASSWORD
-signing.secretKeyRingFile=.gradle/secring.gpg
+# Maven Central (Central Portal) 배포 설정
+# https://central.sonatype.com 에서 User Token 발급
 
-nexusUsername=NEXUS USERNAME
-nexusPassword=NEXUS PASSWORD
+MAVEN_USERNAME=Central Portal User Token username
+MAVEN_PASSWORD=Central Portal User Token password
+
+# GPG 서명 (gpg --export-secret-keys --armor 로 내보낸 키)
+SIGNING_KEY=-----BEGIN PGP PRIVATE KEY BLOCK----- ...
+SIGNING_PASSWORD=GPG 비밀번호

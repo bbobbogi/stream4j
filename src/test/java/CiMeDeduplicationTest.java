@@ -1,5 +1,5 @@
-import com.bbobbogi.stream4j.cime.*;
-import com.bbobbogi.stream4j.cime.chat.CiMeChatMessage;
+import io.github.bbobbogi.stream4j.cime.*;
+import io.github.bbobbogi.stream4j.cime.chat.CiMeChatMessage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

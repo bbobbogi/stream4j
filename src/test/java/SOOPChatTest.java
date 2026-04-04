@@ -1,6 +1,6 @@
-import com.bbobbogi.stream4j.soop.*;
-import com.bbobbogi.stream4j.soop.chat.SOOPDonationMessage;
-import com.bbobbogi.stream4j.util.SharedHttpClient;
+import io.github.bbobbogi.stream4j.soop.*;
+import io.github.bbobbogi.stream4j.soop.chat.SOOPDonationMessage;
+import io.github.bbobbogi.stream4j.util.SharedHttpClient;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;

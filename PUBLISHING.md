@@ -50,7 +50,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.bbobbogi:stream4j:VERSION")
+    implementation("io.github.bbobbogi:stream4j:VERSION")
 }
 ```
 
@@ -66,7 +66,7 @@ dependencies {
 
 <dependencies>
     <dependency>
-        <groupId>com.bbobbogi</groupId>
+        <groupId>io.github.bbobbogi</groupId>
         <artifactId>stream4j</artifactId>
         <version>VERSION</version>
     </dependency>

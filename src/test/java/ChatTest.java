@@ -1,9 +1,9 @@
 import com.google.gson.Gson;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
-import com.bbobbogi.stream4j.chzzk.*;
-import com.bbobbogi.stream4j.chzzk.chat.*;
-import com.bbobbogi.stream4j.util.RawApiUtils;
+import io.github.bbobbogi.stream4j.chzzk.*;
+import io.github.bbobbogi.stream4j.chzzk.chat.*;
+import io.github.bbobbogi.stream4j.util.RawApiUtils;
 
 import java.io.IOException;
 import java.util.Optional;

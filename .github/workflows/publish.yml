@@ -1,4 +1,4 @@
-name: Publish to GitHub Packages
+name: Publish to Maven Central
 
 on:
   release:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to publish (e.g., 0.0.14)'
+        description: 'Version to publish (e.g., 1.0.0)'
         required: true
         type: string
 
@@ -15,7 +15,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
 
     steps:
       - name: Checkout repository
@@ -25,11 +24,9 @@ jobs:
         id: set_version
         run: |
           if [ "${{ github.event_name }}" == "release" ]; then
-            # Release 태그에서 버전 추출 (v 접두사 제거)
             VERSION="${{ github.event.release.tag_name }}"
             VERSION="${VERSION#v}"
           else
-            # workflow_dispatch에서 입력받은 버전 사용
             VERSION="${{ inputs.version }}"
           fi
           if [ -z "$VERSION" ]; then
@@ -53,15 +50,11 @@ jobs:
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@v2
 
-      - name: Check dependencies
-        run: ./gradlew dependencies --no-daemon
-
       - name: Run tests
         run: ./gradlew test --no-daemon --stacktrace
 
       - name: Verify test results
         run: |
-          echo "Checking test results..."
           if [ -d "build/test-results/test" ]; then
             echo "Tests completed successfully"
           else
@@ -91,10 +84,12 @@ jobs:
           fi
           echo "All required artifacts verified successfully"
 
-      - name: Publish to GitHub Packages
+      - name: Publish to Maven Central
         env:
-          GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
         run: ./gradlew publish --no-daemon --stacktrace
 
       - name: Upload test results

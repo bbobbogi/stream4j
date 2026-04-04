@@ -1,9 +1,9 @@
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.bbobbogi.stream4j.chzzk.Chzzk;
-import com.bbobbogi.stream4j.chzzk.ChzzkBuilder;
-import com.bbobbogi.stream4j.util.RawApiUtils;
+import io.github.bbobbogi.stream4j.chzzk.Chzzk;
+import io.github.bbobbogi.stream4j.chzzk.ChzzkBuilder;
+import io.github.bbobbogi.stream4j.util.RawApiUtils;
 
 import java.io.File;
 import java.io.FileInputStream;

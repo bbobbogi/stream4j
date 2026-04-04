@@ -1,5 +1,5 @@
-import com.bbobbogi.stream4j.toonation.*;
-import com.bbobbogi.stream4j.toonation.chat.ToonationDonationMessage;
+import io.github.bbobbogi.stream4j.toonation.*;
+import io.github.bbobbogi.stream4j.toonation.chat.ToonationDonationMessage;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 

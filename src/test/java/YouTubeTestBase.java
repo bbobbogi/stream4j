@@ -2,7 +2,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.bbobbogi.stream4j.util.SharedHttpClient;
+import io.github.bbobbogi.stream4j.util.SharedHttpClient;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;

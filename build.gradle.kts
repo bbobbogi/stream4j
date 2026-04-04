@@ -2,6 +2,7 @@ plugins {
     id("java")
     `maven-publish`
     `java-library`
+    signing
     jacoco
 }
 
@@ -10,8 +11,8 @@ fun getEnvOrProperty(envKey: String, defaultValue: String = ""): String {
     return System.getenv(envKey) ?: defaultValue
 }
 
-group = "com.bbobbogi"
-version = getEnvOrProperty("VERSION", "0.2.1-SNAPSHOT")
+group = "io.github.bbobbogi"
+version = getEnvOrProperty("VERSION", "1.0.0-SNAPSHOT")
 
 repositories {
     mavenCentral()
@@ -54,7 +55,7 @@ publishing {
     publications {
         create<MavenPublication>("maven") {
             artifactId = "stream4j"
-            groupId = "com.bbobbogi"
+            groupId = "io.github.bbobbogi"
             version = project.version.toString()
 
             from(components["java"])
@@ -90,14 +91,25 @@ publishing {
 
     repositories {
         maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/bbobbogi/stream4j")
+            name = "MavenCentral"
+            url = uri("https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/")
             credentials {
-                username = getEnvOrProperty("GITHUB_ACTOR")
-                password = getEnvOrProperty("GITHUB_TOKEN")
+                username = getEnvOrProperty("MAVEN_USERNAME")
+                password = getEnvOrProperty("MAVEN_PASSWORD")
             }
         }
     }
+}
+
+signing {
+    val signingKey = getEnvOrProperty("SIGNING_KEY").ifEmpty { null }
+    val signingPassword = getEnvOrProperty("SIGNING_PASSWORD").ifEmpty { null }
+
+    if (signingKey != null && signingPassword != null) {
+        useInMemoryPgpKeys(signingKey, signingPassword)
+    }
+
+    sign(publishing.publications["maven"])
 }
 
 // JaCoCo configuration for code coverage

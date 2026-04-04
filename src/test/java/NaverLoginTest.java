@@ -1,10 +1,10 @@
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import com.bbobbogi.stream4j.chzzk.Chzzk;
-import com.bbobbogi.stream4j.chzzk.ChzzkBuilder;
-import com.bbobbogi.stream4j.chzzk.exception.NotLoggedInException;
-import com.bbobbogi.stream4j.chzzk.naver.Naver;
-import com.bbobbogi.stream4j.util.Chrome;
+import io.github.bbobbogi.stream4j.chzzk.Chzzk;
+import io.github.bbobbogi.stream4j.chzzk.ChzzkBuilder;
+import io.github.bbobbogi.stream4j.chzzk.exception.NotLoggedInException;
+import io.github.bbobbogi.stream4j.chzzk.naver.Naver;
+import io.github.bbobbogi.stream4j.util.Chrome;
 
 import java.io.IOException;
 import java.util.concurrent.CompletionException;

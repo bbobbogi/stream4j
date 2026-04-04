@@ -1,5 +1,5 @@
 import org.junit.jupiter.api.Test;
-import com.bbobbogi.stream4j.util.ManagedWebSocket;
+import io.github.bbobbogi.stream4j.util.ManagedWebSocket;
 import okhttp3.*;
 
 import java.util.concurrent.*;

@@ -1,7 +1,7 @@
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
-import com.bbobbogi.stream4j.cime.*;
-import com.bbobbogi.stream4j.cime.chat.CiMeChatMessage;
+import io.github.bbobbogi.stream4j.cime.*;
+import io.github.bbobbogi.stream4j.cime.chat.CiMeChatMessage;
 
 import java.util.Optional;
 

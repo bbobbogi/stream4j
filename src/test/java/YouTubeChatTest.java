@@ -1,6 +1,6 @@
-import com.bbobbogi.stream4j.util.SharedHttpClient;
-import com.bbobbogi.stream4j.youtube.*;
-import com.bbobbogi.stream4j.youtube.chat.ChatItem;
+import io.github.bbobbogi.stream4j.util.SharedHttpClient;
+import io.github.bbobbogi.stream4j.youtube.*;
+import io.github.bbobbogi.stream4j.youtube.chat.ChatItem;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.junit.jupiter.api.Assumptions;

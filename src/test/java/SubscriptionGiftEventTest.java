@@ -1,4 +1,4 @@
-import com.bbobbogi.stream4j.chzzk.chat.SubscriptionGiftEvent;
+import io.github.bbobbogi.stream4j.chzzk.chat.SubscriptionGiftEvent;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.Test;
 
