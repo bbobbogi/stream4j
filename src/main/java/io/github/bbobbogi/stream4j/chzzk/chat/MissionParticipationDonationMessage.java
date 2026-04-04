@@ -1,133 +1,135 @@
 package io.github.bbobbogi.stream4j.chzzk.chat;
 
 /**
- * 미션 참여 후원 메시지
+ * Mission participation donation message.
  *
- * 미션에 참여(후원)하는 사람의 정보를 담고 있습니다.
+ * Contains information about a user participating in a mission donation.
  *
- * 두 가지 방식으로 전송됩니다:
- * 1. CHAT/DONATION 명령(cmd: 93101/93102)으로 채팅 메시지 형태
+ * Sent in two ways:
+ * 1. Chat message form via CHAT/DONATION commands (cmd: 93101/93102)
  *    - donationType: "MISSION_PARTICIPATION"
- * 2. EVENT 명령(cmd: 93006)으로 이벤트 형태
- *    - type: "DONATION_MISSION_PARTICIPATION" (미션 참여 이벤트)
+ * 2. Event form via EVENT command (cmd: 93006)
+ *    - type: "DONATION_MISSION_PARTICIPATION" (mission participation event)
  *
- * 이벤트 전송 순서 (미션 라이프사이클):
- * 1. MissionDonationMessage (미션 생성) - status: PENDING
- *    - EVENT로 전송 + CHAT/DONATION으로도 전송
- * 2. MissionDonationMessage (미션 승인/거절) - status: APPROVED 또는 REJECTED
- *    - EVENT로 전송
- * 3. MissionParticipationDonationMessage (참여자 후원) - 참여자마다 반복 ← 현재 클래스 (APPROVED인 경우만)
- *    - EVENT로 전송 + CHAT/DONATION으로도 전송
- * 4. MissionDonationMessage (미션 완료/만료) - status: COMPLETED/EXPIRED
- *    - EVENT로 전송
+ * Event sequence (mission lifecycle):
+ * 1. MissionDonationMessage (mission created) - status: PENDING
+ *    - sent via EVENT + also via CHAT/DONATION
+ * 2. MissionDonationMessage (mission approved/rejected) - status: APPROVED or REJECTED
+ *    - sent via EVENT
+ * 3. MissionParticipationDonationMessage (participant donation) - repeated per participant (this class, APPROVED only)
+ *    - sent via EVENT + also via CHAT/DONATION
+ * 4. MissionDonationMessage (mission completed/expired) - status: COMPLETED/EXPIRED
+ *    - sent via EVENT
  *
- * relatedMissionDonationId를 통해 어떤 미션에 참여했는지 확인할 수 있습니다.
- * missionDonationType: PARTICIPATION (미션 참여)
+ * relatedMissionDonationId indicates which mission this participation belongs to.
+ * missionDonationType: PARTICIPATION.
+ *
+ * @since 1.0.0
  */
 public class MissionParticipationDonationMessage extends DonationMessage {
 
     /**
-     * MissionParticipationDonationMessage를 생성합니다.
+     * Creates a {@link MissionParticipationDonationMessage}.
      */
     public MissionParticipationDonationMessage() {
     }
 
     /**
-     * 관련된 미션 후원 ID를 반환합니다.
+     * Returns related mission donation ID.
      *
-     * @return 관련 미션 후원 ID
+     * @return related mission donation ID
      */
     public String getRelatedMissionDonationId() {
         return extras.relatedMissionDonationId;
     }
 
     /**
-     * 미션 후원 ID를 반환합니다.
+     * Returns mission donation ID.
      *
-     * @return 미션 후원 ID
+     * @return mission donation ID
      */
     public String getMissionDonationId() {
         return extras.missionDonationId;
     }
 
     /**
-     * 미션 후원 타입의 원본 문자열을 반환합니다.
+     * Returns raw mission donation type string.
      *
-     * @return 미션 후원 타입 원본 문자열
+     * @return raw mission donation type string
      */
     public String getMissionDonationTypeRaw() {
         return extras.missionDonationType;
     }
 
     /**
-     * 미션 후원 타입을 반환합니다.
+     * Returns mission donation type.
      *
-     * @return 미션 후원 타입
+     * @return mission donation type
      */
     public MissionDonationType getMissionDonationType() {
         return MissionDonationType.fromString(extras.missionDonationType);
     }
 
     /**
-     * 미션 텍스트를 반환합니다.
+     * Returns mission text.
      *
-     * @return 미션 텍스트
+     * @return mission text
      */
     public String getMissionText() {
         return extras.missionText;
     }
 
     /**
-     * 총 결제 금액을 반환합니다.
+     * Returns total payment amount.
      *
-     * @return 총 결제 금액
+     * @return total payment amount
      */
     public int getTotalPayAmount() {
         return extras.totalPayAmount;
     }
 
     /**
-     * 참여자 수를 반환합니다.
+     * Returns participant count.
      *
-     * @return 참여자 수
+     * @return participant count
      */
     public int getParticipationCount() {
         return extras.participationCount;
     }
 
     /**
-     * 미션 상태의 원본 문자열을 반환합니다.
+     * Returns raw mission status string.
      *
-     * @return 미션 상태 원본 문자열
+     * @return raw mission status string
      */
     public String getMissionStatusRaw() {
         return extras.status;
     }
 
     /**
-     * 미션 상태를 반환합니다.
+     * Returns mission status.
      *
-     * @return 미션 상태
+     * @return mission status
      */
     public MissionStatus getMissionStatus() {
         return MissionStatus.fromString(extras.status);
     }
 
     /**
-     * 미션 성공 여부를 반환합니다.
+     * Returns whether mission succeeded.
      *
-     * @return 미션 성공 여부
+     * @return mission success status
      */
     public boolean isMissionSucceed() {
         return extras.success;
     }
 
     /**
-     * 닉네임 (익명일 경우 null)
-     * EVENT 형태: 상속받은 profile 내부
-     * CHAT/DONATION 형태: extras 내부 또는 profile 내부
+     * Nickname (null if anonymous).
+     * EVENT form: from inherited profile.
+     * CHAT/DONATION form: from extras or profile.
      *
-     * @return 닉네임 (익명일 경우 null)
+     * @return nickname (null if anonymous)
      */
     public String getNickname() {
         if (profile != null && profile.getNickname() != null) return profile.getNickname();
@@ -135,11 +137,11 @@ public class MissionParticipationDonationMessage extends DonationMessage {
     }
 
     /**
-     * 인증 마크 여부
-     * EVENT 형태: 상속받은 profile 내부
-     * CHAT/DONATION 형태: extras 내부 또는 profile 내부
+     * Verified mark status.
+     * EVENT form: from inherited profile.
+     * CHAT/DONATION form: from extras or profile.
      *
-     * @return 인증 마크 여부
+     * @return verified mark status
      */
     public boolean isVerifiedMark() {
         if (profile != null) return profile.isVerifiedMark();
@@ -147,44 +149,44 @@ public class MissionParticipationDonationMessage extends DonationMessage {
     }
 
     /**
-     * 익명 여부
-     * EVENT 형태: extras에 정보 없음 (항상 false)
-     * CHAT/DONATION 형태: extras 내부
+     * Anonymous status.
+     * EVENT form: no info in extras (always false).
+     * CHAT/DONATION form: from extras.
      *
-     * @return 익명 여부
+     * @return anonymous status
      */
     public boolean isAnonymous() {
         return extras != null && extras.isAnonymous;
     }
 
     /**
-     * 익명 토큰 (익명일 경우에만 존재)
-     * EVENT 형태: extras에 정보 없음
-     * CHAT/DONATION 형태: extras 내부
+     * Anonymous token (present only when anonymous).
+     * EVENT form: no info in extras.
+     * CHAT/DONATION form: from extras.
      *
-     * @return 익명 토큰 (익명일 경우에만 존재)
+     * @return anonymous token (only when anonymous)
      */
     public String getAnonymousToken() {
         return extras != null ? extras.anonymousToken : null;
     }
 
     /**
-     * 후원 ID
-     * EVENT 형태: extras에 정보 없음
-     * CHAT/DONATION 형태: extras 내부
+     * Donation ID.
+     * EVENT form: no info in extras.
+     * CHAT/DONATION form: from extras.
      *
-     * @return 후원 ID
+     * @return donation ID
      */
     public String getDonationId() {
         return extras != null ? extras.donationId : null;
     }
 
     /**
-     * 사용자 ID 해시
-     * EVENT 형태: 상속받은 userIdHash 필드 사용
-     * CHAT/DONATION 형태: extras 내부 또는 userIdHash 필드
+     * User ID hash.
+     * EVENT form: uses inherited userIdHash field.
+     * CHAT/DONATION form: from extras or userIdHash field.
      *
-     * @return 사용자 ID 해시
+     * @return user ID hash
      */
     @Override
     public String getUserIdHash() {
@@ -193,22 +195,22 @@ public class MissionParticipationDonationMessage extends DonationMessage {
     }
 
     /**
-     * 결제 타입 (예: "CURRENCY")
-     * EVENT 형태: extras에 정보 없음
-     * CHAT/DONATION 형태: extras 내부
+     * Payment type (e.g., "CURRENCY").
+     * EVENT form: no info in extras.
+     * CHAT/DONATION form: from extras.
      *
-     * @return 결제 타입
+     * @return payment type
      */
     public String getPayType() {
         return extras != null ? extras.payType : null;
     }
 
     /**
-     * 연속 후원 일수
-     * EVENT 형태: extras에 정보 없음
-     * CHAT/DONATION 형태: extras 내부
+     * Continuous donation days.
+     * EVENT form: no info in extras.
+     * CHAT/DONATION form: from extras.
      *
-     * @return 연속 후원 일수
+     * @return continuous donation days
      */
     public int getContinuousDonationDays() {
         return extras != null ? extras.continuousDonationDays : 0;

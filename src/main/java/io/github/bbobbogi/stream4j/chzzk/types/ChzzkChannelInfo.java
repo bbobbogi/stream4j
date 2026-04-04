@@ -3,7 +3,9 @@ package io.github.bbobbogi.stream4j.chzzk.types;
 import io.github.bbobbogi.stream4j.common.ChannelInfo;
 
 /**
- * 치지직 채널 정보를 나타내는 클래스입니다.
+ * Class representing Chzzk channel information.
+ *
+ * @since 1.0.0
  */
 public class ChzzkChannelInfo extends ChzzkPartialChannel implements ChannelInfo {
     private String channelDescription;
@@ -17,7 +19,7 @@ public class ChzzkChannelInfo extends ChzzkPartialChannel implements ChannelInfo
     /**
      * Get description of the channel.
      *
-     * @return 채널 설명
+     * @return channel description
      */
     public String getChannelDescription() {
         return channelDescription;
@@ -26,7 +28,7 @@ public class ChzzkChannelInfo extends ChzzkPartialChannel implements ChannelInfo
     /**
      * Get the count of the channel's followers.
      *
-     * @return 팔로워 수
+     * @return follower count
      */
     public int getFollowerCount() {
         return followerCount;
@@ -35,7 +37,7 @@ public class ChzzkChannelInfo extends ChzzkPartialChannel implements ChannelInfo
     /**
      * Get is the channel broadcasting.
      *
-     * @return 방송 중이면 {@code true}, 그렇지 않으면 {@code false}
+     * @return {@code true} if broadcasting, otherwise {@code false}
      */
     public boolean isBroadcasting() {
         return openLive;

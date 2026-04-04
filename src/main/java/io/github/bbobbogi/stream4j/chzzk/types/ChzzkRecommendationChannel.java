@@ -2,21 +2,23 @@ package io.github.bbobbogi.stream4j.chzzk.types;
 
 
 /**
- * 추천 채널 정보를 나타내는 클래스입니다.
+ * Class representing recommended channel information.
+ *
+ * @since 1.0.0
  */
 public class ChzzkRecommendationChannel {
     private ChzzkPartialChannel channel;
 
     /**
-     * ChzzkRecommendationChannel을 생성합니다.
+     * Creates a {@link ChzzkRecommendationChannel}.
      */
     ChzzkRecommendationChannel() {
     }
 
     /**
-     * 채널 정보를 반환합니다.
+     * Returns channel information.
      *
-     * @return 채널 정보
+     * @return channel information
      */
     public ChzzkPartialChannel getChannel() {
         return channel;

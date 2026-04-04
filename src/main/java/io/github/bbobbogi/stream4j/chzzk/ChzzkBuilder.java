@@ -5,6 +5,8 @@ import io.github.bbobbogi.stream4j.common.PlatformApiBuilder;
 
 /**
  * Class for creating instances of {@link Chzzk}.
+ *
+ * @since 1.0.0
  */
 public class ChzzkBuilder extends PlatformApiBuilder<Chzzk, ChzzkBuilder> {
     boolean isAnonymous = false;
@@ -29,7 +31,7 @@ public class ChzzkBuilder extends PlatformApiBuilder<Chzzk, ChzzkBuilder> {
      *
      * @param nidAuth The value of NID_AUT cookie
      * @param nidSession The value of NID_SES cookie
-     * @return 현재 {@link ChzzkBuilder} 인스턴스
+     * @return this {@link ChzzkBuilder} instance
      */
     public ChzzkBuilder withAuthorization(String nidAuth, String nidSession) {
         this.nidAuth = nidAuth;
@@ -43,16 +45,16 @@ public class ChzzkBuilder extends PlatformApiBuilder<Chzzk, ChzzkBuilder> {
      * Add authorize token (NID_AUT and NID_SES) automatically by {@link Naver}.
      *
      * @param naver The authorized naver object
-     * @return 현재 {@link ChzzkBuilder} 인스턴스
+     * @return this {@link ChzzkBuilder} instance
      */
     public ChzzkBuilder withAuthorization(Naver naver) {
         return withAuthorization(naver.getCookie(Naver.Cookie.NID_AUT), naver.getCookie(Naver.Cookie.NID_SES));
     }
 
     /**
-     * {@link Chzzk} 인스턴스를 생성합니다.
+     * Creates a {@link Chzzk} instance.
      *
-     * @return 생성된 {@link Chzzk} 인스턴스
+     * @return a new {@link Chzzk} instance
      */
     @Override
     public Chzzk build() {

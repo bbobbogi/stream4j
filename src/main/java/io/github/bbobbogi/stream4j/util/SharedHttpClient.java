@@ -8,16 +8,18 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * 프로젝트 전체에서 공유하는 OkHttpClient입니다.
- * <p>
- * Dispatcher(maxRequests=1024)와 ConnectionPool을 공유하여
- * 다수의 동시 연결을 효율적으로 관리합니다.
- * <p>
- * 인증이 필요한 경우 {@link #newBuilder()}로 파생 클라이언트를 생성하세요.
- * 파생 클라이언트는 Dispatcher와 ConnectionPool을 공유합니다.
- * <p>
- * 커스텀 설정이 필요한 경우 {@link #configure(HttpClientConfig)}를 사용하세요.
- * 설정은 반드시 {@link #get()} 호출 전에 적용되어야 합니다.
+ * Shared {@link okhttp3.OkHttpClient} singleton for the entire library.
+ *
+ * <p>All platform clients share one Dispatcher (maxRequests=1024) and
+ * ConnectionPool for efficient concurrent connection management.
+ *
+ * <p>Use {@link #newBuilder()} to create derived clients that share the
+ * same Dispatcher and ConnectionPool while adding interceptors.
+ *
+ * <p>Custom settings can be applied via {@link #configure(HttpClientConfig)}
+ * before the first call to {@link #get()}.
+ *
+ * @since 1.0.0
  */
 public final class SharedHttpClient {
 
@@ -29,13 +31,12 @@ public final class SharedHttpClient {
     }
 
     /**
-     * SharedHttpClient의 설정을 지정합니다.
-     * <p>
-     * 이 메서드는 {@link #get()} 호출 전에 호출되어야 합니다.
-     * 이미 클라이언트가 초기화된 후에는 설정 변경이 무시됩니다.
+     * Applies custom configuration before the client is initialized.
      *
-     * @param config 적용할 설정
-     * @throws IllegalStateException 이미 클라이언트가 초기화된 경우
+     * <p>Must be called before the first call to {@link #get()}.
+     *
+     * @param config configuration to apply
+     * @throws IllegalStateException if the client is already initialized
      */
     public static void configure(HttpClientConfig config) {
         if (INSTANCE != null) {
@@ -45,19 +46,19 @@ public final class SharedHttpClient {
     }
 
     /**
-     * 현재 설정을 반환합니다.
+     * Returns the current configuration.
      *
-     * @return 현재 설정 (읽기 전용 용도)
+     * @return current configuration (read-only)
      */
     public static HttpClientConfig getConfig() {
         return CONFIG.get();
     }
 
     /**
-     * 공유 OkHttpClient 인스턴스를 반환합니다.
-     * 최초 호출 시 클라이언트가 초기화됩니다.
+     * Returns the shared {@link okhttp3.OkHttpClient} instance.
+     * The client is lazily initialized on first call.
      *
-     * @return 공유 OkHttpClient
+     * @return shared OkHttpClient
      */
     public static OkHttpClient get() {
         if (INSTANCE == null) {
@@ -71,10 +72,10 @@ public final class SharedHttpClient {
     }
 
     /**
-     * 공유 클라이언트에서 파생된 빌더를 반환합니다.
-     * Dispatcher와 ConnectionPool을 공유하면서 인터셉터 등을 추가할 수 있습니다.
+     * Returns a builder derived from the shared client.
+     * The derived client shares Dispatcher and ConnectionPool.
      *
-     * @return OkHttpClient.Builder
+     * @return a new OkHttpClient.Builder
      */
     public static OkHttpClient.Builder newBuilder() {
         return get().newBuilder();
@@ -101,8 +102,8 @@ public final class SharedHttpClient {
     }
 
     /**
-     * 테스트 용도로 클라이언트를 리셋합니다.
-     * 프로덕션 코드에서는 사용하지 마세요.
+     * Resets the client for testing purposes.
+     * Do not use in production code.
      */
     static void resetForTesting() {
         synchronized (LOCK) {

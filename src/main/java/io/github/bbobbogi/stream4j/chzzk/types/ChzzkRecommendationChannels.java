@@ -3,21 +3,23 @@ package io.github.bbobbogi.stream4j.chzzk.types;
 import java.util.Arrays;
 
 /**
- * 추천 채널 목록을 나타내는 클래스입니다.
+ * Class representing a list of recommended channels.
+ *
+ * @since 1.0.0
  */
 public class ChzzkRecommendationChannels {
     private ChzzkRecommendationChannel[] recommendationChannels;
 
     /**
-     * ChzzkRecommendationChannels를 생성합니다.
+     * Creates a {@link ChzzkRecommendationChannels}.
      */
     ChzzkRecommendationChannels() {
     }
 
     /**
-     * 추천 채널 배열을 반환합니다.
+     * Returns the array of recommended channels.
      *
-     * @return 추천 채널 배열
+     * @return array of recommended channels
      */
     public ChzzkRecommendationChannel[] getChannels() {
         return recommendationChannels;

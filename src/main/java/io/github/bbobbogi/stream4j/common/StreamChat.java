@@ -19,6 +19,14 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * Unified chat client that connects to multiple streaming platforms.
+ *
+ * <p>This class manages chat and donation connections for Chzzk, CiMe, SOOP,
+ * Toonation, and YouTube through one API surface.
+ *
+ * @since 1.0.0
+ */
 public class StreamChat {
 
 
@@ -52,10 +60,20 @@ public class StreamChat {
         this.youtubeVideoIds = new ArrayList<>(builder.youtubeVideoIds);
     }
 
+    /**
+     * Creates a builder for constructing a {@link StreamChat} instance.
+     *
+     * @return a new stream chat builder
+     */
     public static StreamChatBuilder builder() {
         return new StreamChatBuilder();
     }
 
+    /**
+     * Connects to all configured platforms asynchronously.
+     *
+     * @return a future that completes when all connect attempts finish
+     */
     public CompletableFuture<Void> connectAllAsync() {
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
@@ -78,10 +96,18 @@ public class StreamChat {
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
     }
 
+    /**
+     * Connects to all configured platforms and waits for completion.
+     */
     public void connectAll() {
         connectAllAsync().join();
     }
 
+    /**
+     * Closes all active platform connections asynchronously.
+     *
+     * @return a future that completes when all connections are closed and cleared
+     */
     public CompletableFuture<Void> closeAllAsync() {
         List<CompletableFuture<Void>> closeFutures = new ArrayList<>();
 
@@ -121,10 +147,18 @@ public class StreamChat {
                 });
     }
 
+    /**
+     * Closes all active platform connections and waits for completion.
+     */
     public void closeAll() {
         closeAllAsync().join();
     }
 
+    /**
+     * Returns the number of currently tracked platform connections.
+     *
+     * @return the total active connection count
+     */
     public int getConnectionCount() {
         return chzzkChats.size() + cimeChats.size() + soopChats.size() + toonationChats.size() + youtubeChats.size();
     }

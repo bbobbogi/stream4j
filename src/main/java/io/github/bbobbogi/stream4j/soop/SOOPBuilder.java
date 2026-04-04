@@ -17,11 +17,29 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Builder for creating {@link SOOP} API clients.
+ *
+ * <p>Supports optional authenticated sessions for restricted streams.
+ *
+ * @since 1.0.0
+ */
 public class SOOPBuilder extends PlatformApiBuilder<SOOP, SOOPBuilder> {
     private static final String LOGIN_API = "https://login.sooplive.co.kr/app/LoginAction.php";
 
     OkHttpClient httpClient;
 
+    /**
+     * Configures SOOP account credentials for authenticated API access.
+     *
+     * <p>Default is no authentication. Authentication is optional but required for
+     * streams that enforce login, age verification, or subscription restrictions.
+     *
+     * @param soopId SOOP account ID
+     * @param soopPassword SOOP account password
+     * @return this builder for chaining
+     * @throws IOException if login fails or the login response cannot be parsed
+     */
     public SOOPBuilder withCredentials(String soopId, String soopPassword) throws IOException {
         CookieJar cookieJar = new InMemoryCookieJar();
         OkHttpClient loginClient = SharedHttpClient.newBuilder()
@@ -63,6 +81,11 @@ public class SOOPBuilder extends PlatformApiBuilder<SOOP, SOOPBuilder> {
         return self();
     }
 
+    /**
+     * Builds a {@link SOOP} client with the configured options.
+     *
+     * @return a new SOOP API client instance
+     */
     @Override
     public SOOP build() {
         return new SOOP(this);

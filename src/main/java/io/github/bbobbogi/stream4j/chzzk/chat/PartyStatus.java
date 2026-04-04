@@ -1,24 +1,26 @@
 package io.github.bbobbogi.stream4j.chzzk.chat;
 
 /**
- * 파티 후원 상태
+ * Party donation status.
+ *
+ * @since 1.0.0
  */
 public enum PartyStatus {
     /**
-     * 열림 - 파티가 열려있어 참여 가능
+     * Open - party is open and participation is allowed.
      */
     OPEN,
 
     /**
-     * 닫힘 - 파티가 닫혀 참여 불가
+     * Closed - party is closed and participation is not allowed.
      */
     CLOSED;
 
     /**
-     * 문자열에서 PartyStatus로 변환합니다.
+     * Converts a string to {@link PartyStatus}.
      *
-     * @param status 파티 상태 문자열
-     * @return 해당하는 PartyStatus (없으면 null)
+     * @param status party status string
+     * @return matched {@link PartyStatus}, or {@code null} if unknown
      */
     public static PartyStatus fromString(String status) {
         if (status == null) return null;

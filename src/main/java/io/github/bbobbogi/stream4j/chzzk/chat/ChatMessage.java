@@ -7,17 +7,21 @@ import java.util.Date;
 import java.util.Objects;
 
 /**
- * 채팅 메시지를 나타내는 클래스입니다.
+ * Class representing a chat message.
+ *
+ * @since 1.0.0
  */
 public class ChatMessage {
     /**
-     * ChatMessage를 생성합니다.
+     * Creates a {@link ChatMessage}.
      */
     public ChatMessage() {
     }
 
     /**
-     * 운영 체제 타입을 나타내는 열거형입니다.
+     * Enum representing operating system type.
+     *
+     * @since 1.0.0
      */
     public enum OsType
     {
@@ -30,11 +34,11 @@ public class ChatMessage {
     }
 
     /**
-     * 메시지의 추가 정보를 담는 클래스입니다.
+     * Class containing extra message information.
      */
     public static class Extras {
         /**
-         * Extras를 생성합니다.
+         * Creates {@link Extras}.
          */
         Extras() {
         }
@@ -86,27 +90,27 @@ public class ChatMessage {
         String description;
 
         /**
-         * 후원 타입을 반환합니다.
+         * Returns donation type.
          *
-         * @return 후원 타입 문자열
+         * @return donation type string
          */
         public String getDonationType() {
             return donationType;
         }
 
         /**
-         * 시스템 메시지 설명을 반환합니다.
+         * Returns system message description.
          *
-         * @return 설명 문자열
+         * @return description string
          */
         public String getDescription() {
             return description;
         }
 
         /**
-         * 운영 체제 타입을 반환합니다.
+         * Returns operating system type.
          *
-         * @return 운영 체제 타입
+         * @return operating system type
          */
         public OsType getOsType() {
             if (osType == null) {
@@ -120,9 +124,9 @@ public class ChatMessage {
         }
 
         /**
-         * 후원 금액을 반환합니다.
+         * Returns donation amount.
          *
-         * @return 후원 금액 (설정되지 않은 경우 -1)
+         * @return donation amount (-1 if not set)
          */
         public int getPayAmount() {
             return payAmount;
@@ -148,11 +152,11 @@ public class ChatMessage {
     }
 
     /**
-     * 사용자 프로필 정보를 담는 클래스입니다.
+     * Class containing user profile information.
      */
     public static class Profile {
         /**
-         * Profile을 생성합니다.
+         * Creates {@link Profile}.
          */
         public Profile() {
         }
@@ -166,11 +170,11 @@ public class ChatMessage {
         StreamingProperty streamingProperty;
 
         /**
-         * 스트리밍 속성을 담는 클래스입니다.
+         * Class containing streaming properties.
          */
         public static class StreamingProperty {
             /**
-             * StreamingProperty를 생성합니다.
+             * Creates {@link StreamingProperty}.
              */
             StreamingProperty() {
             }
@@ -178,11 +182,11 @@ public class ChatMessage {
             Subscription subscription;
 
             /**
-             * 구독 정보를 담는 클래스입니다.
+             * Class containing subscription information.
              */
             public static class Subscription {
                 /**
-                 * Subscription을 생성합니다.
+                 * Creates {@link Subscription}.
                  */
                 Subscription() {
                 }
@@ -192,27 +196,27 @@ public class ChatMessage {
                 PartialBadge badge;
 
                 /**
-                 * 누적 구독 개월 수를 반환합니다.
+                 * Returns accumulated subscription months.
                  *
-                 * @return 누적 구독 개월 수
+                 * @return accumulated subscription months
                  */
                 public int getAccmulativeMonth() {
                     return accmulativeMonth;
                 }
 
                 /**
-                 * 구독 티어를 반환합니다.
+                 * Returns subscription tier.
                  *
-                 * @return 구독 티어
+                 * @return subscription tier
                  */
                 public int getTier() {
                     return tier;
                 }
 
                 /**
-                 * 구독 배지를 반환합니다.
+                 * Returns subscription badge.
                  *
-                 * @return 구독 배지
+                 * @return subscription badge
                  */
                 public PartialBadge getBadge() {
                     return badge;
@@ -250,11 +254,11 @@ public class ChatMessage {
         }
 
         /**
-         * 부분 배지 정보를 담는 클래스입니다.
+         * Class containing partial badge information.
          */
         public static class PartialBadge {
             /**
-             * PartialBadge를 생성합니다.
+             * Creates {@link PartialBadge}.
              */
             PartialBadge() {
             }
@@ -262,9 +266,9 @@ public class ChatMessage {
             String imageUrl;
 
             /**
-             * 배지 이미지 URL을 반환합니다.
+             * Returns badge image URL.
              *
-             * @return 이미지 URL
+             * @return image URL
              */
             public String getImageUrl() {
                 return imageUrl;
@@ -292,11 +296,11 @@ public class ChatMessage {
         }
 
         /**
-         * 활동 배지 정보를 담는 클래스입니다.
+         * Class containing activity badge information.
          */
         public static class ActivityBadge extends PartialBadge {
             /**
-             * ActivityBadge를 생성합니다.
+             * Creates {@link ActivityBadge}.
              */
             ActivityBadge() {
             }
@@ -306,27 +310,27 @@ public class ChatMessage {
             boolean activated;
 
             /**
-             * 배지 번호를 반환합니다.
+             * Returns badge number.
              *
-             * @return 배지 번호
+             * @return badge number
              */
             public int getBadgeNo() {
                 return badgeNo;
             }
 
             /**
-             * 배지 ID를 반환합니다.
+             * Returns badge ID.
              *
-             * @return 배지 ID
+             * @return badge ID
              */
             public String getBadgeId() {
                 return badgeId;
             }
 
             /**
-             * 배지 활성화 여부를 반환합니다.
+             * Returns whether badge is activated.
              *
-             * @return 활성화 여부
+             * @return activation status
              */
             public boolean isActivated() {
                 return activated;
@@ -357,54 +361,54 @@ public class ChatMessage {
         }
 
         /**
-         * 닉네임을 반환합니다.
+         * Returns nickname.
          *
-         * @return 닉네임
+         * @return nickname
          */
         public String getNickname() {
             return nickname;
         }
 
         /**
-         * 프로필 이미지 URL을 반환합니다.
+         * Returns profile image URL.
          *
-         * @return 프로필 이미지 URL
+         * @return profile image URL
          */
         public String getProfileImageUrl() {
             return profileImageUrl;
         }
 
         /**
-         * 사용자 역할 코드를 반환합니다.
+         * Returns user role code.
          *
-         * @return 사용자 역할 코드
+         * @return user role code
          */
         public String getUserRoleCode() {
             return userRoleCode;
         }
 
         /**
-         * 인증 마크 여부를 반환합니다.
+         * Returns verified mark status.
          *
-         * @return 인증 마크 여부
+         * @return verified mark status
          */
         public boolean isVerifiedMark() {
             return verifiedMark;
         }
 
         /**
-         * 활동 배지 배열을 반환합니다.
+         * Returns activity badge array.
          *
-         * @return 활동 배지 배열
+         * @return activity badge array
          */
         public ActivityBadge[] getActivityBadges() {
             return activityBadges;
         }
 
         /**
-         * 구독 정보를 반환합니다.
+         * Returns subscription information.
          *
-         * @return 구독 정보 (없는 경우 null)
+         * @return subscription information (null if unavailable)
          */
         @Nullable
         public StreamingProperty.Subscription getSubscription() {
@@ -412,9 +416,9 @@ public class ChatMessage {
         }
 
         /**
-         * 구독 여부를 반환합니다.
+         * Returns whether user has a subscription.
          *
-         * @return 구독 여부
+         * @return subscription status
          */
         public boolean hasSubscription() {
             return streamingProperty.subscription != null;
@@ -446,34 +450,34 @@ public class ChatMessage {
     public String rawJson;
 
     /**
-     * 원본 JSON 문자열을 반환합니다.
+     * Returns raw JSON string.
      *
-     * @return 원본 JSON 문자열
+     * @return raw JSON string
      */
     public String getRawJson() { return rawJson; }
 
     /**
-     * 채팅 타입 코드를 반환합니다.
+     * Returns chat type code.
      *
-     * @return 채팅 타입 코드
+     * @return chat type code
      */
     public int getChatTypeCode() {
         return msgTypeCode;
     }
 
     /**
-     * 사용자 ID 해시를 반환합니다.
+     * Returns user ID hash.
      *
-     * @return 사용자 ID 해시
+     * @return user ID hash
      */
     public String getUserIdHash() {
         return userIdHash;
     }
 
     /**
-     * 사용자 ID 해시를 반환합니다.
+     * Returns user ID hash.
      *
-     * @return 사용자 ID 해시
+     * @return user ID hash
      * @deprecated Use {@link #getUserIdHash()} instead
      */
     @Deprecated
@@ -482,108 +486,108 @@ public class ChatMessage {
     }
 
     /**
-     * 메시지 내용을 반환합니다.
+     * Returns message content.
      *
-     * @return 메시지 내용
+     * @return message content
      */
     public String getContent() {
         return content;
     }
 
     /**
-     * 메시지 시간을 반환합니다.
+     * Returns message time.
      *
-     * @return 메시지 시간
+     * @return message time
      */
     public Date getMessageTime() {
         return messageTime;
     }
 
     /**
-     * 생성 시간을 반환합니다.
+     * Returns creation time.
      *
-     * @return 생성 시간
+     * @return creation time
      */
     public Date getCreateTime() {
         return createTime;
     }
 
     /**
-     * 추가 정보를 반환합니다.
+     * Returns extra information.
      *
-     * @return 추가 정보
+     * @return extra information
      */
     public Extras getExtras() {
         return extras;
     }
 
     /**
-     * 메시지 상태 타입을 반환합니다.
+     * Returns message status type.
      *
-     * @return 메시지 상태 타입
+     * @return message status type
      */
     public String getMessageStatusType() {
         return msgStatusType;
     }
 
     /**
-     * 멤버 수를 반환합니다.
+     * Returns member count.
      *
-     * @return 멤버 수
+     * @return member count
      */
     public int getMemberCount() {
         return memberCount;
     }
 
     /**
-     * 블라인드 메시지 여부를 반환합니다.
+     * Returns whether this is a blind message.
      *
-     * @return 블라인드 여부
+     * @return blind status
      */
     public boolean isBlind() {
         return "BLIND".equals(msgStatusType);
     }
 
     /**
-     * 숨김 메시지 여부를 반환합니다.
+     * Returns whether this is a hidden message.
      *
-     * @return 숨김 여부
+     * @return hidden status
      */
     public boolean isHidden() {
         return "HIDDEN".equals(msgStatusType);
     }
 
     /**
-     * 시스템 메시지 여부를 반환합니다.
+     * Returns whether this is a system message.
      *
-     * @return 시스템 메시지 여부
+     * @return system message status
      */
     public boolean isSystemMessage() {
         return "SYSTEM_MESSAGE".equals(userIdHash);
     }
 
     /**
-     * 오픈 메시지 여부를 반환합니다.
+     * Returns whether this is an open message.
      *
-     * @return 오픈 메시지 여부
+     * @return open message status
      */
     public boolean isOpenMessage() {
         return "@OPEN".equals(userIdHash);
     }
 
     /**
-     * 테스트 메시지 여부를 반환합니다.
+     * Returns whether this is a test message.
      *
-     * @return 테스트 메시지 여부
+     * @return test message status
      */
     public boolean isTestMessage() {
         return "@TEST".equals(userIdHash);
     }
 
     /**
-     * 사용자 메시지 여부를 반환합니다.
+     * Returns whether this is a user message.
      *
-     * @return 사용자 메시지 여부
+     * @return user message status
      */
     public boolean isUserMessage() {
         return !isBlind() && !isHidden() && !isSystemMessage() && !isOpenMessage() && !isTestMessage();
@@ -599,9 +603,9 @@ public class ChatMessage {
     }
 
     /**
-     * 프로필 존재 여부를 반환합니다.
+     * Returns whether profile exists.
      *
-     * @return 프로필 존재 여부
+     * @return profile existence status
      */
     public boolean hasProfile() {
         return profile != null;

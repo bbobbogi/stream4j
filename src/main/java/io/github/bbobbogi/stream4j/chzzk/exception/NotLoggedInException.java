@@ -1,13 +1,15 @@
 package io.github.bbobbogi.stream4j.chzzk.exception;
 
 /**
- * 로그인이 필요한 작업에서 로그인되지 않은 경우 발생하는 예외입니다.
+ * Exception thrown when an operation requiring login is called without login.
+ *
+ * @since 1.0.0
  */
 public class NotLoggedInException extends Exception {
     /**
-     * 지정된 메시지로 NotLoggedInException을 생성합니다.
+     * Creates a {@link NotLoggedInException} with the given message.
      *
-     * @param reason 예외 발생 이유
+     * @param reason reason for the exception
      */
     public NotLoggedInException(String reason) {
         super(reason);

@@ -1,11 +1,13 @@
 package io.github.bbobbogi.stream4j.chzzk.chat;
 
 /**
- * IIMS 페널티 이벤트
+ * IIMS penalty event.
  *
- * 부적절한 콘텐츠(IIMS - Inappropriate Image Monitoring System)로 인한
- * 사용자 제재 정보를 담고 있습니다.
- * EVENT 명령(cmd: 93006)으로 전송되며, type은 "IIMS_PENALTY"입니다.
+ * Contains user penalty information caused by inappropriate content
+ * (IIMS - Inappropriate Image Monitoring System).
+ * Sent through EVENT command (cmd: 93006), and type is "IIMS_PENALTY".
+ *
+ * @since 1.0.0
  */
 public class IimsPenaltyEvent {
     String userIdHash;
@@ -14,33 +16,33 @@ public class IimsPenaltyEvent {
     public String rawJson;
 
     /**
-     * IimsPenaltyEvent를 생성합니다.
+     * Creates an {@link IimsPenaltyEvent}.
      */
     public IimsPenaltyEvent() {
     }
 
     /**
-     * 제재받은 사용자 ID 해시를 반환합니다.
+     * Returns the penalized user's ID hash.
      *
-     * @return 사용자 ID 해시
+     * @return user ID hash
      */
     public String getUserIdHash() {
         return userIdHash;
     }
 
     /**
-     * 이벤트 타입을 반환합니다.
+     * Returns the event type.
      *
-     * @return 이벤트 타입
+     * @return event type
      */
     public String getType() {
         return type;
     }
 
     /**
-     * 원본 JSON 문자열을 반환합니다.
+     * Returns the raw JSON string.
      *
-     * @return 원본 JSON
+     * @return raw JSON
      */
     public String getRawJson() {
         return rawJson;

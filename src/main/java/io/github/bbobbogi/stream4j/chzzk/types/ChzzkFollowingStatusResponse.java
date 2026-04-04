@@ -2,11 +2,13 @@ package io.github.bbobbogi.stream4j.chzzk.types;
 
 
 /**
- * 팔로잉 상태 응답을 나타내는 클래스입니다.
+ * Class representing a following status response.
+ *
+ * @since 1.0.0
  */
 public class ChzzkFollowingStatusResponse {
     /**
-     * 채널 정보
+     * Channel information.
      */
     public ChzzkPartialChannel channel;
 

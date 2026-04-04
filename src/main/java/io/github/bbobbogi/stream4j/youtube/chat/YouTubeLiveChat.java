@@ -16,6 +16,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @SuppressWarnings("unchecked")
+/**
+ * Low-level YouTube live chat client.
+ *
+ * <p>Provides polling-based chat retrieval and optional moderation actions.
+ *
+ * @since 1.0.0
+ */
 public class YouTubeLiveChat {
     static final String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0";
 
@@ -343,6 +350,13 @@ public class YouTubeLiveChat {
         }
     }
 
+    /**
+     * Permanently bans the author of the target chat item.
+     *
+     * @param chatItem target chat item
+     * @throws IOException if the moderation request fails
+     * @throws IllegalStateException if permissions or user data are missing
+     */
     public void banUserPermanently(ChatItem chatItem) throws IOException, IllegalStateException {
         if (this.isReplay) {
             throw new IllegalStateException("This live is replay! You can ban a user if this live isn't replay.");
@@ -369,6 +383,13 @@ public class YouTubeLiveChat {
         }
     }
 
+    /**
+     * Removes a permanent ban for the author of the target chat item.
+     *
+     * @param chatItem target chat item
+     * @throws IOException if the moderation request fails
+     * @throws IllegalStateException if permissions or user data are missing
+     */
     public void unbanUser(ChatItem chatItem) throws IOException, IllegalStateException {
         if (this.isReplay) {
             throw new IllegalStateException("This live is replay! You can ban a user if this live isn't replay.");
@@ -395,6 +416,13 @@ public class YouTubeLiveChat {
         }
     }
 
+    /**
+     * Pins the target chat item to the top of chat.
+     *
+     * @param chatItem target chat item
+     * @throws IOException if the action request fails
+     * @throws IllegalStateException if permissions or user data are missing
+     */
     public void pinMessage(ChatItem chatItem) throws IOException, IllegalStateException {
         if (this.isReplay) {
             throw new IllegalStateException("This live is replay! You can pin a chat if this live isn't replay.");
@@ -720,10 +748,20 @@ public class YouTubeLiveChat {
         return this.channelId;
     }
 
+    /**
+     * Returns the polling interval suggested by YouTube, in milliseconds.
+     *
+     * @return recommended polling interval in milliseconds
+     */
     public long getRecommendedIntervalMs() {
         return this.recommendedIntervalMs;
     }
 
+    /**
+     * Returns whether the live broadcast appears to have ended.
+     *
+     * @return {@code true} if ended, otherwise {@code false}
+     */
     public boolean isLiveEnded() {
         return this.liveEnded;
     }
@@ -989,6 +1027,11 @@ public class YouTubeLiveChat {
         return header;
     }
 
+    /**
+     * Loads moderation context-menu actions for a chat item.
+     *
+     * @param chatItem the target chat item
+     */
     public void getContextMenu(ChatItem chatItem) {
         try {
             String rawJson = Util.getPageContentWithJson(

@@ -3,64 +3,66 @@ package io.github.bbobbogi.stream4j.chzzk.types;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * 라이브 스트리밍 해상도를 나타내는 열거형입니다.
+ * Enum representing live streaming resolution.
+ *
+ * @since 1.0.0
  */
 public enum Resolution {
 
     /**
-     * 1080p 해상도
+     * 1080p resolution.
      */
     R_1080(1080),
 
     /**
-     * 720p 해상도
+     * 720p resolution.
      */
     R_720(720),
 
     /**
-     * 480p 해상도
+     * 480p resolution.
      */
     R_480(480),
 
     /**
-     * 360p 해상도
+     * 360p resolution.
      */
     R_360(360),
 
     /**
-     * 270p 해상도
+     * 270p resolution.
      */
     R_270(270),
 
     /**
-     * 144p 해상도
+     * 144p resolution.
      */
     R_144(144);
 
     private final int raw;
 
     /**
-     * Resolution 열거형 값을 생성합니다.
+     * Creates a {@link Resolution} enum value.
      *
-     * @param raw 해상도 픽셀 값
+     * @param raw resolution pixel value
      */
     Resolution(int raw) {
         this.raw = raw;
     }
 
     /**
-     * 해상도 픽셀 값을 반환합니다.
+     * Returns the resolution pixel value.
      *
-     * @return 해상도 픽셀 값
+     * @return resolution pixel value
      */
     public int getRaw() {
         return raw;
     }
 
     /**
-     * 해상도 픽셀 값을 문자열로 반환합니다.
+     * Returns the resolution pixel value as a string.
      *
-     * @return 해상도 픽셀 값 문자열
+     * @return resolution pixel value string
      */
     public @NotNull String getRawAsString() {
         return Integer.toString(raw);

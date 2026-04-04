@@ -2,6 +2,13 @@ package io.github.bbobbogi.stream4j.soop.chat;
 
 import java.nio.charset.StandardCharsets;
 
+/**
+ * Internal transport model for SOOP chat packets.
+ *
+ * <p>Internal transport model, not part of the stable API.
+ *
+ * @since 1.0.0
+ */
 public final class SOOPPacket {
 
     public static final String STARTER = "\u001b\t";
@@ -50,6 +57,12 @@ public final class SOOPPacket {
             "0125"  // 팬 랭킹
     );
 
+    /**
+     * Returns whether the packet type should be ignored by higher-level handlers.
+     *
+     * @param typeCode SOOP packet type code
+     * @return {@code true} if the type is currently ignored
+     */
     public static boolean isIgnored(String typeCode) {
         return IGNORED_TYPES.contains(typeCode);
     }
@@ -57,26 +70,55 @@ public final class SOOPPacket {
     private SOOPPacket() {
     }
 
+    /**
+     * Builds a SOOP packet string for a type and payload.
+     *
+     * @param typeCode packet type code
+     * @param payload packet payload body
+     * @return encoded SOOP packet string
+     */
     public static String buildPacket(String typeCode, String payload) {
         String safePayload = payload == null ? "" : payload;
         String length = String.format("%06d", safePayload.getBytes(StandardCharsets.UTF_8).length);
         return STARTER + typeCode + length + "00" + safePayload;
     }
 
+    /**
+     * Builds the initial connect packet.
+     *
+     * @return connect packet payload
+     */
     public static String buildConnectPacket() {
         String payload = SEPARATOR.repeat(3) + "16" + SEPARATOR;
         return buildPacket(TYPE_CONNECT, payload);
     }
 
+    /**
+     * Builds the chat-room join packet.
+     *
+     * @param chatNo SOOP chat room number
+     * @return join packet payload
+     */
     public static String buildJoinPacket(String chatNo) {
         String payload = SEPARATOR + (chatNo == null ? "" : chatNo) + SEPARATOR.repeat(5);
         return buildPacket(TYPE_JOIN, payload);
     }
 
+    /**
+     * Builds the ping packet used for keep-alive.
+     *
+     * @return ping packet payload
+     */
     public static String buildPingPacket() {
         return buildPacket(TYPE_PING, SEPARATOR);
     }
 
+    /**
+     * Parses the packet type code from a raw SOOP packet.
+     *
+     * @param packet raw packet text
+     * @return type code, or {@code null} if the packet format is invalid
+     */
     public static String parseTypeCode(String packet) {
         if (packet == null || packet.length() < 6 || !packet.startsWith(STARTER)) {
             return null;
@@ -84,6 +126,12 @@ public final class SOOPPacket {
         return packet.substring(2, 6);
     }
 
+    /**
+     * Splits packet payload into SOOP fields.
+     *
+     * @param packet raw packet text
+     * @return payload fields split by SOOP separator
+     */
     public static String[] splitPayload(String packet) {
         return packet == null ? new String[0] : packet.split(SEPARATOR, -1);
     }

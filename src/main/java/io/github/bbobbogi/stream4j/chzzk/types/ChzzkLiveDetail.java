@@ -9,7 +9,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 /**
- * 라이브 상세 정보를 나타내는 클래스입니다.
+ * Class representing live detail information.
+ *
+ * @since 1.0.0
  */
 public class ChzzkLiveDetail extends ChzzkLiveInfo {
 
@@ -24,7 +26,7 @@ public class ChzzkLiveDetail extends ChzzkLiveInfo {
     private ChzzkLiveChannel channel;
 
     /**
-     * ChzzkLiveDetail을 생성합니다.
+     * Creates a {@link ChzzkLiveDetail}.
      */
     ChzzkLiveDetail() {
         super();
@@ -33,7 +35,7 @@ public class ChzzkLiveDetail extends ChzzkLiveInfo {
     /**
      * Get unique ID number of the live stream.
      *
-     * @return 라이브 ID
+     * @return live ID
      */
     public int getLiveId() {
         return liveId;
@@ -43,7 +45,7 @@ public class ChzzkLiveDetail extends ChzzkLiveInfo {
      * Get URL of the automatically generated thumbnail image.
      *
      * @param resolution Image {@link Resolution}
-     * @return 라이브 이미지 URL
+     * @return live image URL
      */
     public @NotNull String getLiveImageUrl(@NotNull Resolution resolution) {
         return liveImageUrl.replace("{type}", resolution.getRawAsString());
@@ -52,7 +54,7 @@ public class ChzzkLiveDetail extends ChzzkLiveInfo {
     /**
      * Get default thumbnail image URL.
      *
-     * @return 기본 썸네일 이미지 URL (Optional)
+     * @return default thumbnail image URL (optional)
      */
     public @NotNull Optional<String> getDefaultThumbnailImageUrl() {
         return Optional.ofNullable(defaultThumbnailImageUrl);
@@ -61,7 +63,7 @@ public class ChzzkLiveDetail extends ChzzkLiveInfo {
     /**
      * Get start time of the live stream.
      *
-     * @return 방송 시작 시간 (Optional)
+     * @return broadcast start time (optional)
      */
     public @NotNull Optional<ZonedDateTime> getOpenDate() {
         if (openDate == null) {
@@ -74,7 +76,7 @@ public class ChzzkLiveDetail extends ChzzkLiveInfo {
     /**
      * Get close time of the live stream.
      *
-     * @return 방송 종료 시간 (Optional)
+     * @return broadcast end time (optional)
      */
     public @NotNull Optional<ZonedDateTime> getCloseDate() {
         if (closeDate == null) {
@@ -87,7 +89,7 @@ public class ChzzkLiveDetail extends ChzzkLiveInfo {
     /**
      * Get live stream channel.
      *
-     * @return 라이브 채널 정보
+     * @return live channel information
      */
     public @NotNull ChzzkLiveChannel getLiveChannel() {
         return channel;

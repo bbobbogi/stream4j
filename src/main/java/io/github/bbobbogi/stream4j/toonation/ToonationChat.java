@@ -21,6 +21,13 @@ import java.util.regex.Pattern;
 import io.github.bbobbogi.stream4j.common.PlatformChat;
 import io.github.bbobbogi.stream4j.toonation.chat.ToonationDonationMessage;
 
+/**
+ * WebSocket client for Toonation donation alerts.
+ *
+ * <p>Toonation provides donation events only and does not provide chat messages.
+ *
+ * @since 1.0.0
+ */
 public class ToonationChat implements PlatformChat {
 
     static final String ALERTBOX_URL = "https://toon.at/widget/alertbox/";
@@ -47,20 +54,40 @@ public class ToonationChat implements PlatformChat {
         this.isDebug = isDebug;
     }
 
+    /**
+     * Returns whether the alert WebSocket is currently connected.
+     *
+     * @return {@code true} if connected, otherwise {@code false}
+     */
     @Override
     public boolean isConnected() {
         ManagedWebSocket ws = managedWs;
         return ws != null && ws.isConnected();
     }
 
+    /**
+     * Returns whether automatic reconnect is enabled.
+     *
+     * @return {@code true} if reconnect is enabled
+     */
     public boolean shouldAutoReconnect() {
         return autoReconnect;
     }
 
+    /**
+     * Returns the configured Toonation alertbox key.
+     *
+     * @return alertbox key
+     */
     public String getAlertboxKey() {
         return alertboxKey;
     }
 
+    /**
+     * Connects to Toonation asynchronously.
+     *
+     * @return a future completed when initial connection setup finishes
+     */
     @Override
     public CompletableFuture<Void> connectAsync() {
         return CompletableFuture.runAsync(() -> {
@@ -72,6 +99,9 @@ public class ToonationChat implements PlatformChat {
         });
     }
 
+    /**
+     * Connects to Toonation and blocks until completion.
+     */
     @Override
     public void connect() {
         connectAsync().join();
@@ -214,11 +244,19 @@ public class ToonationChat implements PlatformChat {
     private static final long RECONNECT_BASE_DELAY_MS = 1000;
     private static final long RECONNECT_MAX_DELAY_MS = 30000;
 
+    /**
+     * Reconnects asynchronously with exponential backoff.
+     *
+     * @return a future completed when reconnect processing finishes
+     */
     @Override
     public CompletableFuture<Void> reconnectAsync() {
         return CompletableFuture.runAsync(() -> reconnectWithRetry(0));
     }
 
+    /**
+     * Reconnects and blocks until reconnect processing finishes.
+     */
     @Override
     public void reconnect() {
         reconnectAsync().join();
@@ -253,6 +291,11 @@ public class ToonationChat implements PlatformChat {
         }
     }
 
+    /**
+     * Closes the current connection asynchronously.
+     *
+     * @return a future completed when the socket is closed
+     */
     @Override
     public CompletableFuture<Void> closeAsync() {
         return CompletableFuture.runAsync(() -> {
@@ -264,6 +307,9 @@ public class ToonationChat implements PlatformChat {
         });
     }
 
+    /**
+     * Closes the current connection and blocks until completion.
+     */
     @Override
     public void close() {
         closeAsync().join();

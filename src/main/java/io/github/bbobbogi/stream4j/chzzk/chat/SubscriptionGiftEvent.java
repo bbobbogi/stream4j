@@ -4,20 +4,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 구독권 선물 이벤트
+ * Subscription gift event.
  *
- * 구독권을 선물하는 사람의 정보를 담고 있습니다.
- * EVENT 명령(cmd: 93006)으로 전송되며, type은 "SUBSCRIPTION_GIFT"입니다.
+ * Contains information about the user who sends subscription gifts.
+ * Sent through EVENT command (cmd: 93006), and type is "SUBSCRIPTION_GIFT".
  *
- * 이벤트 전송 순서:
- * 1. SUBSCRIPTION_GIFT (발신자 정보) - 1회 전송
- * 2. SUBSCRIPTION_GIFT_RECEIVER (수신자 정보) - 수신자 수만큼 반복 전송
+ * Event sequence:
+ * 1. SUBSCRIPTION_GIFT (sender information) - sent once
+ * 2. SUBSCRIPTION_GIFT_RECEIVER (receiver information) - repeated by receiver count
  *
- * 예시:
- * - 한 명에게 선물: selectionType="MANUAL", quantity=1
- *   → SUBSCRIPTION_GIFT 1회 + SUBSCRIPTION_GIFT_RECEIVER 1회
- * - 랜덤 선물: selectionType="RANDOM", quantity=10
- *   → SUBSCRIPTION_GIFT 1회 + SUBSCRIPTION_GIFT_RECEIVER 10회
+ * Examples:
+ * - Gift to one user: selectionType="MANUAL", quantity=1
+ *   -> SUBSCRIPTION_GIFT once + SUBSCRIPTION_GIFT_RECEIVER once
+ * - Random gift: selectionType="RANDOM", quantity=10
+ *   -> SUBSCRIPTION_GIFT once + SUBSCRIPTION_GIFT_RECEIVER 10 times
+ *
+ * @since 1.0.0
  */
 public class SubscriptionGiftEvent {
     String giftId;
@@ -36,96 +38,96 @@ public class SubscriptionGiftEvent {
     public String rawJson;
 
     /**
-     * SubscriptionGiftEvent를 생성합니다.
+     * Creates a {@link SubscriptionGiftEvent}.
      */
     public SubscriptionGiftEvent() {
     }
 
     /**
-     * 선물 ID를 반환합니다.
+     * Returns the gift ID.
      *
-     * @return 선물 ID
+     * @return gift ID
      */
     public String getGiftId() {
         return giftId;
     }
 
     /**
-     * 선택 타입의 원본 문자열을 반환합니다.
+     * Returns the raw selection type string.
      *
-     * @return 선택 타입 원본 문자열
+     * @return raw selection type string
      */
     public String getSelectionTypeRaw() {
         return selectionType;
     }
 
     /**
-     * 선택 타입을 반환합니다.
+     * Returns the selection type.
      *
-     * @return 선택 타입
+     * @return selection type
      */
     public SelectionType getSelectionType() {
         return SelectionType.fromString(selectionType);
     }
 
     /**
-     * 선물 수량을 반환합니다.
+     * Returns the gift quantity.
      *
-     * @return 선물 수량
+     * @return gift quantity
      */
     public int getQuantity() {
         return quantity;
     }
 
     /**
-     * 부분 환불된 수량을 반환합니다.
+     * Returns the partially refunded quantity.
      *
-     * @return 부분 환불 수량
+     * @return partially refunded quantity
      */
     public int getPartialRefundedQuantity() {
         return partialRefundedQuantity;
     }
 
     /**
-     * 선물 티어 번호를 반환합니다.
+     * Returns the gift tier number.
      *
-     * @return 선물 티어 번호
+     * @return gift tier number
      */
     public int getGiftTierNo() {
         return giftTierNo;
     }
 
     /**
-     * 사용자 ID 해시를 반환합니다.
+     * Returns the user ID hash.
      *
-     * @return 사용자 ID 해시
+     * @return user ID hash
      */
     public String getUserIdHash() {
         return userIdHash;
     }
 
     /**
-     * 발신자 티어 번호를 반환합니다.
+     * Returns the sender tier number.
      *
-     * @return 발신자 티어 번호
+     * @return sender tier number
      */
     public int getSenderTierNo() {
         return senderTierNo;
     }
 
     /**
-     * 선물 타입을 반환합니다.
+     * Returns the gift type.
      *
-     * @return 선물 타입
+     * @return gift type
      */
     public String getGiftType() {
         return giftType;
     }
 
     /**
-     * 실패한 사용자 목록을 반환합니다.
+     * Returns the list of failed users.
      *
-     * @return 실패한 사용자 목록
+     * @return failed user list
      */
     public List<String> getFailedUsers() {
         if (failedUsers instanceof List<?> list) {
@@ -139,36 +141,36 @@ public class SubscriptionGiftEvent {
     }
 
     /**
-     * 완료된 수량을 반환합니다.
+     * Returns the completed quantity.
      *
-     * @return 완료된 수량
+     * @return completed quantity
      */
     public int getCompletedQuantity() {
         return completedQuantity;
     }
 
     /**
-     * 이벤트 타입을 반환합니다.
+     * Returns the event type.
      *
-     * @return 이벤트 타입
+     * @return event type
      */
     public String getType() {
         return type;
     }
 
     /**
-     * 선물 티어 이름을 반환합니다.
+     * Returns the gift tier name.
      *
-     * @return 선물 티어 이름
+     * @return gift tier name
      */
     public String getGiftTierName() {
         return giftTierName;
     }
 
     /**
-     * 원본 JSON 문자열을 반환합니다.
+     * Returns the raw JSON string.
      *
-     * @return 원본 JSON 문자열
+     * @return raw JSON string
      */
     public String getRawJson() {
         return rawJson;

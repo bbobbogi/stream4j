@@ -1,20 +1,22 @@
 package io.github.bbobbogi.stream4j.chzzk.chat;
 
 /**
- * 파티 후원 확인/정산 이벤트
+ * Party donation confirm/settlement event.
  *
- * 파티 후원이 종료되고 정산 정보가 확정되었을 때 전송됩니다.
- * EVENT 명령(cmd: 93006)으로 전송되며, type은 "PARTY_DONATION_CONFIRM"입니다.
+ * Sent when party donation ends and settlement information is finalized.
+ * Sent through EVENT command (cmd: 93006), and type is "PARTY_DONATION_CONFIRM".
  *
- * 파티 후원 라이프사이클:
- * 1. CHANGE_DONATION_ACTIVE (donationType: "PARTY", donationActive: true) - 파티 후원 시작
- * 2. PARTY_DONATION_INFO (파티 상태 정보) - 파티 진행 중 여러 번 전송될 수 있음
- * 3. PartyDonationMessage (파티 후원) - 개별 참여자마다 반복 전송
- * 4. CHANGE_DONATION_ACTIVE (donationType: "PARTY", donationActive: false) - 파티 후원 비활성화
- * 5. PARTY_DONATION_FINISH (confirmNeeded: true) - 파티 후원 종료
- * 6. PARTY_DONATION_CONFIRM - 각 채널별 순위 및 정산 정보 (채널 수만큼 반복)
+ * Party donation lifecycle:
+ * 1. CHANGE_DONATION_ACTIVE (donationType: "PARTY", donationActive: true) - party donation starts
+ * 2. PARTY_DONATION_INFO (party status info) - can be sent multiple times during party donation
+ * 3. PartyDonationMessage (party donation) - repeated per participant
+ * 4. CHANGE_DONATION_ACTIVE (donationType: "PARTY", donationActive: false) - party donation deactivated
+ * 5. PARTY_DONATION_FINISH (confirmNeeded: true) - party donation ends
+ * 6. PARTY_DONATION_CONFIRM - per-channel ranking and settlement info (repeated by channel count)
  *
- * 참고: 파티 후원 시작 후 채팅에 접속한 경우 1번 이벤트를 받지 못하고 2번부터 받을 수 있음
+ * Note: if chat is connected after party donation starts, event #1 may be missed and events can begin from #2.
+ *
+ * @since 1.0.0
  */
 public class PartyDonationConfirmEvent {
     int rank;
@@ -25,51 +27,51 @@ public class PartyDonationConfirmEvent {
     public String rawJson;
 
     /**
-     * PartyDonationConfirmEvent를 생성합니다.
+     * Creates a {@link PartyDonationConfirmEvent}.
      */
     public PartyDonationConfirmEvent() {
     }
 
     /**
-     * 파티 후원 순위를 반환합니다.
+     * Returns the party donation rank.
      *
-     * @return 파티 후원 순위
+     * @return party donation rank
      */
     public int getRank() {
         return rank;
     }
 
     /**
-     * 채널 이름을 반환합니다.
+     * Returns the channel name.
      *
-     * @return 채널 이름
+     * @return channel name
      */
     public String getChannelName() {
         return channelName;
     }
 
     /**
-     * 순위 이름을 반환합니다. (예: "참가비")
+     * Returns the rank name (e.g., "entry fee").
      *
-     * @return 순위 이름
+     * @return rank name
      */
     public String getRankName() {
         return rankName;
     }
 
     /**
-     * 이벤트 타입을 반환합니다.
+     * Returns the event type.
      *
-     * @return 이벤트 타입
+     * @return event type
      */
     public String getType() {
         return type;
     }
 
     /**
-     * 원본 JSON 문자열을 반환합니다.
+     * Returns the raw JSON string.
      *
-     * @return 원본 JSON 문자열
+     * @return raw JSON string
      */
     public String getRawJson() {
         return rawJson;

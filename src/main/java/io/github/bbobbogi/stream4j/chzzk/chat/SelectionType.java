@@ -1,24 +1,26 @@
 package io.github.bbobbogi.stream4j.chzzk.chat;
 
 /**
- * 구독권 선물 선택 방식
+ * Subscription gift selection type.
+ *
+ * @since 1.0.0
  */
 public enum SelectionType {
     /**
-     * 수동 선택 - 직접 선택한 사람에게 선물
+     * Manual selection - gift to directly selected users.
      */
     MANUAL,
 
     /**
-     * 랜덤 선택 - 무작위로 선택된 사람에게 선물
+     * Random selection - gift to randomly selected users.
      */
     RANDOM;
 
     /**
-     * 문자열에서 SelectionType으로 변환합니다.
+     * Converts a string to {@link SelectionType}.
      *
-     * @param type 선택 타입 문자열
-     * @return 해당하는 SelectionType (없으면 null)
+     * @param type selection type string
+     * @return matched {@link SelectionType}, or {@code null} if unknown
      */
     public static SelectionType fromString(String type) {
         if (type == null) return null;

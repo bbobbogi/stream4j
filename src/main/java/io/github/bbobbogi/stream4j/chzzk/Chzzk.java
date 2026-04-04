@@ -24,7 +24,9 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 치지직(CHZZK) API 클라이언트 클래스입니다.
+ * Chzzk (CHZZK) API client class.
+ *
+ * @since 1.0.0
  */
 public class Chzzk {
     /**
@@ -33,12 +35,12 @@ public class Chzzk {
     public static String API_URL = "https://api.chzzk.naver.com";
 
     /**
-     * 네이버 게임 API URL
+     * NAVER game API URL.
      */
     public static String GAME_API_URL = "https://comm-api.game.naver.com/nng_main";
 
     /**
-     * 디버그 모드 활성화 여부
+     * Whether debug mode is enabled.
      */
     public boolean isDebug = false;
 
@@ -75,7 +77,7 @@ public class Chzzk {
     /**
      * Get this {@link Chzzk} logged in.
      *
-     * @return 로그인 상태면 {@code true}, 그렇지 않으면 {@code false}
+     * @return {@code true} if logged in, otherwise {@code false}
      */
     public boolean isLoggedIn() {
         return !isAnonymous;
@@ -84,17 +86,17 @@ public class Chzzk {
     /**
      * Get new an instance of {@link ChzzkChat} with this {@link Chzzk}.
      *
-     * @param channelId 채널 ID
-     * @return {@link ChzzkChatBuilder} 인스턴스
+     * @param channelId channel ID
+     * @return a {@link ChzzkChatBuilder} instance
      */
     public ChzzkChatBuilder chat(String channelId) {
         return new ChzzkChatBuilder(this, channelId);
     }
 
     /**
-     * HTTP 클라이언트를 반환합니다.
+     * Returns the HTTP client.
      *
-     * @return {@link OkHttpClient} 인스턴스
+     * @return an {@link OkHttpClient} instance
      */
     public OkHttpClient getHttpClient() {
         return httpClient;
@@ -194,11 +196,11 @@ public class Chzzk {
     }
 
     /**
-     * 채널의 이모티콘 팩 데이터를 가져옵니다.
+     * Gets emote pack data for the channel.
      *
-     * @param channelId 채널 ID
-     * @return {@link ChzzkChannelEmotePackData} 이모티콘 팩 데이터
-     * @throws IOException API 요청 실패 시
+     * @param channelId channel ID
+     * @return {@link ChzzkChannelEmotePackData} emote pack data
+     * @throws IOException if the API request fails
      */
     public ChzzkChannelEmotePackData getChannelEmotePackData(String channelId) throws IOException {
         JsonElement contentJson = RawApiUtils.getContentJson(

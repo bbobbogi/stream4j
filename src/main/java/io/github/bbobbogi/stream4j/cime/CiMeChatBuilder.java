@@ -5,21 +5,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * {@link CiMeChat} 인스턴스를 생성하기 위한 빌더 클래스입니다.
+ * Builder for {@link CiMeChat} instances.
  *
- * <p>사용 예시:</p>
- * <pre>
- * CiMeChat chat = new CiMeChatBuilder("channel_slug")
- *         .withChatListener(new CiMeChatEventListener() {
- *             {@literal @}Override
- *             public void onChat(CiMeChatMessage msg) {
- *                 System.out.println(msg.getContent());
- *             }
- *         })
- *         .build();
+ * <p>Defaults are auto-reconnect enabled and debug mode disabled.
  *
- * chat.connect();
- * </pre>
+ * @since 1.0.0
  */
 public class CiMeChatBuilder {
 
@@ -31,14 +21,20 @@ public class CiMeChatBuilder {
     private boolean debug = false;
 
     /**
-     * CiMeChatBuilder를 생성합니다.
+     * Creates a builder for a CiMe channel input.
      *
-     * @param channelSlug 채널 슬러그 (ci.me URL에서 사용하는 채널 식별자)
+     * @param channelSlug channel slug or CiMe channel URL
      */
     public CiMeChatBuilder(String channelSlug) {
         this.channelSlug = resolveSlug(channelSlug);
     }
 
+    /**
+     * Resolves a channel input into a normalized slug.
+     *
+     * @param input channel slug, handle, or URL
+     * @return normalized slug
+     */
     public static String resolveSlug(String input) {
         if (input == null) {
             return null;
@@ -58,10 +54,11 @@ public class CiMeChatBuilder {
     }
 
     /**
-     * 채팅 이벤트 리스너를 추가합니다.
+     * Adds a chat event listener.
+     * Default is no listeners.
      *
-     * @param listener 추가할 리스너
-     * @return 현재 빌더 인스턴스
+     * @param listener listener to add
+     * @return this builder for chaining
      */
     public CiMeChatBuilder withChatListener(CiMeChatEventListener listener) {
         listeners.add(listener);
@@ -69,10 +66,11 @@ public class CiMeChatBuilder {
     }
 
     /**
-     * 자동 재연결 설정을 지정합니다.
+     * Configures automatic reconnection.
+     * Default is {@code true}.
      *
-     * @param autoReconnect 자동 재연결 여부
-     * @return 현재 빌더 인스턴스
+     * @param autoReconnect whether automatic reconnect is enabled
+     * @return this builder for chaining
      */
     public CiMeChatBuilder withAutoReconnect(boolean autoReconnect) {
         this.autoReconnect = autoReconnect;
@@ -80,9 +78,10 @@ public class CiMeChatBuilder {
     }
 
     /**
-     * 디버그 모드를 활성화합니다.
+     * Enables debug logging.
+     * Default is disabled.
      *
-     * @return 현재 빌더 인스턴스
+     * @return this builder for chaining
      */
     public CiMeChatBuilder withDebugMode() {
         this.debug = true;
@@ -90,9 +89,9 @@ public class CiMeChatBuilder {
     }
 
     /**
-     * {@link CiMeChat} 인스턴스를 생성합니다.
+     * Builds a {@link CiMeChat} instance.
      *
-     * @return 생성된 CiMeChat 인스턴스
+     * @return a configured CiMe chat client
      */
     public CiMeChat build() {
         CiMeChat chat = new CiMeChat(channelSlug, autoReconnect, debug);

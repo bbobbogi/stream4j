@@ -23,6 +23,14 @@ import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * WebSocket chat client for SOOP live broadcasts.
+ *
+ * <p>Receives chat, donation, subscription, and mission events through
+ * {@link SOOPChatEventListener} callbacks.
+ *
+ * @since 1.0.0
+ */
 public class SOOPChat implements PlatformChat {
 
     private static final String LIVE_DETAIL_API = "https://live.sooplive.co.kr/afreeca/player_live_api.php?bjid=";
@@ -59,12 +67,22 @@ public class SOOPChat implements PlatformChat {
         this.httpClient = httpClient != null ? httpClient : SharedHttpClient.get();
     }
 
+    /**
+     * Returns whether the underlying WebSocket is currently connected.
+     *
+     * @return {@code true} if connected, otherwise {@code false}
+     */
     @Override
     public boolean isConnected() {
         ManagedWebSocket ws = managedWs;
         return ws != null && ws.isConnected();
     }
 
+    /**
+     * Connects to SOOP chat asynchronously.
+     *
+     * @return a future completed when the initial connection flow finishes
+     */
     @Override
     public CompletableFuture<Void> connectAsync() {
         return CompletableFuture.runAsync(() -> {
@@ -76,11 +94,19 @@ public class SOOPChat implements PlatformChat {
         });
     }
 
+    /**
+     * Connects to SOOP chat and blocks until completion.
+     */
     @Override
     public void connect() {
         connectAsync().join();
     }
 
+    /**
+     * Closes the current connection asynchronously.
+     *
+     * @return a future completed when the socket close operation finishes
+     */
     @Override
     public CompletableFuture<Void> closeAsync() {
         return CompletableFuture.runAsync(() -> {
@@ -97,16 +123,27 @@ public class SOOPChat implements PlatformChat {
         });
     }
 
+    /**
+     * Closes the current connection and blocks until completion.
+     */
     @Override
     public void close() {
         closeAsync().join();
     }
 
+    /**
+     * Reconnects asynchronously using configured retry settings.
+     *
+     * @return a future completed when reconnect processing finishes
+     */
     @Override
     public CompletableFuture<Void> reconnectAsync() {
         return CompletableFuture.runAsync(() -> reconnectWithRetry(0));
     }
 
+    /**
+     * Reconnects and blocks until reconnect processing finishes.
+     */
     @Override
     public void reconnect() {
         reconnectAsync().join();

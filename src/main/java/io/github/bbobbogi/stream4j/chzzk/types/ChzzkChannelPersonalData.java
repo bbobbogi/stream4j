@@ -1,7 +1,9 @@
 package io.github.bbobbogi.stream4j.chzzk.types;
 
 /**
- * 채널에 대한 사용자 개인 데이터를 나타내는 클래스입니다.
+ * Class representing user personal data for a channel.
+ *
+ * @since 1.0.0
  */
 public class ChzzkChannelPersonalData {
     private ChzzkChannelFollowingData following;
@@ -12,16 +14,16 @@ public class ChzzkChannelPersonalData {
     /**
      * Get following status of the logged user about the channel.
      *
-     * @return 팔로잉 데이터
+     * @return following data
      */
     public ChzzkChannelFollowingData getFollowing() {
         return following;
     }
 
     /**
-     * 비공개 사용자 차단 여부를 반환합니다.
+     * Returns whether private users are blocked.
      *
-     * @return 비공개 사용자 차단 여부
+     * @return whether private users are blocked
      */
     public boolean isPrivateUserBlock() {
         return privateUserBlock;

@@ -4,16 +4,18 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * 모든 플랫폼의 후원 정보를 통합하는 레코드입니다.
+ * Normalized donation payload shared across all supported platforms.
  *
- * @param platform       후원이 발생한 플랫폼
- * @param type           후원 종류
- * @param status         후원 상태 ({@link DonationStatus})
- * @param userId         후원자 ID (플랫폼별 식별자)
- * @param nickname       후원자 닉네임
- * @param message        후원 메시지
- * @param parsedAmount   플랫폼 단위 금액 + 통화 코드 ({@link CurrencyUtils.ParsedAmount})
- * @param raw            플랫폼별 원본 메시지 객체 (타입 캐스팅 필요)
+ * @param platform non-null platform where the donation event was generated
+ * @param type non-null donation category
+ * @param status non-null normalized donation status ({@link DonationStatus})
+ * @param userId nullable donor identifier in the source platform
+ * @param nickname non-null donor nickname
+ * @param message non-null donation message text
+ * @param anonymous whether the donor was anonymous in the source platform
+ * @param parsedAmount non-null normalized amount and currency data ({@link CurrencyUtils.ParsedAmount})
+ * @param raw nullable raw platform event object for advanced casting and access
+ * @since 1.0.0
  */
 public record Donation(
         @NotNull DonationPlatform platform,
@@ -31,6 +33,11 @@ public record Donation(
         message = message != null ? message : "";
     }
 
+    /**
+     * Returns the numeric donation amount as an integer.
+     *
+     * @return parsed amount, or {@code 0} when parsing fails
+     */
     public int amount() {
         try {
             return (int) Double.parseDouble(parsedAmount.amount());
@@ -39,14 +46,29 @@ public record Donation(
         }
     }
 
+    /**
+     * Returns the normalized currency code.
+     *
+     * @return currency code from {@link #parsedAmount()}
+     */
     public String currencyCode() {
         return parsedAmount.currencyCode();
     }
 
+    /**
+     * Converts the donation amount to KRW when conversion is supported.
+     *
+     * @return converted KRW amount, or {@code 0} when unavailable
+     */
     public int amountInKRW() {
         return CurrencyUtils.toKRW(parsedAmount);
     }
 
+    /**
+     * Returns a formatted amount string for display.
+     *
+     * @return formatted amount text
+     */
     public String formattedAmount() {
         return CurrencyUtils.format(parsedAmount);
     }

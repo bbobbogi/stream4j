@@ -12,8 +12,10 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * 네이버 로그인을 처리하는 클래스입니다.
- * Selenium을 사용하여 네이버에 로그인하고 쿠키를 획득합니다.
+ * Class for handling NAVER login.
+ * Logs in to NAVER with Selenium and retrieves cookies.
+ *
+ * @since 1.0.0
  */
 public class Naver {
 
@@ -33,9 +35,9 @@ public class Naver {
     }
 
     /**
-     * 네이버에 ID와 비밀번호로 로그인합니다.
+     * Logs in to NAVER with ID and password.
      *
-     * @return 로그인 완료 후 반환되는 CompletableFuture
+     * @return {@link CompletableFuture} completed after login
      */
     public CompletableFuture<Void> login() {
         return CompletableFuture.runAsync(() -> {
@@ -69,45 +71,47 @@ public class Naver {
     }
 
     /**
-     * 네이버 ID를 반환합니다.
+     * Returns the NAVER ID.
      *
-     * @return 네이버 ID
+     * @return NAVER ID
      */
     public @NotNull String getId() {
         return id;
     }
 
     /**
-     * 네이버 비밀번호를 반환합니다.
+     * Returns the NAVER password.
      *
-     * @return 네이버 비밀번호
+     * @return NAVER password
      */
     public @NotNull String getPassword() {
         return password;
     }
 
     /**
-     * 네이버 로그인 후 쿠키 값을 반환합니다.
-     * 로그인하지 않은 경우 빈 문자열을 반환합니다.
+     * Returns the cookie value after NAVER login.
+     * Returns an empty string if not logged in.
      *
-     * @param key {@link Cookie} 쿠키 키
-     * @return 쿠키 값 (로그인하지 않은 경우 빈 문자열)
+     * @param key {@link Cookie} key
+     * @return cookie value (empty string if not logged in)
      */
     public @NotNull String getCookie(@NotNull Naver.Cookie key) {
         return cookies.getOrDefault(key, "");
     }
 
     /**
-     * 네이버 쿠키 타입을 나타내는 열거형입니다.
+     * Enum for NAVER cookie types.
+     *
+     * @since 1.0.0
      */
     public enum Cookie {
         /**
-         * 네이버 인증 쿠키
+         * NAVER auth cookie.
          */
         NID_AUT,
 
         /**
-         * 네이버 세션 쿠키
+         * NAVER session cookie.
          */
         NID_SES
     }

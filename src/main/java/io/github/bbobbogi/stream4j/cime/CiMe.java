@@ -13,6 +13,13 @@ import okhttp3.ResponseBody;
 
 import java.io.IOException;
 
+/**
+ * CiMe platform API client.
+ *
+ * <p>Provides read-only access to channel and live metadata and creates chat builders.
+ *
+ * @since 1.0.0
+ */
 public class CiMe {
     public static String API_URL = "https://ci.me/api/app";
     public static String JSON_URL = "https://ci.me/json";
@@ -42,6 +49,13 @@ public class CiMe {
         }
     }
 
+    /**
+     * Retrieves channel information for a CiMe channel slug.
+     *
+     * @param slug the channel slug
+     * @return channel metadata
+     * @throws IOException if the request fails or returns invalid data
+     */
     public CiMeChannelInfo getChannel(String slug) throws IOException {
         Request request = defaultHeaders(JSON_URL + "/@" + slug + "/live")
                 .get()
@@ -65,6 +79,13 @@ public class CiMe {
         }
     }
 
+    /**
+     * Retrieves current live information for a CiMe channel slug.
+     *
+     * @param slug the channel slug
+     * @return live metadata
+     * @throws IOException if the request fails or returns invalid data
+     */
     public CiMeLiveInfo getLiveInfo(String slug) throws IOException {
         Request request = defaultHeaders(API_URL + "/channels/" + slug + "/live/viewer?isWatchingUhd=false")
                 .get()
@@ -94,6 +115,12 @@ public class CiMe {
         }
     }
 
+    /**
+     * Creates a chat builder for the given channel slug.
+     *
+     * @param slug the channel slug
+     * @return a new chat builder
+     */
     public CiMeChatBuilder chat(String slug) {
         return new CiMeChatBuilder(slug);
     }

@@ -28,31 +28,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
- * ci.me 채팅 클라이언트 클래스입니다.
- * Amazon IVS Chat 기반의 ci.me 채팅에 연결합니다.
+ * WebSocket chat client for CiMe (Amazon IVS Chat).
  *
- * <p>사용 예시:</p>
- * <pre>
- * CiMeChat chat = new CiMeChatBuilder("channel_slug")
- *         .withChatListener(new CiMeChatEventListener() {
- *             {@literal @}Override
- *             public void onConnect(CiMeChat chat, boolean isReconnecting) {
- *                 System.out.println("Connected!");
- *             }
- *
- *             {@literal @}Override
- *             public void onChat(CiMeChatMessage msg) {
- *                 if (msg.hasUser()) {
- *                     System.out.println("[Chat] " + msg.getUser().getNickname() + ": " + msg.getContent());
- *                 } else {
- *                     System.out.println("[Chat] 익명: " + msg.getContent());
- *                 }
- *             }
- *         })
- *         .build();
- *
- * chat.connect();
- * </pre>
+ * @since 1.0.0
  */
 public class CiMeChat implements PlatformChat {
     static final String CI_ME_API_URL = "https://ci.me/api/app";
@@ -83,42 +61,47 @@ public class CiMeChat implements PlatformChat {
     }
 
     /**
-     * 채팅 서버 연결 상태를 반환합니다.
+     * Returns whether the WebSocket chat connection is active.
      *
-     * @return 연결되어 있으면 {@code true}, 그렇지 않으면 {@code false}
+     * @return {@code true} if connected, otherwise {@code false}
      */
     public boolean isConnectedToChat() {
         ManagedWebSocket ws = managedWs;
         return ws != null && ws.isConnected();
     }
 
+    /**
+     * Returns whether this chat client is connected.
+     *
+     * @return {@code true} if connected, otherwise {@code false}
+     */
     @Override
     public boolean isConnected() {
         return isConnectedToChat();
     }
 
     /**
-     * 자동 재연결 설정 여부를 반환합니다.
+     * Returns whether automatic reconnection is enabled.
      *
-     * @return 자동 재연결이 활성화되어 있으면 {@code true}, 그렇지 않으면 {@code false}
+     * @return {@code true} if auto reconnect is enabled
      */
     public boolean shouldAutoReconnect() {
         return autoReconnect;
     }
 
     /**
-     * 채널 슬러그를 반환합니다.
+     * Returns the target channel slug.
      *
-     * @return 채널 슬러그
+     * @return channel slug
      */
     public String getChannelSlug() {
         return channelSlug;
     }
 
     /**
-     * 비동기로 채팅에 연결합니다.
+     * Connects to chat asynchronously.
      *
-     * @return 비동기 작업을 위한 CompletableFuture
+     * @return a future that completes when connection setup finishes
      */
     @Override
     public CompletableFuture<Void> connectAsync() {
@@ -131,6 +114,9 @@ public class CiMeChat implements PlatformChat {
         });
     }
 
+    /**
+     * Connects to chat synchronously.
+     */
     @Override
     public void connect() {
         connectAsync().join();
@@ -211,10 +197,10 @@ public class CiMeChat implements PlatformChat {
     }
 
     /**
-     * ci.me API에서 채팅 토큰을 발급받습니다.
+     * Requests a chat token from the CiMe API.
      *
-     * @return 채팅 토큰 문자열
-     * @throws IOException 토큰 발급 실패 시
+     * @return chat token string
+     * @throws IOException if token issuance fails
      */
     private String fetchChatToken() throws IOException {
         String url = CI_ME_API_URL + "/channels/" + channelSlug + "/chat-token";
@@ -398,16 +384,18 @@ public class CiMeChat implements PlatformChat {
     }
 
     /**
-     * 비동기로 재연결합니다.
-     * 새로운 토큰을 발급받아 재연결합니다.
+     * Reconnects asynchronously with retry logic.
      *
-     * @return 비동기 작업을 위한 CompletableFuture
+     * @return a future that completes after reconnect attempt handling
      */
     @Override
     public CompletableFuture<Void> reconnectAsync() {
         return CompletableFuture.runAsync(() -> reconnectWithRetry(0));
     }
 
+    /**
+     * Reconnects synchronously.
+     */
     @Override
     public void reconnect() {
         reconnectAsync().join();
@@ -444,16 +432,16 @@ public class CiMeChat implements PlatformChat {
     }
 
     /**
-     * 동기로 재연결합니다.
+     * Reconnects synchronously.
      */
     public void reconnectSync() {
         reconnectAsync().join();
     }
 
     /**
-     * 비동기로 연결을 종료합니다.
+     * Closes the chat connection asynchronously.
      *
-     * @return 비동기 작업을 위한 CompletableFuture
+     * @return a future that completes when the connection is closed
      */
     @Override
     public CompletableFuture<Void> closeAsync() {
@@ -602,15 +590,18 @@ public class CiMeChat implements PlatformChat {
         }
     }
 
+    /**
+     * Closes the chat connection synchronously.
+     */
     @Override
     public void close() {
         closeAsync().join();
     }
 
     /**
-     * 공유 HTTP 클라이언트를 반환합니다.
+     * Returns the shared HTTP client used by this library.
      *
-     * @return 공유 OkHttpClient 인스턴스
+     * @return shared OkHttp client instance
      */
     public static OkHttpClient getSharedHttpClient() {
         return SharedHttpClient.get();

@@ -7,49 +7,51 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * 라이브 상태 정보를 나타내는 클래스입니다.
+ * Class representing live status information.
+ *
+ * @since 1.0.0
  */
 public class ChzzkLiveInfo implements LiveInfo {
 
-    /** 방송 제목 */
+    /** Broadcast title. */
     protected String liveTitle;
-    /** 방송 상태 */
+    /** Broadcast status. */
     protected String status;
-    /** 동시 접속자 수 */
+    /** Concurrent viewer count. */
     protected int concurrentUserCount;
-    /** 누적 시청자 수 */
+    /** Accumulated viewer count. */
     protected int accumulateCount;
-    /** 유료 프로모션 여부 */
+    /** Whether paid promotion is enabled. */
     protected boolean paidPromotion;
-    /** 성인 전용 여부 */
+    /** Whether the stream is adult-only. */
     protected boolean adult;
-    /** 클립 활성화 여부 */
+    /** Whether clip is enabled. */
     protected boolean clipActive;
-    /** 채팅 채널 ID */
+    /** Chat channel ID. */
     protected String chatChannelId;
-    /** 태그 목록 */
+    /** Tag list. */
     protected List<String> tags;
-    /** 카테고리 타입 */
+    /** Category type. */
     protected String categoryType;
-    /** 라이브 카테고리 */
+    /** Live category. */
     protected String liveCategory;
-    /** 라이브 카테고리 값 */
+    /** Live category value. */
     protected String liveCategoryValue;
-    /** 라이브 폴링 상태 JSON */
+    /** Live polling status JSON. */
     protected String livePollingStatusJson;
-    /** 오류 상태 */
+    /** Fault status. */
     protected Object faultStatus;
-    /** 사용자 성인 상태 */
+    /** User adult status. */
     protected Object userAdultStatus;
-    /** 채팅 활성화 여부 */
+    /** Whether chat is enabled. */
     protected boolean chatActive;
-    /** 채팅 가능 그룹 */
+    /** Chat-allowed group. */
     protected String chatAvailableGroup;
-    /** 채팅 가능 조건 */
+    /** Chat availability condition. */
     protected String chatAvailableCondition;
-    /** 최소 팔로우 시간(분) */
+    /** Minimum follow time (minutes). */
     protected int minFollowerMinute;
-    /** 채팅 후원 랭킹 노출 여부 */
+    /** Whether chat donation ranking is exposed. */
     protected boolean chatDonationRankingExposure;
 
     ChzzkLiveInfo() {

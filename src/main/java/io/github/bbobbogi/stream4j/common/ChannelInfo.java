@@ -1,29 +1,32 @@
 package io.github.bbobbogi.stream4j.common;
 
 /**
- * 플랫폼 공통 채널 정보 인터페이스입니다.
- * <p>각 플랫폼(치지직, CiMe, SOOP, YouTube)의 채널 정보 클래스가 이 인터페이스를 구현합니다.</p>
+ * Common interface for channel metadata across platforms.
+ *
+ * <p>Channel info models from each platform implement this contract.
+ *
+ * @since 1.0.0
  */
 public interface ChannelInfo {
 
     /**
-     * 플랫폼별 고유 채널 식별자를 반환합니다.
+     * Returns the platform-specific channel identifier.
      *
-     * @return 채널 ID
+     * @return channel identifier
      */
     String getId();
 
     /**
-     * 채널 표시 이름을 반환합니다.
+     * Returns the channel display name.
      *
-     * @return 채널 이름
+     * @return channel name
      */
     String getName();
 
     /**
-     * 현재 방송 중인지 여부를 반환합니다.
+     * Returns whether the channel is currently live.
      *
-     * @return 방송 중이면 {@code true}
+     * @return {@code true} when live
      */
     boolean isLive();
 }

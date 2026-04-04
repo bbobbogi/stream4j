@@ -1,22 +1,25 @@
 package io.github.bbobbogi.stream4j.common;
 
 /**
- * 플랫폼 공통 라이브 방송 정보 인터페이스입니다.
- * <p>각 플랫폼(치지직, CiMe, SOOP, YouTube)의 라이브 정보 클래스가 이 인터페이스를 구현합니다.</p>
+ * Common interface for live broadcast metadata across platforms.
+ *
+ * <p>Live info models from each platform implement this contract.
+ *
+ * @since 1.0.0
  */
 public interface LiveInfo {
 
     /**
-     * 현재 방송 중인지 여부를 반환합니다.
+     * Returns whether the broadcast is currently live.
      *
-     * @return 방송 중이면 {@code true}
+     * @return {@code true} when the broadcast is live
      */
     boolean isLive();
 
     /**
-     * 방송 제목을 반환합니다.
+     * Returns the broadcast title.
      *
-     * @return 방송 제목 (없으면 {@code null})
+     * @return title text, or {@code null} when unavailable
      */
     String getTitle();
 }

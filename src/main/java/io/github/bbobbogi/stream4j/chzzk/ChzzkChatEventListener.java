@@ -2,146 +2,148 @@ package io.github.bbobbogi.stream4j.chzzk;
 import io.github.bbobbogi.stream4j.chzzk.chat.*;
 
 /**
- * 채팅 이벤트를 수신하기 위한 리스너 인터페이스입니다.
+ * Listener interface for receiving chat events.
+ *
+ * @since 1.0.0
  */
 public interface ChzzkChatEventListener {
     /**
-     * 채팅 서버에 연결되었을 때 호출됩니다.
+     * Called when connected to the chat server.
      *
-     * @param chat 연결된 채팅 인스턴스
-     * @param isReconnecting 재연결 여부
+     * @param chat connected chat instance
+     * @param isReconnecting whether this is a reconnection
      */
     default void onConnect(ChzzkChat chat, boolean isReconnecting) {}
 
     /**
-     * 채팅 서버와의 연결이 종료되었을 때 호출됩니다.
+     * Called when the connection to the chat server is closed.
      *
-     * @param code 연결 종료 코드
-     * @param reason 연결 종료 사유
-     * @param remote 원격에서 종료되었는지 여부
-     * @param tryingToReconnect 재연결 시도 여부
+     * @param code close code
+     * @param reason close reason
+     * @param remote whether it was closed remotely
+     * @param tryingToReconnect whether reconnection is being attempted
      */
     default void onConnectionClosed(int code, String reason, boolean remote, boolean tryingToReconnect) {}
 
     /**
-     * 방송이 종료되었을 때 호출됩니다.
-     * 30초 간격으로 라이브 상태를 폴링하여 감지합니다.
+     * Called when the broadcast ends.
+     * Broadcast end is detected by polling live status every 30 seconds.
      *
-     * @param chat 채팅 인스턴스
+     * @param chat chat instance
      */
     default void onBroadcastEnd(ChzzkChat chat) {}
 
     /**
-     * 오류가 발생했을 때 호출됩니다.
+     * Called when an error occurs.
      *
-     * @param ex 발생한 예외
+     * @param ex occurred exception
      */
     default void onError(Exception ex) {
         ex.printStackTrace();
     }
 
     /**
-     * 일반 채팅 메시지를 수신했을 때 호출됩니다.
+     * Called when a normal chat message is received.
      *
-     * @param msg 수신된 채팅 메시지
+     * @param msg received chat message
      */
     default void onChat(ChatMessage msg) {}
 
     /**
-     * 후원 채팅 메시지를 수신했을 때 호출됩니다.
+     * Called when a donation chat message is received.
      *
-     * @param msg 수신된 후원 메시지
+     * @param msg received donation message
      */
     default void onDonationChat(DonationMessage msg) {}
 
     /**
-     * 미션 후원 채팅 메시지를 수신했을 때 호출됩니다.
+     * Called when a mission donation chat message is received.
      *
-     * @param msg 수신된 미션 후원 메시지
+     * @param msg received mission donation message
      */
     default void onMissionDonationChat(MissionDonationMessage msg) {}
 
     /**
-     * 파티 후원 채팅 메시지를 수신했을 때 호출됩니다.
+     * Called when a party donation chat message is received.
      *
-     * @param msg 수신된 파티 후원 메시지
+     * @param msg received party donation message
      */
     default void onPartyDonationChat(PartyDonationMessage msg) {}
 
     /**
-     * 구독 채팅 메시지를 수신했을 때 호출됩니다.
+     * Called when a subscription chat message is received.
      *
-     * @param msg 수신된 구독 메시지
+     * @param msg received subscription message
      */
     default void onSubscriptionChat(SubscriptionMessage msg) {}
 
     /**
-     * 미션 후원 이벤트를 수신했을 때 호출됩니다.
+     * Called when a mission donation event is received.
      *
-     * @param msg 수신된 미션 후원 메시지
+     * @param msg received mission donation message
      */
     default void onMissionDonation(MissionDonationMessage msg) {}
 
     /**
-     * 미션 참여 후원 이벤트를 수신했을 때 호출됩니다.
+     * Called when a mission participation donation event is received.
      *
-     * @param msg 수신된 미션 참여 후원 메시지
+     * @param msg received mission participation donation message
      */
     default void onMissionDonationParticipation(MissionParticipationDonationMessage msg) {}
 
     /**
-     * 파티 후원 정보 이벤트를 수신했을 때 호출됩니다.
+     * Called when a party donation info event is received.
      *
-     * @param info 파티 후원 정보
+     * @param info party donation information
      */
     default void onPartyDonationInfo(PartyDonationInfo info) {}
 
     /**
-     * 구독권 선물 이벤트를 수신했을 때 호출됩니다.
+     * Called when a subscription gift event is received.
      *
-     * @param event 구독권 선물 이벤트
+     * @param event subscription gift event
      */
     default void onSubscriptionGift(SubscriptionGiftEvent event) {}
 
     /**
-     * 구독권 선물 수신자 이벤트를 수신했을 때 호출됩니다.
+     * Called when a subscription gift receiver event is received.
      *
-     * @param event 구독권 선물 수신자 이벤트
+     * @param event subscription gift receiver event
      */
     default void onSubscriptionGiftReceiver(SubscriptionGiftReceiverEvent event) {}
 
     /**
-     * 임시 제재 이벤트를 수신했을 때 호출됩니다.
+     * Called when a temporary restriction event is received.
      *
-     * @param event 임시 제재 이벤트
+     * @param event temporary restriction event
      */
     default void onTemporaryRestrict(TemporaryRestrictEvent event) {}
 
     /**
-     * 후원 활성화 상태 변경 이벤트를 수신했을 때 호출됩니다.
+     * Called when a donation activation state change event is received.
      *
-     * @param event 후원 활성화 상태 변경 이벤트
+     * @param event donation activation state change event
      */
     default void onChangeDonationActive(ChangeDonationActiveEvent event) {}
 
     /**
-     * 파티 후원 종료 이벤트를 수신했을 때 호출됩니다.
+     * Called when a party donation finish event is received.
      *
-     * @param event 파티 후원 종료 이벤트
+     * @param event party donation finish event
      */
     default void onPartyDonationFinish(PartyDonationFinishEvent event) {}
 
     /**
-     * 파티 후원 확인 이벤트를 수신했을 때 호출됩니다.
+     * Called when a party donation confirm event is received.
      *
-     * @param event 파티 후원 확인 이벤트
+     * @param event party donation confirm event
      */
     default void onPartyDonationConfirm(PartyDonationConfirmEvent event) {}
 
     /**
-     * IIMS 페널티 이벤트를 수신했을 때 호출됩니다.
+     * Called when an IIMS penalty event is received.
      *
-     * @param event IIMS 페널티 이벤트
+     * @param event IIMS penalty event
      */
     default void onIimsPenalty(IimsPenaltyEvent event) {}
 }

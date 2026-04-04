@@ -14,6 +14,13 @@ import okhttp3.ResponseBody;
 
 import java.io.IOException;
 
+/**
+ * SOOP (formerly AfreecaTV) platform API client.
+ *
+ * <p>Provides channel and live status queries and creates chat clients.
+ *
+ * @since 1.0.0
+ */
 public class SOOP {
     private static final String LIVE_DETAIL_API = "https://live.sooplive.co.kr/afreeca/player_live_api.php?bjid=";
 
@@ -26,6 +33,13 @@ public class SOOP {
         this.isDebug = builder.isDebugEnabled();
     }
 
+    /**
+     * Retrieves live broadcast metadata for the given streamer.
+     *
+     * @param streamerId SOOP streamer ID
+     * @return live information resolved from the SOOP live detail API
+     * @throws IOException if the request fails or the response is invalid
+     */
     public SOOPLiveInfo getLiveInfo(String streamerId) throws IOException {
         RequestBody formBody = new FormBody.Builder()
                 .add("bid", streamerId)
@@ -81,15 +95,35 @@ public class SOOP {
         }
     }
 
+    /**
+     * Retrieves basic channel information for the given streamer.
+     *
+     * @param streamerId SOOP streamer ID
+     * @return channel information including display name and live state
+     * @throws IOException if live information lookup fails
+     */
     public SOOPChannelInfo getChannel(String streamerId) throws IOException {
         SOOPLiveInfo liveInfo = getLiveInfo(streamerId);
         return new SOOPChannelInfo(streamerId, liveInfo.getNickname(), liveInfo.isLive());
     }
 
+    /**
+     * Checks whether the given streamer is currently live.
+     *
+     * @param streamerId SOOP streamer ID
+     * @return {@code true} if the streamer is live, otherwise {@code false}
+     * @throws IOException if live information lookup fails
+     */
     public boolean isLive(String streamerId) throws IOException {
         return getLiveInfo(streamerId).isOnline();
     }
 
+    /**
+     * Creates a chat builder for the given streamer.
+     *
+     * @param streamerId SOOP streamer ID or supported SOOP URL
+     * @return a new chat builder for chat and donation connection
+     */
     public SOOPChatBuilder chat(String streamerId) {
         return new SOOPChatBuilder(streamerId);
     }

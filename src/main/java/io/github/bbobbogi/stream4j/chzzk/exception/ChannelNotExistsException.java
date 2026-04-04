@@ -1,7 +1,9 @@
 package io.github.bbobbogi.stream4j.chzzk.exception;
 
 /**
- * 채널이 존재하지 않을 때 발생하는 예외입니다.
+ * Exception thrown when a channel does not exist.
+ *
+ * @since 1.0.0
  */
 public class ChannelNotExistsException extends NotExistsException {
     /**

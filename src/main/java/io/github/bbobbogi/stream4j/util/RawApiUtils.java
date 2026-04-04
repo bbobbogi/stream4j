@@ -11,20 +11,23 @@ import okhttp3.ResponseBody;
 import java.io.IOException;
 
 /**
- * API 요청을 위한 유틸리티 클래스입니다.
+ * Utility methods for raw API requests.
+ *
+ * @apiNote This is an internal API and may change without notice.
+ * @since 1.0.0
  */
 public class RawApiUtils {
     /**
-     * RawApiUtils 인스턴스 생성을 방지합니다.
+     * Prevents instantiation of this utility class.
      */
     private RawApiUtils() {
     }
 
     /**
-     * HTTP GET 요청을 위한 Request.Builder를 생성합니다.
+     * Creates a {@link Request.Builder} for an HTTP GET request.
      *
-     * @param url 요청할 URL
-     * @return Request.Builder 인스턴스
+     * @param url target URL
+     * @return {@link Request.Builder} instance
      */
     public static Request.Builder httpGetRequest(String url) {
         return new Request.Builder()
@@ -33,13 +36,13 @@ public class RawApiUtils {
     }
 
     /**
-     * HTTP 요청을 실행하고 응답을 JsonObject로 반환합니다.
+     * Executes an HTTP request and returns the response as a {@link JsonObject}.
      *
-     * @param httpClient OkHttpClient 인스턴스
-     * @param request 실행할 요청
-     * @param isDebug 디버그 모드 여부
-     * @return 응답 JSON 객체
-     * @throws IOException 요청 실패 시
+     * @param httpClient {@link OkHttpClient} instance
+     * @param request request to execute
+     * @param isDebug whether debug mode is enabled
+     * @return response JSON object
+     * @throws IOException if the request fails
      */
     public static JsonObject getRawJson(OkHttpClient httpClient, Request request, boolean isDebug) throws IOException {
         Response response = httpClient.newCall(request).execute();
@@ -65,13 +68,13 @@ public class RawApiUtils {
     }
 
     /**
-     * HTTP 요청을 실행하고 응답의 content 필드를 JsonElement로 반환합니다.
+     * Executes an HTTP request and returns the {@code content} field as a {@link JsonElement}.
      *
-     * @param httpClient OkHttpClient 인스턴스
-     * @param request 실행할 요청
-     * @param isDebug 디버그 모드 여부
-     * @return 응답의 content JSON 요소
-     * @throws IOException 요청 실패 시
+     * @param httpClient {@link OkHttpClient} instance
+     * @param request request to execute
+     * @param isDebug whether debug mode is enabled
+     * @return response {@code content} JSON element
+     * @throws IOException if the request fails
      */
     public static JsonElement getContentJson(OkHttpClient httpClient, Request request, boolean isDebug) throws IOException {
         return getRawJson(httpClient, request, isDebug).get("content");

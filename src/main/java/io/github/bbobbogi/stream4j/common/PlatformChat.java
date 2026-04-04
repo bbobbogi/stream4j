@@ -3,22 +3,55 @@ package io.github.bbobbogi.stream4j.common;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * 플랫폼 공통 채팅 클라이언트 인터페이스입니다.
- * <p>각 플랫폼(치지직, CiMe, SOOP, YouTube)의 Chat 클래스가 이 인터페이스를 구현합니다.</p>
+ * Common interface for platform-specific chat clients.
+ *
+ * <p>Chat implementations for Chzzk, CiMe, SOOP, and YouTube expose these
+ * lifecycle operations.
+ *
+ * @since 1.0.0
  */
 public interface PlatformChat {
 
+    /**
+     * Returns whether this chat client is currently connected.
+     *
+     * @return {@code true} if connected
+     */
     boolean isConnected();
 
+    /**
+     * Connects asynchronously.
+     *
+     * @return a future that completes when connection is established
+     */
     CompletableFuture<Void> connectAsync();
 
+    /**
+     * Connects synchronously.
+     */
     void connect();
 
+    /**
+     * Closes asynchronously.
+     *
+     * @return a future that completes when close is finished
+     */
     CompletableFuture<Void> closeAsync();
 
+    /**
+     * Closes synchronously.
+     */
     void close();
 
+    /**
+     * Reconnects asynchronously.
+     *
+     * @return a future that completes when reconnect is finished
+     */
     CompletableFuture<Void> reconnectAsync();
 
+    /**
+     * Reconnects synchronously.
+     */
     void reconnect();
 }

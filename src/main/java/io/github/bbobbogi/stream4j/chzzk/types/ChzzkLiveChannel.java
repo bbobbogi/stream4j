@@ -3,7 +3,9 @@ package io.github.bbobbogi.stream4j.chzzk.types;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * 라이브 채널 정보를 나타내는 클래스입니다.
+ * Class representing live channel information.
+ *
+ * @since 1.0.0
  */
 public class ChzzkLiveChannel {
 
@@ -13,7 +15,7 @@ public class ChzzkLiveChannel {
     private boolean verifiedMark;
 
     /**
-     * ChzzkLiveChannel을 생성합니다.
+     * Creates a {@link ChzzkLiveChannel}.
      */
     ChzzkLiveChannel() {
     }
@@ -21,7 +23,7 @@ public class ChzzkLiveChannel {
     /**
      * Get id of the live channel.
      *
-     * @return 채널 ID
+     * @return channel ID
      */
     public @NotNull String getId() {
         return channelId;
@@ -30,7 +32,7 @@ public class ChzzkLiveChannel {
     /**
      * Get name of the live channel.
      *
-     * @return 채널 이름
+     * @return channel name
      */
     public @NotNull String getName() {
         return channelName;
@@ -39,7 +41,7 @@ public class ChzzkLiveChannel {
     /**
      * Get image url of the live channel.
      *
-     * @return 채널 이미지 URL
+     * @return channel image URL
      */
     public @NotNull String getImageUrl() {
         return channelImageUrl;
@@ -48,7 +50,7 @@ public class ChzzkLiveChannel {
     /**
      * Get verified mark status of the live channel.
      *
-     * @return 인증 마크 여부
+     * @return whether the channel has a verified mark
      */
     public boolean hasVerifiedMark() {
         return verifiedMark;

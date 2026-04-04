@@ -12,6 +12,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.*;
 
+/**
+ * Polling-based chat client for YouTube live broadcasts.
+ *
+ * <p>This client reads live chat by periodic HTTP polling instead of a WebSocket connection.
+ *
+ * @since 1.0.0
+ */
 public class YouTubeChat implements PlatformChat {
     final ArrayList<YouTubeChatEventListener> listeners = new ArrayList<>();
 
@@ -54,11 +61,33 @@ public class YouTubeChat implements PlatformChat {
         });
     }
 
+    /**
+     * Returns whether the polling client is currently connected.
+     *
+     * @return {@code true} if connected, otherwise {@code false}
+     */
     @Override
     public boolean isConnected() { return connected; }
+
+    /**
+     * Returns the resolved video ID after connection.
+     *
+     * @return the video ID, or {@code null} if not initialized
+     */
     public String getVideoId() { return liveChat != null ? liveChat.getVideoId() : null; }
+
+    /**
+     * Returns the resolved channel ID after connection.
+     *
+     * @return the channel ID, or {@code null} if not initialized
+     */
     public String getChannelId() { return liveChat != null ? liveChat.getChannelId() : null; }
 
+    /**
+     * Connects to chat asynchronously.
+     *
+     * @return a future that completes when the connection is established
+     */
     @Override
     public CompletableFuture<Void> connectAsync() {
         return CompletableFuture.runAsync(() -> {
@@ -70,6 +99,9 @@ public class YouTubeChat implements PlatformChat {
         });
     }
 
+    /**
+     * Connects to chat synchronously.
+     */
     @Override
     public void connect() { connectAsync().join(); }
 
@@ -177,6 +209,11 @@ public class YouTubeChat implements PlatformChat {
         if (poller != null) { poller.shutdownNow(); poller = null; }
     }
 
+    /**
+     * Closes the chat connection asynchronously.
+     *
+     * @return a future that completes when resources are released
+     */
     @Override
     public CompletableFuture<Void> closeAsync() {
         return CompletableFuture.runAsync(() -> {
@@ -186,9 +223,17 @@ public class YouTubeChat implements PlatformChat {
         });
     }
 
+    /**
+     * Closes the chat connection synchronously.
+     */
     @Override
     public void close() { closeAsync().join(); }
 
+    /**
+     * Reconnects to chat asynchronously.
+     *
+     * @return a future that completes after reconnection attempt finishes
+     */
     @Override
     public CompletableFuture<Void> reconnectAsync() {
         return CompletableFuture.runAsync(() -> {
@@ -202,6 +247,9 @@ public class YouTubeChat implements PlatformChat {
         });
     }
 
+    /**
+     * Reconnects to chat synchronously.
+     */
     @Override
     public void reconnect() { reconnectAsync().join(); }
 }

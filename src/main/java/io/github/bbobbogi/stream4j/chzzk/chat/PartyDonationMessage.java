@@ -1,52 +1,54 @@
 package io.github.bbobbogi.stream4j.chzzk.chat;
 
 /**
- * 파티 후원 메시지
+ * Party donation message.
  *
- * 파티 후원에 참여한 사람의 정보를 담고 있습니다.
- * CHAT/DONATION 명령(cmd: 93101/93102)으로 전송되며, donationType은 "PARTY"입니다.
+ * Contains information about a user participating in party donation.
+ * Sent through CHAT/DONATION command (cmd: 93101/93102), and donationType is "PARTY".
  *
- * partyName과 partyNo를 통해 어떤 파티에 후원했는지 확인할 수 있습니다.
+ * You can identify which party was donated to via partyName and partyNo.
  *
- * 파티 후원 라이프사이클:
- * 1. CHANGE_DONATION_ACTIVE (donationType: "PARTY", donationActive: true) - 파티 후원 시작
- * 2. PARTY_DONATION_INFO (파티 상태 정보) - 파티 진행 중 여러 번 전송될 수 있음
- * 3. PartyDonationMessage (파티 후원) - 개별 참여자마다 반복 전송
- * 4. CHANGE_DONATION_ACTIVE (donationType: "PARTY", donationActive: false) - 파티 후원 비활성화
- * 5. PARTY_DONATION_FINISH (confirmNeeded: true) - 파티 후원 종료
- * 6. PARTY_DONATION_CONFIRM - 각 채널별 순위 및 정산 정보 (채널 수만큼 반복)
+ * Party donation lifecycle:
+ * 1. CHANGE_DONATION_ACTIVE (donationType: "PARTY", donationActive: true) - party donation starts
+ * 2. PARTY_DONATION_INFO (party status info) - can be sent multiple times during party donation
+ * 3. PartyDonationMessage (party donation) - repeated per participant
+ * 4. CHANGE_DONATION_ACTIVE (donationType: "PARTY", donationActive: false) - party donation deactivated
+ * 5. PARTY_DONATION_FINISH (confirmNeeded: true) - party donation ends
+ * 6. PARTY_DONATION_CONFIRM - per-channel ranking and settlement info (repeated by channel count)
  *
- * 참고: 파티 후원 시작 후 채팅에 접속한 경우 1번 이벤트를 받지 못하고 2번부터 받을 수 있음
+ * Note: if chat is connected after party donation starts, event #1 may be missed and events can begin from #2.
+ *
+ * @since 1.0.0
  */
 public class PartyDonationMessage extends DonationMessage {
     /**
-     * PartyDonationMessage를 생성합니다.
+     * Creates a {@link PartyDonationMessage}.
      */
     public PartyDonationMessage() {
     }
 
     /**
-     * 파티 후원 ID를 반환합니다.
+     * Returns the party donation ID.
      *
-     * @return 파티 후원 ID
+     * @return party donation ID
      */
     public String getPartyDonationId() {
         return extras.partyDonationId;
     }
 
     /**
-     * 파티 이름을 반환합니다.
+     * Returns the party name.
      *
-     * @return 파티 이름
+     * @return party name
      */
     public String getPartyName() {
         return extras.partyName;
     }
 
     /**
-     * 파티 번호를 반환합니다.
+     * Returns the party number.
      *
-     * @return 파티 번호
+     * @return party number
      */
     public int getPartyNo() {
         return extras.partyNo;

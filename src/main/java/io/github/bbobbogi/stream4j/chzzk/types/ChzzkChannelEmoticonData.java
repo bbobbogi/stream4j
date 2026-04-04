@@ -1,7 +1,9 @@
 package io.github.bbobbogi.stream4j.chzzk.types;
 
 /**
- * 채널 이모티콘 데이터를 나타내는 클래스입니다.
+ * Class representing channel emoticon data.
+ *
+ * @since 1.0.0
  */
 public class ChzzkChannelEmoticonData {
     private String emojiId;
@@ -12,7 +14,7 @@ public class ChzzkChannelEmoticonData {
     /**
      * Get the emoticon's id.
      *
-     * @return 이모티콘 ID
+     * @return emoticon ID
      */
     public String getEmoticonId() {
         return emojiId;
@@ -21,7 +23,7 @@ public class ChzzkChannelEmoticonData {
     /**
      * Get url of the emoticon's image.
      *
-     * @return 이모티콘 이미지 URL
+     * @return emoticon image URL
      */
     public String getEmoticonImageUrl() {
         return imageUrl;

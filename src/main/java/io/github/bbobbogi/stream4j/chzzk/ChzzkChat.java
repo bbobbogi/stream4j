@@ -31,7 +31,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 치지직 채팅 클라이언트 클래스입니다.
+ * Chzzk chat client class.
+ *
+ * @since 1.0.0
  */
 public class ChzzkChat implements PlatformChat {
     boolean reconnecting;
@@ -64,9 +66,9 @@ public class ChzzkChat implements PlatformChat {
     }};
 
     /**
-     * 채팅 서버 연결 상태를 반환합니다.
+     * Returns the chat server connection status.
      *
-     * @return 연결되어 있으면 {@code true}, 그렇지 않으면 {@code false}
+     * @return {@code true} if connected, otherwise {@code false}
      */
     public boolean isConnectedToChat() {
         ManagedWebSocket ws = managedWs;
@@ -79,27 +81,27 @@ public class ChzzkChat implements PlatformChat {
     }
 
     /**
-     * 자동 재연결 설정 여부를 반환합니다.
+     * Returns whether auto-reconnect is enabled.
      *
-     * @return 자동 재연결이 활성화되어 있으면 {@code true}, 그렇지 않으면 {@code false}
+     * @return {@code true} if auto-reconnect is enabled, otherwise {@code false}
      */
     public boolean shouldAutoReconnect() {
         return autoReconnect;
     }
 
     /**
-     * 채팅 ID를 반환합니다.
+     * Returns the chat ID.
      *
-     * @return 채팅 ID
+     * @return chat ID
      */
     public String getChatId() {
         return chatId;
     }
 
     /**
-     * 채널 ID를 반환합니다.
+     * Returns the channel ID.
      *
-     * @return 채널 ID
+     * @return channel ID
      */
     public String getChannelId() {
         return channelId;
@@ -119,7 +121,7 @@ public class ChzzkChat implements PlatformChat {
     /**
      * Connects to the chat. This method doesn't block.
      *
-     * @return 비동기 작업을 위한 CompletableFuture
+     * @return {@link CompletableFuture} for asynchronous work
      */
     @Override
     public CompletableFuture<Void> connectAsync() {
@@ -132,9 +134,9 @@ public class ChzzkChat implements PlatformChat {
     }
 
     /**
-     * 이벤트 리스너를 추가합니다.
+     * Adds an event listener.
      *
-     * @param listener 추가할 리스너
+     * @param listener listener to add
      * @deprecated Please add listeners when build {@link ChzzkChat} by {@link ChzzkChatBuilder}
      */
     @Deprecated
@@ -143,9 +145,9 @@ public class ChzzkChat implements PlatformChat {
     }
 
     /**
-     * 최근 채팅 메시지를 요청합니다.
+     * Requests recent chat messages.
      *
-     * @param chatCount 요청할 채팅 메시지 수
+     * @param chatCount number of recent chat messages to request
      */
     public void requestRecentChat(int chatCount) {
         ManagedWebSocket ws = managedWs;
@@ -160,9 +162,9 @@ public class ChzzkChat implements PlatformChat {
     }
 
     /**
-     * 채팅 메시지를 전송합니다.
+     * Sends a chat message.
      *
-     * @param content 전송할 메시지 내용
+     * @param content message content to send
      */
     public void sendChat(String content) {
         if (content == null || content.isEmpty()) {
@@ -272,9 +274,9 @@ public class ChzzkChat implements PlatformChat {
     }
 
     /**
-     * 비동기로 재연결합니다.
+     * Reconnects asynchronously.
      *
-     * @return 비동기 작업을 위한 CompletableFuture
+     * @return {@link CompletableFuture} for asynchronous work
      */
     private static final int MAX_RECONNECT_ATTEMPTS = 10;
     private static final long RECONNECT_BASE_DELAY_MS = 1000;
@@ -327,16 +329,16 @@ public class ChzzkChat implements PlatformChat {
     }
 
     /**
-     * 동기로 재연결합니다.
+     * Reconnects synchronously.
      */
     public void reconnectSync() {
         reconnectAsync().join();
     }
 
     /**
-     * 비동기로 연결을 종료합니다.
+     * Closes the connection asynchronously.
      *
-     * @return 비동기 작업을 위한 CompletableFuture
+     * @return {@link CompletableFuture} for asynchronous work
      */
     @Override
     public CompletableFuture<Void> closeAsync() {

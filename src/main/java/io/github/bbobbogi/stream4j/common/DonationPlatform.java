@@ -3,25 +3,27 @@ package io.github.bbobbogi.stream4j.common;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * 후원을 수신할 수 있는 스트리밍 플랫폼입니다.
+ * Streaming platforms that can provide donation events.
+ *
+ * @since 1.0.0
  */
 public enum DonationPlatform {
-    /** 치지직 (CHZZK) - 네이버 */
+    /** Naver Chzzk platform. */
     CHZZK,
-    /** ci.me - Amazon IVS 기반 */
+    /** CiMe platform based on Amazon IVS. */
     CIME,
-    /** 숲 (SOOP/AfreecaTV) */
+    /** SOOP platform (formerly AfreecaTV). */
     SOOP,
-    /** 투네이션 (Toonation) */
+    /** Toonation donation alert platform. */
     TOONATION,
     /** YouTube */
     YOUTUBE;
 
     /**
-     * 이름으로 플랫폼을 찾습니다.
+     * Resolves a platform by name.
      *
-     * @param name 플랫폼 이름 (대소문자 무관)
-     * @return 일치하는 플랫폼, 없으면 {@code null}
+     * @param name platform name, case-insensitive
+     * @return matching platform, or {@code null} when not found
      */
     @Nullable
     public static DonationPlatform from(String name) {

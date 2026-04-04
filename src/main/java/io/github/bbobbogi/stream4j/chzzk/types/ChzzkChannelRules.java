@@ -1,7 +1,9 @@
 package io.github.bbobbogi.stream4j.chzzk.types;
 
 /**
- * 채널 규칙 정보를 나타내는 클래스입니다.
+ * Class representing channel rule information.
+ *
+ * @since 1.0.0
  */
 public class ChzzkChannelRules {
     private boolean agree;
@@ -15,7 +17,7 @@ public class ChzzkChannelRules {
     /**
      * Get the user is agreed to the rules of channel.
      *
-     * @return 규칙 동의 여부
+     * @return whether the user agreed to the rules
      */
     public boolean isAgree() {
         return agree;
@@ -24,7 +26,7 @@ public class ChzzkChannelRules {
     /**
      * Get the id of channel.
      *
-     * @return 채널 ID
+     * @return channel ID
      */
     public String getChannelId() {
         return channelId;
@@ -33,7 +35,7 @@ public class ChzzkChannelRules {
     /**
      * Get the rule string of channel.
      *
-     * @return 채널 규칙 문자열
+     * @return channel rule string
      */
     public String getRule() {
         return rule;
@@ -42,7 +44,7 @@ public class ChzzkChannelRules {
     /**
      * Get when the rule updated in yyyy-mm-dd HH:mm:ss format.
      *
-     * @return 규칙 업데이트 날짜
+     * @return rule update date
      */
     public String getUpdatedDate() {
         return updatedDate;
@@ -51,7 +53,7 @@ public class ChzzkChannelRules {
     /**
      * Get the user is agreed to the rules of channel.
      *
-     * @return 서비스 동의 여부
+     * @return whether the user agreed to the service terms
      */
     public boolean isServiceAgree() {
         return serviceAgree;

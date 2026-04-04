@@ -4,6 +4,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * YouTube live chat message model.
+ *
+ * @since 1.0.0
+ */
 public class ChatItem {
     protected ChatItemType type;
     protected String authorName;
@@ -236,6 +241,11 @@ public class ChatItem {
         return this.authorNameTextColor;
     }
 
+    /**
+     * Returns the ticker end background color for ticker paid messages.
+     *
+     * @return color value as integer
+     */
     public int getEndBackgroundColor() {
         return this.endBackgroundColor;
     }

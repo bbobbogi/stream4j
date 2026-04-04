@@ -8,7 +8,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * {@link ChzzkChat} 인스턴스를 생성하기 위한 빌더 클래스입니다.
+ * Builder class for creating {@link ChzzkChat} instances.
+ *
+ * @since 1.0.0
  */
 public class ChzzkChatBuilder {
 
@@ -21,10 +23,10 @@ public class ChzzkChatBuilder {
     private boolean debug = false;
 
     /**
-     * ChzzkChatBuilder를 생성합니다.
+     * Creates a {@link ChzzkChatBuilder}.
      *
-     * @param chzzk Chzzk 인스턴스
-     * @param channelId 채널 ID
+     * @param chzzk {@link Chzzk} instance
+     * @param channelId channel ID
      */
     public ChzzkChatBuilder(Chzzk chzzk, String channelId) {
         this.chzzk = chzzk;
@@ -46,10 +48,10 @@ public class ChzzkChatBuilder {
     }
 
     /**
-     * 채팅 이벤트 리스너를 추가합니다.
+     * Adds a chat event listener.
      *
-     * @param listener 추가할 리스너
-     * @return 현재 빌더 인스턴스
+     * @param listener listener to add
+     * @return this builder instance
      */
     public ChzzkChatBuilder withChatListener(ChzzkChatEventListener listener) {
         listeners.add(listener);
@@ -58,10 +60,10 @@ public class ChzzkChatBuilder {
     }
 
     /**
-     * 자동 재연결 설정을 지정합니다.
+     * Sets the auto-reconnect option.
      *
-     * @param autoReconnect 자동 재연결 여부
-     * @return 현재 빌더 인스턴스
+     * @param autoReconnect whether to enable auto-reconnect
+     * @return this builder instance
      */
     public ChzzkChatBuilder withAutoReconnect(boolean autoReconnect) {
         this.autoReconnect = autoReconnect;
@@ -75,10 +77,10 @@ public class ChzzkChatBuilder {
     }
 
     /**
-     * {@link ChzzkChat} 인스턴스를 생성합니다.
+     * Creates a {@link ChzzkChat} instance.
      *
-     * @return 생성된 ChzzkChat 인스턴스
-     * @throws IOException API 요청 실패 시
+     * @return a new {@link ChzzkChat} instance
+     * @throws IOException if the API request fails
      */
     public ChzzkChat build() throws IOException {
         ChzzkChat chat = new ChzzkChat(chzzk, channelId, autoReconnect, debug);

@@ -1,16 +1,18 @@
 package io.github.bbobbogi.stream4j.chzzk.chat;
 
 /**
- * 구독권 선물 수신자 이벤트
+ * Subscription gift receiver event.
  *
- * 구독권을 받는 사람의 정보를 담고 있습니다.
- * EVENT 명령(cmd: 93006)으로 전송되며, type은 "SUBSCRIPTION_GIFT_RECEIVER"입니다.
+ * Contains information about the user receiving a subscription gift.
+ * Sent through EVENT command (cmd: 93006), and type is "SUBSCRIPTION_GIFT_RECEIVER".
  *
- * 이벤트 전송 순서:
- * 1. SUBSCRIPTION_GIFT (발신자 정보) - 1회 전송
- * 2. SUBSCRIPTION_GIFT_RECEIVER (수신자 정보) - 수신자 수만큼 반복 전송 ← 현재 클래스
+ * Event sequence:
+ * 1. SUBSCRIPTION_GIFT (sender information) - sent once
+ * 2. SUBSCRIPTION_GIFT_RECEIVER (receiver information) - repeated by receiver count (this class)
  *
- * giftId 필드를 통해 어떤 SUBSCRIPTION_GIFT에 속하는 수신자인지 확인할 수 있습니다.
+ * giftId links this receiver to its SUBSCRIPTION_GIFT event.
+ *
+ * @since 1.0.0
  */
 public class SubscriptionGiftReceiverEvent {
     String giftId;
@@ -27,114 +29,114 @@ public class SubscriptionGiftReceiverEvent {
     public String rawJson;
 
     /**
-     * SubscriptionGiftReceiverEvent를 생성합니다.
+     * Creates a {@link SubscriptionGiftReceiverEvent}.
      */
     public SubscriptionGiftReceiverEvent() {
     }
 
     /**
-     * 선물 ID를 반환합니다.
+     * Returns the gift ID.
      *
-     * @return 선물 ID
+     * @return gift ID
      */
     public String getGiftId() {
         return giftId;
     }
 
     /**
-     * 수신자의 사용자 ID 해시를 반환합니다.
+     * Returns the receiver user ID hash.
      *
-     * @return 수신자 사용자 ID 해시
+     * @return receiver user ID hash
      */
     public String getReceiverUserIdHash() {
         return receiverUserIdHash;
     }
 
     /**
-     * 선택 타입의 원본 문자열을 반환합니다.
+     * Returns the raw selection type string.
      *
-     * @return 선택 타입 원본 문자열
+     * @return raw selection type string
      */
     public String getSelectionTypeRaw() {
         return selectionType;
     }
 
     /**
-     * 선택 타입을 반환합니다.
+     * Returns the selection type.
      *
-     * @return 선택 타입
+     * @return selection type
      */
     public SelectionType getSelectionType() {
         return SelectionType.fromString(selectionType);
     }
 
     /**
-     * 선물 티어 번호를 반환합니다.
+     * Returns the gift tier number.
      *
-     * @return 선물 티어 번호
+     * @return gift tier number
      */
     public int getGiftTierNo() {
         return giftTierNo;
     }
 
     /**
-     * 발신자의 사용자 ID 해시를 반환합니다.
+     * Returns the sender user ID hash.
      *
-     * @return 발신자 사용자 ID 해시
+     * @return sender user ID hash
      */
     public String getUserIdHash() {
         return userIdHash;
     }
 
     /**
-     * 수신자의 인증 마크 여부를 반환합니다.
+     * Returns whether the receiver has a verified mark.
      *
-     * @return 수신자 인증 마크 여부
+     * @return receiver verified mark status
      */
     public boolean isReceiverVerifiedMark() {
         return receiverVerifiedMark;
     }
 
     /**
-     * 선물 타입을 반환합니다.
+     * Returns the gift type.
      *
-     * @return 선물 타입
+     * @return gift type
      */
     public String getGiftType() {
         return giftType;
     }
 
     /**
-     * 수신자의 닉네임을 반환합니다.
+     * Returns the receiver nickname.
      *
-     * @return 수신자 닉네임
+     * @return receiver nickname
      */
     public String getReceiverNickname() {
         return receiverNickname;
     }
 
     /**
-     * 이벤트 타입을 반환합니다.
+     * Returns the event type.
      *
-     * @return 이벤트 타입
+     * @return event type
      */
     public String getType() {
         return type;
     }
 
     /**
-     * 선물 티어 이름을 반환합니다.
+     * Returns the gift tier name.
      *
-     * @return 선물 티어 이름
+     * @return gift tier name
      */
     public String getGiftTierName() {
         return giftTierName;
     }
 
     /**
-     * 원본 JSON 문자열을 반환합니다.
+     * Returns the raw JSON string.
      *
-     * @return 원본 JSON 문자열
+     * @return raw JSON string
      */
     public String getRawJson() {
         return rawJson;

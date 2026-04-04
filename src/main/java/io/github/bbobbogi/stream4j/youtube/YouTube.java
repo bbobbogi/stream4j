@@ -17,6 +17,15 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * YouTube platform API client.
+ *
+ * <p>Provides access to live stream metadata and creates polling-based chat clients
+ * for YouTube live broadcasts.
+ *
+ * @since 1.0.0
+ * @see YouTubeBuilder
+ */
 public class YouTube {
     private static final Gson gson = new Gson();
 
@@ -33,6 +42,13 @@ public class YouTube {
         this.isDebug = builder.isDebugEnabled();
     }
 
+    /**
+     * Retrieves live broadcast information for a YouTube video.
+     *
+     * @param videoIdOrUrl the video ID or a YouTube watch URL
+     * @return live broadcast metadata for the target video
+     * @throws IOException if the watch page cannot be fetched or parsed
+     */
     public YouTubeLiveInfo getLiveInfo(String videoIdOrUrl) throws IOException {
         String videoId = YouTubeLiveChat.getVideoIdFromURL(videoIdOrUrl);
         String clientVersion = getClientVersion();
@@ -67,15 +83,35 @@ public class YouTube {
         );
     }
 
+    /**
+     * Retrieves channel information from a YouTube live video input.
+     *
+     * @param videoIdOrUrl the video ID or a YouTube watch URL
+     * @return channel metadata associated with the video
+     * @throws IOException if live information cannot be loaded
+     */
     public YouTubeChannelInfo getChannel(String videoIdOrUrl) throws IOException {
         YouTubeLiveInfo liveInfo = getLiveInfo(videoIdOrUrl);
         return new YouTubeChannelInfo(liveInfo.getChannelId(), liveInfo.getChannelName(), liveInfo.isLive());
     }
 
+    /**
+     * Checks whether the target YouTube video is currently live.
+     *
+     * @param videoIdOrUrl the video ID or a YouTube watch URL
+     * @return {@code true} if the broadcast is live, otherwise {@code false}
+     * @throws IOException if live information cannot be loaded
+     */
     public boolean isLive(String videoIdOrUrl) throws IOException {
         return getLiveInfo(videoIdOrUrl).isLive();
     }
 
+    /**
+     * Creates a chat builder for the target YouTube input.
+     *
+     * @param videoIdOrUrl the video ID, watch URL, channel URL, or user handle URL
+     * @return a new chat builder instance
+     */
     public YouTubeChatBuilder chat(String videoIdOrUrl) {
         return new YouTubeChatBuilder(videoIdOrUrl);
     }

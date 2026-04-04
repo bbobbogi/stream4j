@@ -7,7 +7,9 @@ import io.github.bbobbogi.stream4j.chzzk.exception.NotExistsException;
 import java.io.IOException;
 
 /**
- * 치지직 부분 채널 정보를 나타내는 클래스입니다.
+ * Class representing partial Chzzk channel information.
+ *
+ * @since 1.0.0
  */
 public class ChzzkPartialChannel {
     private String channelId;
@@ -22,7 +24,7 @@ public class ChzzkPartialChannel {
     /**
      * Get this channel's {@link ChzzkChannelRules}.
      *
-     * @param chzzk {@link Chzzk} 인스턴스
+     * @param chzzk {@link Chzzk} instance
      * @return {@link ChzzkChannelRules} of the channel
      * @throws IOException if the request to API failed
      * @throws NotExistsException if the channel doesn't exists or the rules of the channel doesn't available
@@ -34,7 +36,7 @@ public class ChzzkPartialChannel {
     /**
      * Get the channel's id.
      *
-     * @return 채널 ID
+     * @return channel ID
      */
     public String getChannelId() {
         return channelId;
@@ -43,7 +45,7 @@ public class ChzzkPartialChannel {
     /**
      * Get the name of the channel.
      *
-     * @return 채널 이름
+     * @return channel name
      */
     public String getChannelName() {
         return channelName;
@@ -52,7 +54,7 @@ public class ChzzkPartialChannel {
     /**
      * Get url of the channel's image.
      *
-     * @return 채널 이미지 URL (없는 경우 null)
+     * @return channel image URL (null if unavailable)
      */
     @Nullable
     public String getChannelImageUrl() {
@@ -62,7 +64,7 @@ public class ChzzkPartialChannel {
     /**
      * Get is the channel verified.
      *
-     * @return 인증 마크 여부
+     * @return whether the channel has a verified mark
      */
     public boolean isVerifiedMark() {
         return verifiedMark;
@@ -72,7 +74,7 @@ public class ChzzkPartialChannel {
      * Get personal data of logged user about the channel.
      * If not logged in, returns null.
      *
-     * @return 개인 데이터 (로그인하지 않은 경우 null)
+     * @return personal data (null if not logged in)
      */
     @Nullable
     public ChzzkChannelPersonalData getPersonalData() {
@@ -82,7 +84,7 @@ public class ChzzkPartialChannel {
     /**
      * Get the emoticon pack data of the channel.
      *
-     * @return 이모티콘 팩 데이터 (없는 경우 null)
+     * @return emote pack data (null if unavailable)
      */
     @Nullable
     public ChzzkChannelEmotePackData getEmotePackData() {

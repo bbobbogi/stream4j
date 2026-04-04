@@ -15,6 +15,12 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * Managed WebSocket wrapper with connection lifecycle and ping scheduling.
+ *
+ * @apiNote This is an internal API and may change without notice.
+ * @since 1.0.0
+ */
 public class ManagedWebSocket {
 
     private final Object lock = new Object();
@@ -100,11 +106,12 @@ public class ManagedWebSocket {
     }
 
     /**
-     * 주기적으로 ping 메시지를 전송하고, 선택적으로 유휴 타임아웃을 감지합니다.
+     * Sends ping messages periodically and optionally detects idle timeouts.
      *
-     * @param message            전송할 ping 메시지 (null이면 전송 생략, 유휴 감시만 수행)
-     * @param intervalSeconds    ping 전송 및 유휴 체크 간격 (초)
-     * @param idleTimeoutSeconds 유휴 타임아웃 (초). 이 시간 동안 메시지가 없으면 onFailure 호출. 0이면 비활성화.
+     * @param message ping message to send ({@code null} to skip sending and only monitor idleness)
+     * @param intervalSeconds ping send and idle-check interval in seconds
+     * @param idleTimeoutSeconds idle timeout in seconds; if no message is received within this period,
+     *                           {@code onFailure} is called; {@code 0} disables idle timeout detection
      */
     public void startPing(String message, long intervalSeconds, long idleTimeoutSeconds) {
         stopPing();
@@ -131,7 +138,7 @@ public class ManagedWebSocket {
     }
 
     /**
-     * 마지막 메시지 수신 시각을 반환합니다.
+     * Returns the last message receive timestamp.
      *
      * @return epoch millis
      */

@@ -11,6 +11,13 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Builder for creating {@link SOOPChat} instances.
+ *
+ * <p>Accepts a raw streamer ID or supported SOOP URL as input.
+ *
+ * @since 1.0.0
+ */
 public class SOOPChatBuilder {
 
     private static final String LOGIN_API = "https://login.sooplive.co.kr/app/LoginAction.php";
@@ -25,10 +32,21 @@ public class SOOPChatBuilder {
     private long reconnectDelayMs = 5000;
     private OkHttpClient httpClient;
 
+    /**
+     * Creates a builder for the target streamer.
+     *
+     * @param streamerId SOOP streamer ID or supported SOOP URL
+     */
     public SOOPChatBuilder(String streamerId) {
         this.streamerId = resolveStreamerId(streamerId);
     }
 
+    /**
+     * Resolves a SOOP streamer ID from an ID or SOOP URL.
+     *
+     * @param input raw streamer ID or SOOP URL
+     * @return normalized streamer ID, or {@code null} if input is {@code null}
+     */
     public static String resolveStreamerId(String input) {
         if (input == null) {
             return null;
@@ -48,31 +66,81 @@ public class SOOPChatBuilder {
         return trimmed;
     }
 
+    /**
+     * Registers a chat event listener.
+     *
+     * <p>Default is no listener.
+     *
+     * @param listener listener to receive chat events
+     * @return this builder for chaining
+     */
     public SOOPChatBuilder withChatListener(SOOPChatEventListener listener) {
         listeners.add(listener);
         return this;
     }
 
+    /**
+     * Configures automatic reconnection after disconnection.
+     *
+     * <p>Default is {@code true}.
+     *
+     * @param autoReconnect whether automatic reconnect is enabled
+     * @return this builder for chaining
+     */
     public SOOPChatBuilder withAutoReconnect(boolean autoReconnect) {
         this.autoReconnect = autoReconnect;
         return this;
     }
 
+    /**
+     * Enables debug logging output.
+     *
+     * <p>Default is disabled.
+     *
+     * @return this builder for chaining
+     */
     public SOOPChatBuilder withDebugMode() {
         this.debug = true;
         return this;
     }
 
+    /**
+     * Configures the maximum reconnect attempt count.
+     *
+     * <p>Default is {@code 5}.
+     *
+     * @param maxReconnectAttempts maximum number of reconnect attempts
+     * @return this builder for chaining
+     */
     public SOOPChatBuilder withMaxReconnectAttempts(int maxReconnectAttempts) {
         this.maxReconnectAttempts = maxReconnectAttempts;
         return this;
     }
 
+    /**
+     * Configures the base reconnect delay in milliseconds.
+     *
+     * <p>Default is {@code 5000} ms.
+     *
+     * @param reconnectDelayMs reconnect delay in milliseconds
+     * @return this builder for chaining
+     */
     public SOOPChatBuilder withReconnectDelay(long reconnectDelayMs) {
         this.reconnectDelayMs = reconnectDelayMs;
         return this;
     }
 
+    /**
+     * Configures SOOP login credentials for authenticated chat access.
+     *
+     * <p>Default is no authentication. Authentication is optional but required for
+     * some restricted streams.
+     *
+     * @param soopId SOOP account ID
+     * @param soopPassword SOOP account password
+     * @return this builder for chaining
+     * @throws IOException if login fails or the login response cannot be parsed
+     */
     public SOOPChatBuilder withCredentials(String soopId, String soopPassword) throws IOException {
         CookieJar cookieJar = new InMemoryCookieJar();
         OkHttpClient loginClient = SharedHttpClient.newBuilder()
@@ -114,6 +182,11 @@ public class SOOPChatBuilder {
         return this;
     }
 
+    /**
+     * Builds a {@link SOOPChat} instance with current configuration.
+     *
+     * @return configured SOOP chat client
+     */
     public SOOPChat build() {
         SOOPChat chat = new SOOPChat(streamerId, autoReconnect, debug, maxReconnectAttempts, reconnectDelayMs, httpClient);
         for (SOOPChatEventListener listener : listeners) {

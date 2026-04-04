@@ -1,29 +1,31 @@
 package io.github.bbobbogi.stream4j.chzzk.chat;
 
 /**
- * 후원 메시지를 나타내는 클래스입니다.
+ * Class representing a donation message.
+ *
+ * @since 1.0.0
  */
 public class DonationMessage extends ChatMessage {
     /**
-     * DonationMessage를 생성합니다.
+     * Creates a {@link DonationMessage}.
      */
     public DonationMessage() {
         super();
     }
 
     /**
-     * 후원 금액을 반환합니다.
+     * Returns the donation amount.
      *
-     * @return 후원 금액
+     * @return donation amount
      */
     public int getPayAmount() {
         return extras != null ? extras.payAmount : 0;
     }
 
     /**
-     * 익명 후원 여부를 반환합니다.
+     * Returns whether this donation is anonymous.
      *
-     * @return 익명 후원이면 {@code true}, 그렇지 않으면 {@code false}
+     * @return {@code true} if anonymous, otherwise {@code false}
      */
     public boolean isAnonymous() {
         return extras != null && extras.isAnonymous;

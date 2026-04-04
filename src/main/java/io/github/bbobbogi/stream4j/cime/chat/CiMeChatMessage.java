@@ -7,7 +7,9 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * ci.me 채팅 메시지를 나타내는 클래스입니다.
+ * Chat message model for CiMe.
+ *
+ * @since 1.0.0
  */
 public class CiMeChatMessage {
     public CiMeChatMessage() {
@@ -22,10 +24,9 @@ public class CiMeChatMessage {
     public CiMeUser user;
 
     /**
-     * ci.me 사용자 정보를 담는 클래스입니다.
-     * <p>
-     * JSON 형식 예시:
-     * <pre>{"id":"1014236","ch":{"id":"1014172","na":"인방망령자"},"c":"D","bg":[],"dsc":0}</pre>
+     * User metadata in a CiMe chat message.
+     *
+     * @since 1.0.0
      */
     public static class CiMeUser {
         CiMeUser() {
@@ -46,18 +47,18 @@ public class CiMeChatMessage {
         int donationStreakCount;
 
         /**
-         * 사용자 ID를 반환합니다.
+         * Returns the user ID.
          *
-         * @return 사용자 ID
+         * @return user ID
          */
         public String getId() {
             return id;
         }
 
         /**
-         * 채널 정보를 반환합니다.
+         * Returns channel information for the user.
          *
-         * @return 채널 정보
+         * @return channel information, or {@code null}
          */
         @Nullable
         public CiMeChannel getChannel() {
@@ -65,9 +66,9 @@ public class CiMeChatMessage {
         }
 
         /**
-         * 닉네임을 반환합니다. 채널의 이름입니다.
+         * Returns the user's nickname.
          *
-         * @return 닉네임 (채널이 없을 경우 null)
+         * @return nickname, or {@code null} when channel data is missing
          */
         @Nullable
         public String getNickname() {
@@ -75,18 +76,18 @@ public class CiMeChatMessage {
         }
 
         /**
-         * 색상 코드를 반환합니다.
+         * Returns the display color code.
          *
-         * @return 색상 코드
+         * @return color code
          */
         public String getColorCode() {
             return colorCode;
         }
 
         /**
-         * 배지 목록을 반환합니다.
+         * Returns user badges.
          *
-         * @return 배지 목록
+         * @return list of badges, or {@code null}
          */
         @Nullable
         public List<CiMeBadge> getBadges() {
@@ -94,9 +95,9 @@ public class CiMeChatMessage {
         }
 
         /**
-         * 후원 연속일수를 반환합니다.
+         * Returns the donation streak count.
          *
-         * @return 후원 연속일수
+         * @return donation streak count
          */
         public int getDonationStreakCount() {
             return donationStreakCount;
@@ -115,7 +116,9 @@ public class CiMeChatMessage {
     }
 
     /**
-     * ci.me 채널 정보를 담는 클래스입니다.
+     * Channel metadata embedded in a CiMe chat user object.
+     *
+     * @since 1.0.0
      */
     public static class CiMeChannel {
         CiMeChannel() {
@@ -127,18 +130,18 @@ public class CiMeChatMessage {
         String name;
 
         /**
-         * 채널 ID를 반환합니다.
+         * Returns the channel ID.
          *
-         * @return 채널 ID
+         * @return channel ID
          */
         public String getId() {
             return id;
         }
 
         /**
-         * 채널 이름(닉네임)을 반환합니다.
+         * Returns the channel display name.
          *
-         * @return 채널 이름
+         * @return channel name
          */
         public String getName() {
             return name;
@@ -154,7 +157,9 @@ public class CiMeChatMessage {
     }
 
     /**
-     * ci.me 배지 정보를 담는 클래스입니다.
+     * Badge metadata embedded in a CiMe chat user object.
+     *
+     * @since 1.0.0
      */
     public static class CiMeBadge {
         CiMeBadge() {
@@ -172,36 +177,36 @@ public class CiMeChatMessage {
         String imageUrl;
 
         /**
-         * 배지 ID를 반환합니다.
+         * Returns the badge ID.
          *
-         * @return 배지 ID
+         * @return badge ID
          */
         public String getId() {
             return id;
         }
 
         /**
-         * 배지 이름을 반환합니다.
+         * Returns the badge name.
          *
-         * @return 배지 이름
+         * @return badge name
          */
         public String getName() {
             return name;
         }
 
         /**
-         * 배지 설명을 반환합니다.
+         * Returns the badge description.
          *
-         * @return 배지 설명
+         * @return badge description
          */
         public String getDescription() {
             return description;
         }
 
         /**
-         * 배지 이미지 URL을 반환합니다.
+         * Returns the badge image URL.
          *
-         * @return 이미지 URL
+         * @return image URL, or {@code null}
          */
         @Nullable
         public String getImageUrl() {
@@ -220,36 +225,36 @@ public class CiMeChatMessage {
     }
 
     /**
-     * 메시지 ID를 반환합니다.
+     * Returns the message ID.
      *
-     * @return 메시지 ID
+     * @return message ID
      */
     public String getId() {
         return id;
     }
 
     /**
-     * 메시지 타입을 반환합니다. (예: "MESSAGE")
+     * Returns the message type.
      *
-     * @return 메시지 타입
+     * @return message type (for example, {@code MESSAGE})
      */
     public String getType() {
         return type;
     }
 
     /**
-     * 메시지 내용을 반환합니다.
+     * Returns the message content.
      *
-     * @return 메시지 내용
+     * @return message content
      */
     public String getContent() {
         return content;
     }
 
     /**
-     * 전송 시간을 반환합니다.
+     * Returns the send time.
      *
-     * @return 전송 시간
+     * @return send time, or {@code null}
      */
     @Nullable
     public Date getSendTime() {
@@ -257,27 +262,27 @@ public class CiMeChatMessage {
     }
 
     /**
-     * 원본 JSON 문자열을 반환합니다.
+     * Returns the raw JSON payload.
      *
-     * @return 원본 JSON
+     * @return raw JSON string
      */
     public String getRawJson() {
         return rawJson;
     }
 
     /**
-     * 전송자의 사용자 ID를 반환합니다.
+     * Returns the sender user ID.
      *
-     * @return 사용자 ID
+     * @return sender user ID
      */
     public String getSenderUserId() {
         return senderUserId;
     }
 
     /**
-     * 전송자의 사용자 정보를 반환합니다.
+     * Returns sender user metadata.
      *
-     * @return 사용자 정보
+     * @return user metadata, or {@code null}
      */
     @Nullable
     public CiMeUser getUser() {
@@ -285,9 +290,9 @@ public class CiMeChatMessage {
     }
 
     /**
-     * 사용자 정보 존재 여부를 반환합니다.
+     * Returns whether user metadata is available.
      *
-     * @return 사용자 정보 존재 여부
+     * @return {@code true} if user metadata exists
      */
     public boolean hasUser() {
         return user != null;

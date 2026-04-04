@@ -1,39 +1,41 @@
 package io.github.bbobbogi.stream4j.chzzk.chat;
 
 /**
- * 미션 후원 상태
+ * Mission donation status.
+ *
+ * @since 1.0.0
  */
 public enum MissionStatus {
     /**
-     * 대기 중 - 미션이 승인 대기 중
+     * Pending.
      */
     PENDING,
 
     /**
-     * 거부됨 - 미션이 거부됨
+     * Rejected.
      */
     REJECTED,
 
     /**
-     * 승인됨 - 미션이 승인되어 진행 중
+     * Approved.
      */
     APPROVED,
 
     /**
-     * 완료됨 - 미션이 완료됨
+     * Completed.
      */
     COMPLETED,
 
     /**
-     * 만료됨 - 미션 시간이 만료됨
+     * Expired.
      */
     EXPIRED;
 
     /**
-     * 문자열에서 MissionStatus로 변환합니다.
+     * Converts a string to {@link MissionStatus}.
      *
-     * @param status 미션 상태 문자열
-     * @return 해당하는 MissionStatus (없으면 null)
+     * @param status mission status string
+     * @return matched {@link MissionStatus}, or {@code null} if unknown
      */
     public static MissionStatus fromString(String status) {
         if (status == null) return null;

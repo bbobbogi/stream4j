@@ -1,19 +1,21 @@
 package io.github.bbobbogi.stream4j.common;
 
 /**
- * 후원의 종류를 나타냅니다.
+ * Donation categories normalized across platforms.
+ *
+ * @since 1.0.0
  */
 public enum DonationType {
-    /** 채팅 후원 (일반 도네이션) */
+    /** Chat donation, including standard paid chat events. */
     CHAT,
-    /** 영상 후원 */
+    /** Video donation event. */
     VIDEO,
-    /** 구독 */
+    /** Subscription event. */
     SUBSCRIPTION,
-    /** 구독 선물 */
+    /** Gifted subscription event. */
     SUBSCRIPTION_GIFT,
-    /** 미션 후원 */
+    /** Mission donation event. */
     MISSION,
-    /** 파티 후원 */
+    /** Party donation event. */
     PARTY
 }

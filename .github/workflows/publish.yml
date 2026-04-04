@@ -1,8 +1,8 @@
 name: Publish to Maven Central
 
 on:
-  release:
-    types: [created]
+  push:
+    tags: ['v*']
   workflow_dispatch:
     inputs:
       version:
@@ -14,7 +14,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
 
     steps:
       - name: Checkout repository
@@ -23,9 +23,8 @@ jobs:
       - name: Set version
         id: set_version
         run: |
-          if [ "${{ github.event_name }}" == "release" ]; then
-            VERSION="${{ github.event.release.tag_name }}"
-            VERSION="${VERSION#v}"
+          if [ "${{ github.event_name }}" == "push" ]; then
+            VERSION="${GITHUB_REF_NAME#v}"
           else
             VERSION="${{ inputs.version }}"
           fi
@@ -47,65 +46,21 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@v2
-
       - name: Run tests
         run: ./gradlew test --no-daemon --stacktrace
 
-      - name: Verify test results
-        run: |
-          if [ -d "build/test-results/test" ]; then
-            echo "Tests completed successfully"
-          else
-            echo "No test results found"
-            exit 1
-          fi
-
-      - name: Build with Gradle
-        run: ./gradlew build --no-daemon --stacktrace
-
-      - name: Verify build artifacts
-        run: |
-          VERSION=${{ steps.set_version.outputs.version }}
-          echo "Verifying build artifacts for version $VERSION..."
-          ls -lh build/libs/
-          if [ ! -f "build/libs/stream4j-${VERSION}.jar" ]; then
-            echo "Main JAR not found!"
-            exit 1
-          fi
-          if [ ! -f "build/libs/stream4j-${VERSION}-sources.jar" ]; then
-            echo "Sources JAR not found!"
-            exit 1
-          fi
-          if [ ! -f "build/libs/stream4j-${VERSION}-javadoc.jar" ]; then
-            echo "Javadoc JAR not found!"
-            exit 1
-          fi
-          echo "All required artifacts verified successfully"
-
       - name: Publish to Maven Central
         env:
-          MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
-          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
-          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
-        run: ./gradlew publish --no-daemon --stacktrace
+          VERSION: ${{ steps.set_version.outputs.version }}
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
+        run: ./gradlew publishAndReleaseToMavenCentral --no-daemon --stacktrace
 
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
         with:
-          name: test-results
-          path: build/test-results/
-          retention-days: 1
-
-      - name: Upload build artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts
-          path: |
-            build/libs/
-            build/publications/
-          retention-days: 1
+          generate_release_notes: true
+          files: build/libs/*.jar

@@ -3,11 +3,14 @@ package io.github.bbobbogi.stream4j.util;
 import java.util.concurrent.TimeUnit;
 
 /**
- * SharedHttpClient의 설정을 담는 클래스입니다.
+ * Configuration holder for {@link SharedHttpClient}.
  * <p>
- * 애플리케이션 시작 시 {@link SharedHttpClient#configure(HttpClientConfig)}를
- * 호출하여 설정을 적용할 수 있습니다. 설정은 최초 {@link SharedHttpClient#get()}
- * 호출 전에 적용되어야 합니다.
+ * Apply settings during application startup by calling
+ * {@link SharedHttpClient#configure(HttpClientConfig)}.
+ * Configuration must be applied before the first call to
+ * {@link SharedHttpClient#get()}.
+ *
+ * @since 1.0.0
  */
 public final class HttpClientConfig {
 
@@ -20,9 +23,12 @@ public final class HttpClientConfig {
     public HttpClientConfig() {}
 
     /**
-     * User-Agent 헤더 값을 설정합니다.
+     * Configures the {@code User-Agent} header value.
+     * <p>
+     * Default value:
+     * {@code Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0}.
      *
-     * @param userAgent User-Agent 문자열
+     * @param userAgent User-Agent string
      * @return this
      */
     public HttpClientConfig userAgent(String userAgent) {
@@ -31,9 +37,11 @@ public final class HttpClientConfig {
     }
 
     /**
-     * 연결 타임아웃을 밀리초 단위로 설정합니다.
+     * Configures the connection timeout in milliseconds.
+     * <p>
+     * Default value: {@code 10000} ms (10 seconds).
      *
-     * @param ms 타임아웃 (밀리초)
+     * @param ms timeout in milliseconds
      * @return this
      */
     public HttpClientConfig connectTimeoutMs(long ms) {
@@ -42,9 +50,11 @@ public final class HttpClientConfig {
     }
 
     /**
-     * 읽기 타임아웃을 밀리초 단위로 설정합니다.
+     * Configures the read timeout in milliseconds.
+     * <p>
+     * Default value: {@code 10000} ms (10 seconds).
      *
-     * @param ms 타임아웃 (밀리초)
+     * @param ms timeout in milliseconds
      * @return this
      */
     public HttpClientConfig readTimeoutMs(long ms) {
@@ -53,9 +63,11 @@ public final class HttpClientConfig {
     }
 
     /**
-     * 최대 동시 요청 수를 설정합니다.
+     * Configures the maximum number of concurrent requests.
+     * <p>
+     * Default value: {@code 1024}.
      *
-     * @param maxRequests 최대 요청 수
+     * @param maxRequests maximum concurrent requests
      * @return this
      */
     public HttpClientConfig maxRequests(int maxRequests) {
@@ -64,9 +76,11 @@ public final class HttpClientConfig {
     }
 
     /**
-     * 호스트당 최대 동시 요청 수를 설정합니다.
+     * Configures the maximum number of concurrent requests per host.
+     * <p>
+     * Default value: {@code 1024}.
      *
-     * @param maxRequestsPerHost 호스트당 최대 요청 수
+     * @param maxRequestsPerHost maximum concurrent requests per host
      * @return this
      */
     public HttpClientConfig maxRequestsPerHost(int maxRequestsPerHost) {

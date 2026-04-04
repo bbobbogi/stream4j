@@ -3,7 +3,9 @@ package io.github.bbobbogi.stream4j.chzzk.types;
 import java.util.List;
 
 /**
- * 채널 이모티콘 팩 데이터를 나타내는 클래스입니다.
+ * Class representing channel emote pack data.
+ *
+ * @since 1.0.0
  */
 public class ChzzkChannelEmotePackData {
     private String emojiPackId;
@@ -17,7 +19,7 @@ public class ChzzkChannelEmotePackData {
     /**
      * Get the pack's id.
      *
-     * @return 이모티콘 팩 ID
+     * @return emote pack ID
      */
     public String getPackId() {
         return emojiPackId;
@@ -26,7 +28,7 @@ public class ChzzkChannelEmotePackData {
     /**
      * Get the name of the pack.
      *
-     * @return 이모티콘 팩 이름
+     * @return emote pack name
      */
     public String getPackName() {
         return emojiPackName;
@@ -35,7 +37,7 @@ public class ChzzkChannelEmotePackData {
     /**
      * Get url of the pack's image.
      *
-     * @return 이모티콘 팩 이미지 URL
+     * @return emote pack image URL
      */
     public String getPackImageUrl() {
         return emojiPackImageUrl;
@@ -44,7 +46,7 @@ public class ChzzkChannelEmotePackData {
     /**
      * Get the emoticons data of the pack.
      *
-     * @return 이모티콘 데이터 목록
+     * @return list of emoticon data
      */
     public List<ChzzkChannelEmoticonData> getEmojis() {
         return emojis;
