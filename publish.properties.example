@@ -4,6 +4,8 @@
 MAVEN_USERNAME=Central Portal User Token username
 MAVEN_PASSWORD=Central Portal User Token password
 
-# GPG 서명 (gpg --export-secret-keys --armor 로 내보낸 키)
-SIGNING_KEY=-----BEGIN PGP PRIVATE KEY BLOCK----- ...
+# GPG 서명
+# SIGNING_KEY: 환경변수에 키 내용 직접 전달 (GitHub Actions 용)
+# SIGNING_KEY_FILE: 로컬에서 asc 파일 경로 지정 (로컬 개발용)
+SIGNING_KEY_FILE=GPG 경로
 SIGNING_PASSWORD=GPG 비밀번호

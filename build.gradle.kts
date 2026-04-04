@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.File
+
 plugins {
     id("java")
     `maven-publish`
@@ -6,9 +9,17 @@ plugins {
     jacoco
 }
 
-// Helper function to get property from environment
-fun getEnvOrProperty(envKey: String, defaultValue: String = ""): String {
-    return System.getenv(envKey) ?: defaultValue
+// publish.properties 로드 (로컬 개발용, .gitignore에 포함)
+val publishProps = Properties().apply {
+    val f = rootProject.file("publish.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
+}
+
+// 환경변수 → publish.properties → 기본값 순으로 조회
+fun getEnvOrProperty(key: String, defaultValue: String = ""): String {
+    return System.getenv(key)
+        ?: publishProps.getProperty(key)
+        ?: defaultValue
 }
 
 group = "io.github.bbobbogi"
@@ -102,14 +113,17 @@ publishing {
 }
 
 signing {
+    // 환경변수 SIGNING_KEY 또는 파일 경로 SIGNING_KEY_FILE 지원
     val signingKey = getEnvOrProperty("SIGNING_KEY").ifEmpty { null }
+        ?: getEnvOrProperty("SIGNING_KEY_FILE").ifEmpty { null }?.let { path ->
+            File(path).takeIf { it.exists() }?.readText()
+        }
     val signingPassword = getEnvOrProperty("SIGNING_PASSWORD").ifEmpty { null }
 
     if (signingKey != null && signingPassword != null) {
         useInMemoryPgpKeys(signingKey, signingPassword)
+        sign(publishing.publications["maven"])
     }
-
-    sign(publishing.publications["maven"])
 }
 
 // JaCoCo configuration for code coverage
