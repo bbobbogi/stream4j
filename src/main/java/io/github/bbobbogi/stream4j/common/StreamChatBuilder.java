@@ -38,6 +38,7 @@ public class StreamChatBuilder {
     Chzzk chzzk;
     boolean autoReconnect = true;
     boolean debug = false;
+    boolean ignoreBroadcastEnd = false;
     String soopId;
     String soopPassword;
     long youtubePollIntervalMs = 5000;
@@ -199,6 +200,11 @@ public class StreamChatBuilder {
      */
     public StreamChatBuilder withDebugMode() {
         this.debug = true;
+        return this;
+    }
+
+    public StreamChatBuilder withIgnoreBroadcastEnd(boolean ignoreBroadcastEnd) {
+        this.ignoreBroadcastEnd = ignoreBroadcastEnd;
         return this;
     }
 

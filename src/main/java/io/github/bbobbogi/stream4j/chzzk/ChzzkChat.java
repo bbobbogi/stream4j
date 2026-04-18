@@ -49,6 +49,7 @@ public class ChzzkChat implements PlatformChat {
 
     boolean autoReconnect = false;
     boolean debug = false;
+    boolean ignoreBroadcastEnd = false;
 
     private final Gson gson = new Gson().newBuilder().disableHtmlEscaping().create();
     private String sid;
@@ -107,11 +108,12 @@ public class ChzzkChat implements PlatformChat {
         return channelId;
     }
 
-    ChzzkChat(Chzzk chzzk, String channelId, boolean autoReconnect, boolean debug) {
+    ChzzkChat(Chzzk chzzk, String channelId, boolean autoReconnect, boolean debug, boolean ignoreBroadcastEnd) {
         this.chzzk = chzzk;
         this.channelId = channelId;
         this.autoReconnect = autoReconnect;
         this.debug = debug;
+        this.ignoreBroadcastEnd = ignoreBroadcastEnd;
     }
 
     private boolean isDebug() {
@@ -694,6 +696,8 @@ public class ChzzkChat implements PlatformChat {
     }
 
     private void checkBroadcastEnd() {
+        if (ignoreBroadcastEnd) return;
+
         try {
             var status = chzzk.getLiveStatus(channelId);
             if (status == null || !status.isOnline()) {
