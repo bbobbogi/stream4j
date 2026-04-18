@@ -21,6 +21,7 @@ public class ChzzkChatBuilder {
     private Chzzk chzzk;
     private boolean autoReconnect = true;
     private boolean debug = false;
+    private boolean ignoreBroadcastEnd = false;
 
     /**
      * Creates a {@link ChzzkChatBuilder}.
@@ -76,6 +77,11 @@ public class ChzzkChatBuilder {
         return this;
     }
 
+    public ChzzkChatBuilder withIgnoreBroadcastEnd(boolean ignoreBroadcastEnd) {
+        this.ignoreBroadcastEnd = ignoreBroadcastEnd;
+        return this;
+    }
+
     /**
      * Creates a {@link ChzzkChat} instance.
      *
@@ -83,7 +89,7 @@ public class ChzzkChatBuilder {
      * @throws IOException if the API request fails
      */
     public ChzzkChat build() throws IOException {
-        ChzzkChat chat = new ChzzkChat(chzzk, channelId, autoReconnect, debug);
+        ChzzkChat chat = new ChzzkChat(chzzk, channelId, autoReconnect, debug, ignoreBroadcastEnd);
 
         for (ChzzkChatEventListener listener : listeners) {
             chat.addListener(listener);

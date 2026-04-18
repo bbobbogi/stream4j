@@ -33,6 +33,7 @@ public class StreamChat {
     private final List<StreamChatEventListener> listeners;
     private final boolean autoReconnect;
     private final boolean debug;
+    private final boolean ignoreBroadcastEnd;
 
     private final Chzzk chzzk;
     private final List<String> chzzkChannelIds;
@@ -52,6 +53,7 @@ public class StreamChat {
         this.listeners = new ArrayList<>(builder.listeners);
         this.autoReconnect = builder.autoReconnect;
         this.debug = builder.debug;
+        this.ignoreBroadcastEnd = builder.ignoreBroadcastEnd;
         this.chzzk = builder.chzzk;
         this.chzzkChannelIds = new ArrayList<>(builder.chzzkChannelIds);
         this.cimeSlugs = new ArrayList<>(builder.cimeSlugs);
@@ -167,6 +169,7 @@ public class StreamChat {
         try {
             ChzzkChat chat = chzzk.chat(channelId)
                     .withAutoReconnect(autoReconnect)
+                    .withIgnoreBroadcastEnd(ignoreBroadcastEnd)
                     .withChatListener(new ChzzkChatEventListener() {
                         @Override
                         public void onConnect(ChzzkChat c, boolean isReconnecting) {
@@ -271,6 +274,12 @@ public class StreamChat {
                         @Override
                         public void onConnectionClosed(int code, String reason, boolean remote, boolean tryingToReconnect) {
                             emit(l -> l.onDisconnect(DonationPlatform.CHZZK, channelId, reason));
+                            if (!tryingToReconnect) {
+                                ChzzkChat removed = chzzkChats.remove(channelId);
+                                if (removed != null) {
+                                    try { removed.close(); } catch (Exception e) { logDebug("Error closing ChzzkChat on connection closed", e); }
+                                }
+                            }
                         }
 
                         @Override

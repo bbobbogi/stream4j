@@ -68,7 +68,7 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.bbobbogi:stream4j:1.0.0-SNAPSHOT")
+    implementation("io.github.bbobbogi:stream4j:1.0.1-SNAPSHOT")
 }
 ```
 
