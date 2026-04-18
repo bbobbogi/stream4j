@@ -274,6 +274,12 @@ public class StreamChat {
                         @Override
                         public void onConnectionClosed(int code, String reason, boolean remote, boolean tryingToReconnect) {
                             emit(l -> l.onDisconnect(DonationPlatform.CHZZK, channelId, reason));
+                            if (!tryingToReconnect) {
+                                ChzzkChat removed = chzzkChats.remove(channelId);
+                                if (removed != null) {
+                                    try { removed.close(); } catch (Exception e) { logDebug("Error closing ChzzkChat on connection closed", e); }
+                                }
+                            }
                         }
 
                         @Override
