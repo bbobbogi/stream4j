@@ -15,6 +15,8 @@ import io.github.bbobbogi.stream4j.toonation.chat.ToonationDonationMessage;
 import io.github.bbobbogi.stream4j.youtube.*;
 import io.github.bbobbogi.stream4j.youtube.chat.ChatItem;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -366,10 +368,10 @@ public class StreamChat {
 
     private void parseCiMeDonation(String slug, String eventType, String rawJson) {
         try {
-            com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(rawJson).getAsJsonObject();
-            com.google.gson.JsonObject attrs = json.has("Attributes") ? json.getAsJsonObject("Attributes") : null;
+            JsonObject json = JsonParser.parseString(rawJson).getAsJsonObject();
+            JsonObject attrs = json.has("Attributes") ? json.getAsJsonObject("Attributes") : null;
             if (attrs == null || !attrs.has("extra") || attrs.get("extra").isJsonNull()) return;
-            com.google.gson.JsonObject extra = com.google.gson.JsonParser.parseString(attrs.get("extra").getAsString()).getAsJsonObject();
+            JsonObject extra = JsonParser.parseString(attrs.get("extra").getAsString()).getAsJsonObject();
 
             String message = extra.has("msg") ? extra.get("msg").getAsString() : "";
             int amount = extra.has("amt") ? extra.get("amt").getAsInt() : 0;
@@ -377,9 +379,9 @@ public class StreamChat {
 
             String nickname = "익명";
             if (!anonymous && extra.has("prof") && !extra.get("prof").isJsonNull()) {
-                com.google.gson.JsonObject prof = extra.getAsJsonObject("prof");
+                JsonObject prof = extra.getAsJsonObject("prof");
                 if (prof.has("ch") && !prof.get("ch").isJsonNull()) {
-                    com.google.gson.JsonObject ch = prof.getAsJsonObject("ch");
+                    JsonObject ch = prof.getAsJsonObject("ch");
                     nickname = ch.has("na") ? ch.get("na").getAsString() : "익명";
                 }
             }
