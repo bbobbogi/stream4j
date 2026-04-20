@@ -29,6 +29,15 @@ public interface StreamChatEventListener {
     default void onChat(DonationPlatform platform, String channelId, String nickname, String message) {}
 
     /**
+     * Called when a system message is received.
+     *
+     * @param platform source platform
+     * @param channelId platform-specific channel identifier
+     * @param message system message content
+     */
+    default void onSystemMessage(DonationPlatform platform, String channelId, String message) {}
+
+    /**
      * Called when a donation-related event is received.
      *
      * @param donation normalized donation payload

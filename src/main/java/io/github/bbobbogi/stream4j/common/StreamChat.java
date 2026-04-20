@@ -183,6 +183,11 @@ public class StreamChat {
                         }
 
                         @Override
+                        public void onSystemMessage(ChatMessage msg) {
+                            emit(l -> l.onSystemMessage(DonationPlatform.CHZZK, channelId, msg.getContent()));
+                        }
+
+                        @Override
                         public void onDonationChat(DonationMessage msg) {
                             String nickname = msg.getProfile() != null ? msg.getProfile().getNickname() : null;
                             Donation donation = new Donation(

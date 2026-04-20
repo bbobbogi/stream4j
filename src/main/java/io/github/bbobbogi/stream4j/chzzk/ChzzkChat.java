@@ -596,6 +596,8 @@ public class ChzzkChat implements PlatformChat {
                 listener.onSubscriptionChat((SubscriptionMessage) msg);
             } else if (msg instanceof DonationMessage) {
                 listener.onDonationChat((DonationMessage) msg);
+            } else if (msg.msgTypeCode == WsMessageTypes.ChatTypes.SYSTEM_MESSAGE) {
+                listener.onSystemMessage(msg);
             } else {
                 listener.onChat(msg);
             }
