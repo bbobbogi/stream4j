@@ -50,6 +50,13 @@ public interface ChzzkChatEventListener {
     default void onChat(ChatMessage msg) {}
 
     /**
+     * Called when a system message is received (msgTypeCode=30).
+     *
+     * @param msg received system message
+     */
+    default void onSystemMessage(ChatMessage msg) {}
+
+    /**
      * Called when a donation chat message is received.
      *
      * @param msg received donation message
