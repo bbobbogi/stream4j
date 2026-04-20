@@ -5,6 +5,8 @@ import io.github.bbobbogi.stream4j.chzzk.*;
 import io.github.bbobbogi.stream4j.chzzk.chat.*;
 import io.github.bbobbogi.stream4j.cime.*;
 import io.github.bbobbogi.stream4j.cime.chat.CiMeChatMessage;
+import io.github.bbobbogi.stream4j.cime.chat.CiMeSubscriptionMessage;
+import io.github.bbobbogi.stream4j.cime.chat.CiMeSubscriptionGiftMessage;
 import io.github.bbobbogi.stream4j.soop.*;
 import io.github.bbobbogi.stream4j.soop.chat.SOOPDonationMessage;
 import io.github.bbobbogi.stream4j.soop.chat.SOOPMissionEvent;
@@ -263,12 +265,12 @@ public class StreamChat {
                         @Override
                         public void onSubscriptionChat(SubscriptionMessage msg) {
                             String nickname = msg.getProfile() != null ? msg.getProfile().getNickname() : null;
-                            Donation donation = new Donation(
-                                    DonationPlatform.CHZZK, DonationType.SUBSCRIPTION, DonationStatus.SUCCESS,
+                            Subscription subscription = new Subscription(
+                                    DonationPlatform.CHZZK, SubscriptionType.SUBSCRIPTION,
                                     msg.getUserIdHash(), nickname != null ? nickname : "익명",
-                                    msg.getContent(), msg.isAnonymous(), CurrencyUtils.of(CurrencyUtils.CHZZK_CHEESE, 0), msg
+                                    msg.getContent(), msg.isAnonymous(), msg
                             );
-                            emit(l -> l.onDonation(donation));
+                            emit(l -> l.onSubscription(subscription));
                         }
 
                         @Override
@@ -310,6 +312,28 @@ public class StreamChat {
                         public void onChat(CiMeChatMessage msg) {
                             String nickname = msg.getUser() != null ? msg.getUser().getNickname() : null;
                             emit(l -> l.onChat(DonationPlatform.CIME, slug, nickname, msg.getContent()));
+                        }
+
+                        @Override
+                        public void onSubscription(CiMeSubscriptionMessage msg) {
+                            Subscription subscription = new Subscription(
+                                    DonationPlatform.CIME, SubscriptionType.SUBSCRIPTION,
+                                    null, msg.getNickname() != null ? msg.getNickname() : "익명",
+                                    msg.getMessage() != null ? msg.getMessage() : "",
+                                    false, msg
+                            );
+                            emit(l -> l.onSubscription(subscription));
+                        }
+
+                        @Override
+                        public void onSubscriptionGift(CiMeSubscriptionGiftMessage msg) {
+                            Subscription subscription = new Subscription(
+                                    DonationPlatform.CIME, SubscriptionType.SUBSCRIPTION_GIFT,
+                                    null, msg.getNickname() != null ? msg.getNickname() : "익명",
+                                    msg.getMessage() != null ? msg.getMessage() : "",
+                                    msg.isAnonymous(), msg
+                            );
+                            emit(l -> l.onSubscription(subscription));
                         }
 
                         @Override
@@ -393,32 +417,32 @@ public class StreamChat {
 
                         @Override
                         public void onSubscribe(SOOPChat c, String from, String fromUsername, int monthCount, int tier) {
-                            Donation donation = new Donation(
-                                    DonationPlatform.SOOP, DonationType.SUBSCRIPTION, DonationStatus.SUCCESS,
+                            Subscription subscription = new Subscription(
+                                    DonationPlatform.SOOP, SubscriptionType.SUBSCRIPTION,
                                     from, fromUsername != null ? fromUsername : "익명",
-                                    monthCount + "개월 " + tier + "티어", false, CurrencyUtils.of(CurrencyUtils.SOOP_BALLOON, 0), null
+                                    monthCount + "개월 " + tier + "티어", false, null
                             );
-                            emit(l -> l.onDonation(donation));
+                            emit(l -> l.onSubscription(subscription));
                         }
 
                         @Override
                         public void onNewSubscribe(SOOPChat c, String userId, String nickname, int duration) {
-                            Donation donation = new Donation(
-                                    DonationPlatform.SOOP, DonationType.SUBSCRIPTION, DonationStatus.SUCCESS,
+                            Subscription subscription = new Subscription(
+                                    DonationPlatform.SOOP, SubscriptionType.SUBSCRIPTION,
                                     userId, nickname != null ? nickname : "익명",
-                                    "신규 구독", false, CurrencyUtils.of(CurrencyUtils.SOOP_BALLOON, 0), null
+                                    "신규 구독", false, null
                             );
-                            emit(l -> l.onDonation(donation));
+                            emit(l -> l.onSubscription(subscription));
                         }
 
                         @Override
                         public void onSubscriptionGift(SOOPChat c, String gifterUserId, String gifterNickname, String recipientUserId, String recipientNickname, int months) {
-                            Donation donation = new Donation(
-                                    DonationPlatform.SOOP, DonationType.SUBSCRIPTION, DonationStatus.SUCCESS,
+                            Subscription subscription = new Subscription(
+                                    DonationPlatform.SOOP, SubscriptionType.SUBSCRIPTION_GIFT,
                                     gifterUserId, gifterNickname != null ? gifterNickname : "익명",
-                                    recipientNickname + "에게 " + months + "개월 구독권 선물", false, CurrencyUtils.of(CurrencyUtils.SOOP_BALLOON, 0), null
+                                    recipientNickname + "에게 " + months + "개월 구독권 선물", false, null
                             );
-                            emit(l -> l.onDonation(donation));
+                            emit(l -> l.onSubscription(subscription));
                         }
 
                         @Override
@@ -550,13 +574,13 @@ public class StreamChat {
 
                         @Override
                         public void onNewMember(ChatItem item) {
-                            Donation donation = new Donation(
-                                    DonationPlatform.YOUTUBE, DonationType.SUBSCRIPTION, DonationStatus.SUCCESS,
+                            Subscription subscription = new Subscription(
+                                    DonationPlatform.YOUTUBE, SubscriptionType.SUBSCRIPTION,
                                     item.getAuthorChannelID(), item.getAuthorName() != null ? item.getAuthorName() : "익명",
                                     item.getMessage() != null ? item.getMessage() : "",
-                                    false, CurrencyUtils.of("KRW", 0), item
+                                    false, item
                             );
-                            emit(l -> l.onDonation(donation));
+                            emit(l -> l.onSubscription(subscription));
                         }
 
                         @Override

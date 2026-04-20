@@ -10,10 +10,6 @@ public enum DonationType {
     CHAT,
     /** Video donation event. */
     VIDEO,
-    /** Subscription event. */
-    SUBSCRIPTION,
-    /** Gifted subscription event. */
-    SUBSCRIPTION_GIFT,
     /** Mission donation event. */
     MISSION,
     /** Party donation event. */

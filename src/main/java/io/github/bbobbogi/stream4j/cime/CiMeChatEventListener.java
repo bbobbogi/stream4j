@@ -1,6 +1,8 @@
 package io.github.bbobbogi.stream4j.cime;
 
 import io.github.bbobbogi.stream4j.cime.chat.CiMeChatMessage;
+import io.github.bbobbogi.stream4j.cime.chat.CiMeSubscriptionMessage;
+import io.github.bbobbogi.stream4j.cime.chat.CiMeSubscriptionGiftMessage;
 
 /**
  * Listener for CiMe chat events.
@@ -48,6 +50,20 @@ public interface CiMeChatEventListener {
      * @param msg received chat message
      */
     default void onChat(CiMeChatMessage msg) {}
+
+    /**
+     * Called when a subscription event is received.
+     *
+     * @param msg parsed subscription payload
+     */
+    default void onSubscription(CiMeSubscriptionMessage msg) {}
+
+    /**
+     * Called when a gifted subscription event is received.
+     *
+     * @param msg parsed gifted subscription payload
+     */
+    default void onSubscriptionGift(CiMeSubscriptionGiftMessage msg) {}
 
     /**
      * Called when a non-chat system event is received.
