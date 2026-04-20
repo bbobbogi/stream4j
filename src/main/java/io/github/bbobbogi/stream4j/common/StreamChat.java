@@ -367,11 +367,22 @@ public class StreamChat {
     private void parseCiMeDonation(String slug, String eventType, String rawJson) {
         try {
             com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(rawJson).getAsJsonObject();
-            com.google.gson.JsonObject data = json.has("data") ? json.getAsJsonObject("data") : json;
+            com.google.gson.JsonObject attrs = json.has("Attributes") ? json.getAsJsonObject("Attributes") : null;
+            if (attrs == null || !attrs.has("extra") || attrs.get("extra").isJsonNull()) return;
+            com.google.gson.JsonObject extra = com.google.gson.JsonParser.parseString(attrs.get("extra").getAsString()).getAsJsonObject();
 
-            String nickname = data.has("nickname") ? data.get("nickname").getAsString() : "익명";
-            String message = data.has("message") ? data.get("message").getAsString() : "";
-            int amount = data.has("amount") ? data.get("amount").getAsInt() : 0;
+            String message = extra.has("msg") ? extra.get("msg").getAsString() : "";
+            int amount = extra.has("amt") ? extra.get("amt").getAsInt() : 0;
+            boolean anonymous = extra.has("anon") && extra.get("anon").getAsBoolean();
+
+            String nickname = "익명";
+            if (!anonymous && extra.has("prof") && !extra.get("prof").isJsonNull()) {
+                com.google.gson.JsonObject prof = extra.getAsJsonObject("prof");
+                if (prof.has("ch") && !prof.get("ch").isJsonNull()) {
+                    com.google.gson.JsonObject ch = prof.getAsJsonObject("ch");
+                    nickname = ch.has("na") ? ch.get("na").getAsString() : "익명";
+                }
+            }
 
             DonationType type;
             switch (eventType) {
@@ -382,7 +393,7 @@ public class StreamChat {
 
             Donation donation = new Donation(
                     DonationPlatform.CIME, type, DonationStatus.SUCCESS,
-                    null, nickname, message, false, CurrencyUtils.of(CurrencyUtils.CIME_BEAM, amount), rawJson
+                    null, nickname, message, anonymous, CurrencyUtils.of(CurrencyUtils.CIME_BEAM, amount), rawJson
             );
             emit(l -> l.onDonation(donation));
         } catch (Exception e) {
