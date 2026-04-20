@@ -10,6 +10,8 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okhttp3.WebSocket;
 import io.github.bbobbogi.stream4j.cime.chat.CiMeChatMessage;
+import io.github.bbobbogi.stream4j.cime.chat.CiMeSubscriptionMessage;
+import io.github.bbobbogi.stream4j.cime.chat.CiMeSubscriptionGiftMessage;
 import io.github.bbobbogi.stream4j.common.PlatformChat;
 import io.github.bbobbogi.stream4j.util.ManagedWebSocket;
 import io.github.bbobbogi.stream4j.util.SharedHttpClient;
@@ -580,6 +582,26 @@ public class CiMeChat implements PlatformChat {
             return;
         }
 
+        if ("SUBSCRIPTION_MESSAGE".equals(eventName)) {
+            CiMeSubscriptionMessage msg = parseSubscriptionMessage(parsed);
+            if (msg != null) {
+                for (CiMeChatEventListener listener : listeners) {
+                    listener.onSubscription(msg);
+                }
+            }
+            return;
+        }
+
+        if ("SUBSCRIPTION_GIFT_MESSAGE".equals(eventName)) {
+            CiMeSubscriptionGiftMessage msg = parseSubscriptionGiftMessage(parsed);
+            if (msg != null) {
+                for (CiMeChatEventListener listener : listeners) {
+                    listener.onSubscriptionGift(msg);
+                }
+            }
+            return;
+        }
+
         for (CiMeChatEventListener listener : listeners) {
             if ("LIVE_ENDED".equals(eventName)) {
                 broadcastEnded = true;
@@ -587,6 +609,71 @@ public class CiMeChat implements PlatformChat {
                 listener.onBroadcastEnd(this);
             }
             listener.onEvent(eventName, parsed.toString());
+        }
+    }
+
+    private CiMeSubscriptionMessage parseSubscriptionMessage(JsonObject parsed) {
+        try {
+            JsonObject attrs = parsed.has("Attributes") ? parsed.getAsJsonObject("Attributes") : null;
+            if (attrs == null || !attrs.has("extra") || attrs.get("extra").isJsonNull()) return null;
+            JsonObject extra = JsonParser.parseString(attrs.get("extra").getAsString()).getAsJsonObject();
+
+            CiMeSubscriptionMessage msg = new CiMeSubscriptionMessage();
+            msg.setRawJson(parsed.toString());
+            msg.setMessage(extra.has("msg") ? extra.get("msg").getAsString() : "");
+
+            String nickname = "익명";
+            if (extra.has("prof") && !extra.get("prof").isJsonNull()) {
+                JsonObject prof = extra.getAsJsonObject("prof");
+                if (prof.has("ch") && !prof.get("ch").isJsonNull()) {
+                    JsonObject ch = prof.getAsJsonObject("ch");
+                    nickname = ch.has("na") ? ch.get("na").getAsString() : "익명";
+                }
+            }
+            msg.setNickname(nickname);
+
+            if (extra.has("sub") && !extra.get("sub").isJsonNull()) {
+                JsonObject sub = extra.getAsJsonObject("sub");
+                msg.setStreamerName(sub.has("na") ? sub.get("na").getAsString() : "");
+                msg.setDuration(sub.has("du") ? sub.get("du").getAsInt() : 0);
+                msg.setTier(sub.has("ti") ? sub.get("ti").getAsInt() : 0);
+            }
+
+            return msg;
+        } catch (Exception e) {
+            if (isDebug) System.out.println("[CiMe] Failed to parse SUBSCRIPTION_MESSAGE: " + e.getMessage());
+            return null;
+        }
+    }
+
+    private CiMeSubscriptionGiftMessage parseSubscriptionGiftMessage(JsonObject parsed) {
+        try {
+            JsonObject attrs = parsed.has("Attributes") ? parsed.getAsJsonObject("Attributes") : null;
+            if (attrs == null || !attrs.has("extra") || attrs.get("extra").isJsonNull()) return null;
+            JsonObject extra = JsonParser.parseString(attrs.get("extra").getAsString()).getAsJsonObject();
+
+            CiMeSubscriptionGiftMessage msg = new CiMeSubscriptionGiftMessage();
+            msg.setRawJson(parsed.toString());
+            msg.setMessage(extra.has("msg") ? extra.get("msg").getAsString() : "");
+            msg.setCount(extra.has("cnt") ? extra.get("cnt").getAsInt() : 0);
+            msg.setTargetType(extra.has("tt") ? extra.get("tt").getAsString() : "");
+            boolean anon = extra.has("anon") && extra.get("anon").getAsBoolean();
+            msg.setAnonymous(anon);
+
+            String nickname = "익명";
+            if (!anon && extra.has("prof") && !extra.get("prof").isJsonNull()) {
+                JsonObject prof = extra.getAsJsonObject("prof");
+                if (prof.has("ch") && !prof.get("ch").isJsonNull()) {
+                    JsonObject ch = prof.getAsJsonObject("ch");
+                    nickname = ch.has("na") ? ch.get("na").getAsString() : "익명";
+                }
+            }
+            msg.setNickname(nickname);
+
+            return msg;
+        } catch (Exception e) {
+            if (isDebug) System.out.println("[CiMe] Failed to parse SUBSCRIPTION_GIFT_MESSAGE: " + e.getMessage());
+            return null;
         }
     }
 

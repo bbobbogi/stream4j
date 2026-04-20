@@ -36,6 +36,13 @@ public interface StreamChatEventListener {
     default void onDonation(Donation donation) {}
 
     /**
+     * Called when a subscription-related event is received.
+     *
+     * @param subscription normalized subscription payload
+     */
+    default void onSubscription(Subscription subscription) {}
+
+    /**
      * Called when the platform reports that a broadcast has ended.
      *
      * @param platform source platform
