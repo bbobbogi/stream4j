@@ -13,6 +13,7 @@ const PLATFORMS = [
 const rawBase = import.meta.env.BASE_URL;
 const baseUrl = rawBase.endsWith('/') ? rawBase : `${rawBase}/`;
 const docsHref = `${baseUrl}getting-started/`;
+const javadocHref = `${baseUrl}javadoc/`;
 ---
 
 <nav class="s4j-nav">
@@ -30,6 +31,7 @@ const docsHref = `${baseUrl}getting-started/`;
       <a href="#donation">DONATION</a>
       <a href="#install">INSTALL</a>
       <a href={docsHref}>DOCS</a>
+      <a href={javadocHref}>JAVADOC</a>
     </div>
     <a
       class="s4j-nav-cta"

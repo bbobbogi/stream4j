@@ -120,6 +120,16 @@ export default defineConfig({
           label: '인증',
           items: [{ label: '인증 가이드', link: '/auth/' }],
         },
+        {
+          label: 'API 레퍼런스',
+          items: [
+            {
+              label: 'Javadoc ↗',
+              link: '/javadoc/',
+              attrs: { target: '_blank', rel: 'noreferrer' },
+            },
+          ],
+        },
       ],
     }),
   ],
