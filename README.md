@@ -1,8 +1,8 @@
 # stream4j
 
-치지직, CiMe, SOOP, YouTube, 투네이션 — 5개 스트리밍 플랫폼의 **채팅과 후원을 하나의 API로** 다루는 Java 라이브러리입니다.
+치지직, 씨미(CiMe), 숲(SOOP, 구 아프리카TV/아프리카티비), 유튜브(YouTube), 투네이션 — 5개 스트리밍 플랫폼의 **채팅과 후원을 하나의 API로** 다루는 Java 라이브러리입니다.
 
-> 이 프로젝트는 [chzzk4j](https://github.com/R2turnTrue/chzzk4j)에서 출발하여, 치지직 외 4개 플랫폼(CiMe, SOOP, YouTube, 투네이션)을 추가 지원하도록 확장한 라이브러리입니다.
+> 이 프로젝트는 [chzzk4j](https://github.com/R2turnTrue/chzzk4j)에서 출발하여, 치지직 외 4개 플랫폼(씨미·숲·유튜브·투네이션)을 추가 지원하도록 확장한 라이브러리입니다.
 
 ## 왜 필요한가요?
 
@@ -25,9 +25,9 @@
 | 플랫폼 | 채팅 | 후원 | 방송 종료 감지 | 인증 필요 |
 |---|:---:|:---:|:---:|:---:|
 | **치지직** (Chzzk) | ✅ | ✅ | ✅ | 선택 |
-| **CiMe** | ✅ | ✅ | ✅ | 불필요 |
-| **SOOP** (구 아프리카TV) | ✅ | ✅ | ✅ | 선택 |
-| **YouTube** | ✅ | ✅ | ✅ | 불필요 |
+| **씨미** (CiMe) | ✅ | ✅ | ✅ | 불필요 |
+| **숲** (SOOP, 구 아프리카TV / 아프리카티비) | ✅ | ✅ | ✅ | 선택 |
+| **유튜브** (YouTube) | ✅ | ✅ | ✅ | 불필요 |
 | **투네이션** (Toonation) | — | ✅ | — | 불필요 |
 
 ## 빠른 시작
@@ -85,6 +85,10 @@ dependencies {
 - 🖥️ 여러 플랫폼의 채팅을 한 화면에 모아보는 **통합 채팅 뷰어**
 - 🔔 후원이 들어오면 알려주는 **멀티플랫폼 후원 알림 봇**
 - 📊 채팅/후원 데이터를 수집·분석하는 **방송 관리 대시보드**
+- 🎮 **마인크래프트 서버 연동** — 후원 시 보스 소환·아이템 지급·이펙트 발동 등 게임 내 이벤트를 자동으로 트리거 (치즈·별풍선·슈퍼챗·빔 등 후원 단위 통합 처리)
+- 🤖 **디스코드 봇 연동** — 치지직·숲·유튜브의 채팅과 후원을 디스코드 채널로 실시간 중계
+- 🎬 **OBS 오버레이 연동** — 후원·구독·미션 알림을 방송 화면에 커스텀 오버레이로 표시
+- 🔊 **TTS(음성 알림) 연동** — 후원 메시지를 자동으로 음성 변환해 방송 중 재생
 
 ## 제한사항
 
@@ -99,11 +103,11 @@ dependencies {
 
 - [상세 사용 가이드](docs/USAGE.md) — Raw ID 사용법, 후원 데이터 상세, 설정 옵션
 - [치지직 (Chzzk)](docs/platforms/chzzk.md)
-- [CiMe](docs/platforms/cime.md)
-- [SOOP](docs/platforms/soop.md)
-- [YouTube](docs/platforms/youtube.md)
-- [투네이션](docs/platforms/toonation.md)
-- [인증 가이드](docs/auth.md) — 네이버 로그인, SOOP 로그인
+- [씨미 (CiMe)](docs/platforms/cime.md)
+- [숲 (SOOP, 구 아프리카TV / 아프리카티비)](docs/platforms/soop.md)
+- [유튜브 (YouTube)](docs/platforms/youtube.md)
+- [투네이션 (Toonation)](docs/platforms/toonation.md)
+- [인증 가이드](docs/auth.md) — 네이버 로그인, 숲(SOOP) 로그인
 
 ## 라이선스
 

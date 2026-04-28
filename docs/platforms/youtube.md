@@ -1,4 +1,4 @@
-# YouTube
+# 유튜브 (YouTube)
 
 ## 채팅 연결
 
