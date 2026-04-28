@@ -1,5 +1,6 @@
 ---
 import Logo from './Logo.astro';
+import { LIBRARY_VERSION } from '../lib/version.ts';
 
 const PLATFORMS = [
   { name: '치지직', en: 'Chzzk', chat: true, don: true },
@@ -19,7 +20,9 @@ const docsHref = `${baseUrl}getting-started/`;
     <a href="#top" class="s4j-brand">
       <span class="s4j-brand-mark"><Logo /></span>
       <span>stream4j</span>
-      <span style="color: var(--s4j-fg-3); font-size: 12px;">/ v1.0.1</span>
+      <span style="color: var(--s4j-fg-3); font-size: 12px;" data-stream4j-version
+        >/ v{LIBRARY_VERSION}</span
+      >
     </a>
     <div class="s4j-nav-links">
       <a href="#features">FEATURES</a>

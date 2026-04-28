@@ -10,6 +10,7 @@ import SiteFooter from '../components/SiteFooter.astro';
 import CodeCard from '../components/CodeCard.astro';
 import LiveDemo from '../components/LiveDemo.tsx';
 import UseCaseSlider from '../components/UseCaseSlider.tsx';
+import { VERSION_UPDATER_SCRIPT } from '../lib/versionUpdaterScript.ts';
 
 const QUICK_START = `StreamChat chat = new StreamChatBuilder()
         .add("https://chzzk.naver.com/live/924a636224c9203259af46ad7d8b70ca")
@@ -81,6 +82,8 @@ const ogImage = new URL(`${baseUrl}og-image.png`, Astro.site).toString();
       href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
+
+    <script is:inline set:html={VERSION_UPDATER_SCRIPT} />
 
     <script type="application/ld+json" set:html={JSON.stringify({
       '@context': 'https://schema.org',

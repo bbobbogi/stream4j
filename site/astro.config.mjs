@@ -3,6 +3,7 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import sitemap from '@astrojs/sitemap';
 import react from '@astrojs/react';
+import { VERSION_UPDATER_SCRIPT } from './src/lib/versionUpdaterScript.ts';
 
 const SITE = 'https://bbobbogi.github.io';
 const BASE = '/stream4j';
@@ -35,6 +36,11 @@ export default defineConfig({
       ],
       customCss: ['./src/styles/custom.css'],
       head: [
+        {
+          tag: 'script',
+          attrs: { type: 'text/javascript' },
+          content: VERSION_UPDATER_SCRIPT,
+        },
         { tag: 'meta', attrs: { property: 'og:type', content: 'website' } },
         { tag: 'meta', attrs: { property: 'og:locale', content: 'ko_KR' } },
         { tag: 'meta', attrs: { property: 'og:site_name', content: 'stream4j' } },

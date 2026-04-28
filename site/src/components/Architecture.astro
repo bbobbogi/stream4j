@@ -1,4 +1,6 @@
 ---
+import { LIBRARY_VERSION } from '../lib/version.ts';
+
 const PLATFORMS = [
   { name: 'CHZZK', proto: 'WS · 폴링' },
   { name: 'CIME', proto: 'WS · JWT' },
@@ -55,7 +57,8 @@ const MODULES = [
           <div class="core-modules">
             {MODULES.map((m) => <span class="core-mod">{m}</span>)}
           </div>
-          <div class="core-label" style="text-align: right;">v1.0.1<br />MIT</div>
+          <div class="core-label" style="text-align: right;" data-stream4j-version
+            >v{LIBRARY_VERSION}<br />MIT</div>
         </div>
         <div class="s4j-arch-pipes" style="height: 40px;">
           <div></div>

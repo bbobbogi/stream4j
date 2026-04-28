@@ -3,40 +3,24 @@ title: 설치 및 빠른 시작
 description: stream4j를 Maven Central에서 받아 5분 안에 첫 통합 채팅을 받아보는 가이드입니다.
 ---
 
-## 설치
+import { Code } from '@astrojs/starlight/components';
+import { INSTALL_VERSION } from '../../lib/version.ts';
 
-Maven Central에 배포되어 있습니다.
-
-### Gradle (Kotlin DSL)
-
-```kotlin
-repositories {
+export const gradleCode = `repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation("io.github.bbobbogi:stream4j:1.0.1-SNAPSHOT")
-}
-```
+    implementation("io.github.bbobbogi:stream4j:${INSTALL_VERSION}")
+}`;
 
-### Maven
-
-```xml
-<dependency>
+export const mavenCode = `<dependency>
     <groupId>io.github.bbobbogi</groupId>
     <artifactId>stream4j</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
-</dependency>
-```
+    <version>${INSTALL_VERSION}</version>
+</dependency>`;
 
-> **요구사항**: Java 11 이상
-
-## 빠른 시작
-
-URL만 넣으면 바로 동작합니다. 아래 코드를 실행하면 5개 플랫폼의 채팅과 후원이 동일한 콜백으로 들어옵니다.
-
-```java
-StreamChat chat = new StreamChatBuilder()
+export const quickStartCode = `StreamChat chat = new StreamChatBuilder()
         .add("https://chzzk.naver.com/live/924a636224c9203259af46ad7d8b70ca")
         .add("https://ci.me/@lyn")
         .add("https://play.sooplive.co.kr/tjrdbs999/292536969")
@@ -59,8 +43,29 @@ StreamChat chat = new StreamChatBuilder()
         })
         .build();
 
-chat.connectAll();
-```
+chat.connectAll();`;
+
+## 설치
+
+Maven Central에 배포되어 있습니다. 아래 코드의 버전 번호는 빌드 시점에
+[Maven Central의 정식 release](https://central.sonatype.com/artifact/io.github.bbobbogi/stream4j)
+에서 자동으로 가져오며, 페이지 로드 후에는 GitHub Releases 정보로도 갱신됩니다 (현재: <code data-stream4j-install-version>{INSTALL_VERSION}</code>).
+
+### Gradle (Kotlin DSL)
+
+<Code code={gradleCode} lang="kotlin" />
+
+### Maven
+
+<Code code={mavenCode} lang="xml" />
+
+> **요구사항**: Java 11 이상
+
+## 빠른 시작
+
+URL만 넣으면 바로 동작합니다. 아래 코드를 실행하면 5개 플랫폼의 채팅과 후원이 동일한 콜백으로 들어옵니다.
+
+<Code code={quickStartCode} lang="java" />
 
 ## 다음 단계
 

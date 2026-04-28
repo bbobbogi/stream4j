@@ -1,18 +1,19 @@
 ---
 import CodeCard from './CodeCard.astro';
+import { INSTALL_VERSION } from '../lib/version.ts';
 
 const GRADLE_CODE = `repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation("io.github.bbobbogi:stream4j:1.0.1-SNAPSHOT")
+    implementation("io.github.bbobbogi:stream4j:${INSTALL_VERSION}")
 }`;
 
 const MAVEN_CODE = `<dependency>
     <groupId>io.github.bbobbogi</groupId>
     <artifactId>stream4j</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>${INSTALL_VERSION}</version>
 </dependency>`;
 
 const OPTIONS_CODE = `new StreamChatBuilder()
