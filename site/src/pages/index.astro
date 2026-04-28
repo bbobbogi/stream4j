@@ -40,9 +40,10 @@ const TITLE = 'stream4j — 5개 스트리밍 플랫폼, 하나의 API';
 const DESCRIPTION =
   '치지직 · 씨미(CiMe) · 숲(SOOP, 구 아프리카TV/아프리카티비) · 유튜브(YouTube) · 투네이션의 채팅과 후원을 하나의 Java API로 통합. 마인크래프트 후원 연동, 디스코드 봇, OBS 오버레이, TTS 알림에 활용.';
 
-const baseUrl = import.meta.env.BASE_URL;
+const rawBase = import.meta.env.BASE_URL;
+const baseUrl = rawBase.endsWith('/') ? rawBase : `${rawBase}/`;
 const canonicalURL = new URL(baseUrl, Astro.site).toString();
-const ogImage = new URL(`${baseUrl}og-image.png`.replace(/\/+/g, '/'), Astro.site).toString();
+const ogImage = new URL(`${baseUrl}og-image.png`, Astro.site).toString();
 ---
 
 <!doctype html>

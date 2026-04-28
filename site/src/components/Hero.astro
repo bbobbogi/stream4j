@@ -9,8 +9,9 @@ const PLATFORMS = [
   { name: '투네이션', en: 'Toonation', chat: false, don: true },
 ];
 
-const baseUrl = import.meta.env.BASE_URL;
-const docsHref = `${baseUrl}getting-started/`.replace(/\/+/g, '/');
+const rawBase = import.meta.env.BASE_URL;
+const baseUrl = rawBase.endsWith('/') ? rawBase : `${rawBase}/`;
+const docsHref = `${baseUrl}getting-started/`;
 ---
 
 <nav class="s4j-nav">
