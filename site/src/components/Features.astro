@@ -1,0 +1,63 @@
+---
+const FEATURES = [
+  {
+    n: '01',
+    t: 'URL만 넣으면 자동 감지',
+    d: '치지직, CiMe, SOOP, YouTube, 투네이션 — URL을 그대로 넣으면 어떤 플랫폼인지 stream4j가 알아서 판별합니다. Raw ID 방식도 지원합니다.',
+  },
+  {
+    n: '02',
+    t: '통합 후원 모델 (Donation)',
+    d: '치즈, 별풍선, 빔, 슈퍼챗을 모두 단일 Donation record로. nickname, message, amountInKRW, formattedAmount까지 한 번에.',
+  },
+  {
+    n: '03',
+    t: '안정적인 연결 유지',
+    d: 'OkHttp ManagedWebSocket 기반. 지수 백오프 재시도, idle timeout 감지, 비복구성 에러 즉시 중단까지 내장되어 있습니다.',
+  },
+  {
+    n: '04',
+    t: '방송 종료 자동 감지',
+    d: '치지직 폴링, CiMe LIVE_ENDED 이벤트, SOOP svc_SETBJSTAT=0 패킷 등 플랫폼별 방식을 라이브러리가 추상화합니다.',
+  },
+  {
+    n: '05',
+    t: '원화 환산 내장',
+    d: '치즈, 빔, 별풍선, USD를 KRW로 자동 환산. CurrencyUtils가 통화 단위를 처리하므로 후원 합산이 간단합니다.',
+  },
+  {
+    n: '06',
+    t: 'CiMe 토큰 자동 갱신',
+    d: 'JWT 만료 5분 전 자동 갱신, 메시지 ID 기반 중복 제거. 새 연결을 먼저 열고 구 연결을 닫아 메시지 유실을 막습니다.',
+  },
+];
+---
+
+<section class="s4j-section" id="features">
+  <div class="s4j-shell">
+    <div class="s4j-section-head">
+      <div class="left">
+        <div class="s4j-eyebrow">CORE&nbsp;FEATURES</div>
+        <h2>겉보기는 단순,<br />내부는 견고.</h2>
+      </div>
+      <div class="right">
+        <p>
+          stream4j는 chzzk4j에서 출발하여 4개 플랫폼을 더한 라이브러리로,
+          실제 운영 환경에서 발생하는 끊김·토큰 만료·정책 변경을 견디도록
+          설계되었습니다.
+        </p>
+      </div>
+    </div>
+    <div class="s4j-feat-grid">
+      {
+        FEATURES.map((f) => (
+          <div class="s4j-feat">
+            <div class="s4j-feat-num">/ {f.n}</div>
+            <h3>{f.t}</h3>
+            <p>{f.d}</p>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>

@@ -1,0 +1,66 @@
+---
+import CodeCard from './CodeCard.astro';
+
+const GRADLE_CODE = `repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation("io.github.bbobbogi:stream4j:1.0.1-SNAPSHOT")
+}`;
+
+const MAVEN_CODE = `<dependency>
+    <groupId>io.github.bbobbogi</groupId>
+    <artifactId>stream4j</artifactId>
+    <version>1.0.1-SNAPSHOT</version>
+</dependency>`;
+
+const OPTIONS_CODE = `new StreamChatBuilder()
+        .add("https://...")
+        .withSoopCredentials("아이디", "비밀번호")    // SOOP 로그인 (선택)
+        .withYouTubePollInterval(3000)             // YouTube 폴링 간격 (기본 5000ms)
+        .withAutoReconnect(true)                   // 자동 재연결
+        .withDebugMode()                           // 디버그 로그
+        .withListener(listener)
+        .build();`;
+---
+
+<section class="s4j-section">
+  <div class="s4j-shell">
+    <div class="s4j-section-head">
+      <div class="left">
+        <div class="s4j-eyebrow">CONFIG</div>
+        <h2>필요한 만큼<br />세밀하게.</h2>
+      </div>
+      <div class="right">
+        <p>
+          기본값으로 바로 쓸 수도 있고, 운영 환경에 맞춰 조정할 수도 있습니다 — SOOP
+          로그인, YouTube 폴링 간격, 자동 재연결, 디버그 로그.
+        </p>
+      </div>
+    </div>
+    <CodeCard title="Builder.java" code={OPTIONS_CODE} />
+  </div>
+</section>
+
+<section class="s4j-section" id="install">
+  <div class="s4j-shell">
+    <div class="s4j-section-head">
+      <div class="left">
+        <div class="s4j-eyebrow">INSTALL</div>
+        <h2>설치는 한 줄.</h2>
+      </div>
+      <div class="right">
+        <p>
+          Maven Central에 배포되어 있습니다. <span class="s4j-mono"
+            >io.github.bbobbogi:stream4j</span
+          >. Java 11 이상이 필요합니다.
+        </p>
+      </div>
+    </div>
+    <div class="s4j-install">
+      <CodeCard title="build.gradle.kts" code={GRADLE_CODE} />
+      <CodeCard title="pom.xml" code={MAVEN_CODE} />
+    </div>
+  </div>
+</section>

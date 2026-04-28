@@ -1,0 +1,172 @@
+---
+import '../styles/custom.css';
+import Hero from '../components/Hero.astro';
+import Features from '../components/Features.astro';
+import Architecture from '../components/Architecture.astro';
+import PlatformMatrix from '../components/PlatformMatrix.astro';
+import DonationModel from '../components/DonationModel.astro';
+import Install from '../components/Install.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import CodeCard from '../components/CodeCard.astro';
+import LiveDemo from '../components/LiveDemo.tsx';
+import UseCaseSlider from '../components/UseCaseSlider.tsx';
+
+const QUICK_START = `StreamChat chat = new StreamChatBuilder()
+        .add("https://chzzk.naver.com/live/924a636224c9203259af46ad7d8b70ca")
+        .add("https://ci.me/@lyn")
+        .add("https://play.sooplive.co.kr/tjrdbs999/292536969")
+        .add("https://www.youtube.com/watch?v=Qv6o6WACJ60")
+        .add("https://toon.at/widget/alertbox/abc123")
+        .withListener(new StreamChatEventListener() {
+            @Override
+            public void onDonation(Donation donation) {
+                System.out.println("[" + donation.platform() + "] "
+                        + donation.nickname() + ": "
+                        + donation.formattedAmount() + " - "
+                        + donation.message());
+            }
+
+            @Override
+            public void onChat(DonationPlatform platform, String channelId,
+                               String nickname, String message) {
+                System.out.println("[" + platform + "] " + nickname + ": " + message);
+            }
+        })
+        .build();
+
+chat.connectAll();`;
+
+const TITLE = 'stream4j — 5개 스트리밍 플랫폼, 하나의 API';
+const DESCRIPTION =
+  '치지직 · 씨미(CiMe) · 숲(SOOP, 구 아프리카TV/아프리카티비) · 유튜브(YouTube) · 투네이션의 채팅과 후원을 하나의 Java API로 통합. 마인크래프트 후원 연동, 디스코드 봇, OBS 오버레이, TTS 알림에 활용.';
+
+const baseUrl = import.meta.env.BASE_URL;
+const canonicalURL = new URL(baseUrl, Astro.site).toString();
+const ogImage = new URL(`${baseUrl}og-image.png`.replace(/\/+/g, '/'), Astro.site).toString();
+---
+
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{TITLE}</title>
+    <meta name="description" content={DESCRIPTION} />
+    <link rel="canonical" href={canonicalURL} />
+    <meta
+      name="keywords"
+      content="치지직, 씨미, 숲, 아프리카TV, 아프리카티비, 유튜브, 투네이션, 마인크래프트 후원 연동, 디스코드 봇, OBS 오버레이, TTS, Java 스트리밍, 후원 알림, 채팅 통합, chzzk4j, stream4j"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="ko_KR" />
+    <meta property="og:site_name" content="stream4j" />
+    <meta property="og:title" content={TITLE} />
+    <meta property="og:description" content={DESCRIPTION} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={TITLE} />
+    <meta name="twitter:description" content={DESCRIPTION} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css"
+      crossorigin
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <script type="application/ld+json" set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareSourceCode',
+      name: 'stream4j',
+      description: DESCRIPTION,
+      programmingLanguage: 'Java',
+      license: 'https://opensource.org/license/mit/',
+      codeRepository: 'https://github.com/bbobbogi/stream4j',
+      url: canonicalURL,
+      inLanguage: 'ko-KR',
+      keywords: '치지직, 씨미, 숲, 아프리카TV, 유튜브, 투네이션, 마인크래프트 후원, 디스코드 봇, OBS 오버레이, TTS',
+    })} />
+  </head>
+  <body class="s4j-landing-body">
+    <div class="s4j-bg-ambient" aria-hidden="true">
+      <div class="blob b1"></div>
+      <div class="blob b2"></div>
+      <div class="blob b3"></div>
+    </div>
+    <div class="s4j-landing">
+      <Hero />
+
+      <section class="s4j-section" id="quickstart">
+        <div class="s4j-shell">
+          <div class="s4j-section-head">
+            <div class="left">
+              <div class="s4j-eyebrow">QUICK&nbsp;START</div>
+              <h2>URL을 넣고,<br />이벤트를 받습니다.</h2>
+            </div>
+            <div class="right">
+              <p>
+                stream4j의 핵심 사용법은 한 화면에 들어옵니다. Builder에 URL을
+                추가하고, Listener를 달고, <span class="s4j-mono">connectAll()</span>.
+                나머지는 라이브러리가 처리합니다 — WebSocket 핸드셰이크, 후원 파싱,
+                통화 환산, 재연결까지.
+              </p>
+            </div>
+          </div>
+          <CodeCard title="QuickStart.java" code={QUICK_START} />
+        </div>
+      </section>
+
+      <section class="s4j-section" id="demo">
+        <div class="s4j-shell">
+          <div class="s4j-section-head">
+            <div class="left">
+              <div class="s4j-eyebrow">UNIFIED&nbsp;STREAM</div>
+              <h2>5개 채널이<br />하나의 콜백으로.</h2>
+            </div>
+            <div class="right">
+              <p>
+                플랫폼마다 따로 연결할 필요 없이, <span class="s4j-mono">onChat()</span>과
+                <span class="s4j-mono">onDonation()</span> 두 콜백에서 모두 받습니다.
+                아래는 시뮬레이션된 통합 이벤트 스트림 — 실제로 동작할 때의 구조를 그대로 보여줍니다.
+              </p>
+            </div>
+          </div>
+          <LiveDemo client:visible />
+        </div>
+      </section>
+
+      <Features />
+      <Architecture />
+      <PlatformMatrix />
+      <DonationModel />
+
+      <section class="s4j-section" id="usecases">
+        <div class="s4j-shell">
+          <div class="s4j-section-head">
+            <div class="left">
+              <div class="s4j-eyebrow">USE&nbsp;CASES</div>
+              <h2>이런 곳에<br />씁니다.</h2>
+            </div>
+            <div class="right">
+              <p>
+                통합 채팅 뷰어부터 마인크래프트 서버 연동, 디스코드 봇, OBS 오버레이, TTS까지 —
+                stream4j 위에 올라가는 실제 시나리오들입니다.
+              </p>
+            </div>
+          </div>
+          <UseCaseSlider client:visible />
+        </div>
+      </section>
+
+      <Install />
+      <SiteFooter />
+    </div>
+  </body>
+</html>

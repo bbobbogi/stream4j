@@ -1,0 +1,84 @@
+---
+const PLATFORMS = [
+  { name: 'CHZZK', proto: 'WS · 폴링' },
+  { name: 'CIME', proto: 'WS · JWT' },
+  { name: 'SOOP', proto: 'WS · Selenium' },
+  { name: 'YOUTUBE', proto: 'HTTP polling' },
+  { name: 'TOONATION', proto: 'WS · alertbox' },
+];
+
+const MODULES = [
+  'URL Resolver',
+  'Managed\u00A0WebSocket',
+  'Token Refresher',
+  'Donation Normalizer',
+  'Currency Utils',
+  'Reconnect Strategy',
+];
+---
+
+<section class="s4j-section" id="architecture">
+  <div class="s4j-shell">
+    <div class="s4j-section-head">
+      <div class="left">
+        <div class="s4j-eyebrow">ARCHITECTURE</div>
+        <h2>플랫폼별 차이를<br />추상화하는 레이어.</h2>
+      </div>
+      <div class="right">
+        <p>
+          각 플랫폼은 고유의 WebSocket / 폴링 / Webhook 방식으로 동작합니다.
+          stream4j는 이 차이를 흡수하고 통합 이벤트로 정규화합니다.
+        </p>
+      </div>
+    </div>
+    <div class="s4j-arch">
+      <div class="s4j-arch-grid">
+        <div class="s4j-arch-platforms">
+          {
+            PLATFORMS.map((p) => (
+              <div class="s4j-arch-pf">
+                <span class="name">{p.name}</span>
+                <span class="proto">{p.proto}</span>
+              </div>
+            ))
+          }
+        </div>
+        <div class="s4j-arch-pipes">
+          <div class="pipe"></div>
+          <div class="pipe"></div>
+          <div class="pipe"></div>
+          <div class="pipe"></div>
+          <div class="pipe"></div>
+        </div>
+        <div class="s4j-arch-core">
+          <div class="core-label">Core<br />Layer</div>
+          <div class="core-modules">
+            {MODULES.map((m) => <span class="core-mod">{m}</span>)}
+          </div>
+          <div class="core-label" style="text-align: right;">v1.0.1<br />MIT</div>
+        </div>
+        <div class="s4j-arch-pipes" style="height: 40px;">
+          <div></div>
+          <div class="pipe"></div>
+          <div></div>
+          <div class="pipe"></div>
+          <div></div>
+        </div>
+        <div class="s4j-arch-out">
+          <div class="s4j-arch-out-card">
+            <span class="name">onChat(platform, channelId, nickname, message)</span>
+            <span class="desc"
+              >통합 채팅 이벤트 — 어떤 플랫폼에서 왔든 동일한 시그니처</span
+            >
+          </div>
+          <div class="s4j-arch-out-card">
+            <span class="name">onDonation(Donation donation)</span>
+            <span class="desc"
+              >type · status · amountInKRW · formattedAmount 포함된 단일 record</span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -40,3 +40,10 @@ bin/
 
 env.properties
 publish.properties
+
+### Astro / Node site ###
+site/node_modules/
+site/dist/
+site/.astro/
+site/.tmp_handoff/
+.tmp_handoff/

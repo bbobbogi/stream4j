@@ -1,0 +1,23 @@
+---
+import { highlightJava } from '../lib/highlightJava.ts';
+
+interface Props {
+  title: string;
+  code: string;
+}
+
+const { title, code } = Astro.props;
+const highlighted = highlightJava(code);
+---
+
+<div class="s4j-code-card">
+  <div class="s4j-code-bar">
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <div class="dots"><span></span><span></span><span></span></div>
+      <span>{title}</span>
+    </div>
+  </div>
+  <div class="s4j-code-body">
+    <pre><code set:html={highlighted} /></pre>
+  </div>
+</div>

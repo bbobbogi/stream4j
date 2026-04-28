@@ -1,0 +1,84 @@
+---
+import CodeCard from './CodeCard.astro';
+
+const RAW_ID_CODE = `new StreamChatBuilder()
+        .add("924a636224c9203259af46ad7d8b70ca", DonationPlatform.CHZZK)
+        .add("tjrdbs999", DonationPlatform.SOOP)
+        .add("@lyn", DonationPlatform.CIME)
+        .add("alertbox_key", DonationPlatform.TOONATION)
+        .add("@jtbc_news", DonationPlatform.YOUTUBE)
+        .withListener(listener)
+        .build();`;
+
+const FIELDS = [
+  { name: 'platform()', val: 'DonationPlatform' },
+  { name: 'type()', val: 'DonationType' },
+  { name: 'status()', val: 'DonationStatus' },
+  { name: 'nickname()', val: 'String' },
+  { name: 'message()', val: 'String' },
+  { name: 'amount()', val: 'int' },
+  { name: 'currencyCode()', val: 'String — CHEESE, BEAM, BALLOON, KRW...' },
+  { name: 'amountInKRW()', val: 'int — 원화 환산' },
+  { name: 'formattedAmount()', val: 'String — "1000치즈 (1000원)"' },
+  { name: 'anonymous()', val: 'boolean' },
+  { name: 'raw()', val: 'Object — 플랫폼별 원본' },
+];
+
+const TYPES = ['CHAT', 'VIDEO', 'MISSION', 'PARTY', 'SUBSCRIPTION', 'SUBSCRIPTION_GIFT'];
+const STATUSES = ['SUCCESS', 'PENDING', 'APPROVED', 'REJECTED', 'EXPIRED'];
+---
+
+<section class="s4j-section" id="donation">
+  <div class="s4j-shell">
+    <div class="s4j-section-head">
+      <div class="left">
+        <div class="s4j-eyebrow">DONATION&nbsp;MODEL</div>
+        <h2>치즈도, 별풍선도, 슈퍼챗도 — 같은 record.</h2>
+      </div>
+      <div class="right">
+        <p>
+          플랫폼이 다르면 후원 단위도, 메시지 구조도 다릅니다. stream4j는 이를 단일
+          <span class="s4j-mono">Donation</span> record로 정규화하고, 원화 환산까지 자동으로 처리합니다.
+        </p>
+      </div>
+    </div>
+    <div class="s4j-donation-card">
+      <div class="s4j-donation-left">
+        <h3>Donation</h3>
+        <p
+          style="font-family: var(--s4j-mono); font-size: 12px; color: var(--s4j-fg-3);"
+        >
+          record · io.github.bbobbogi.stream4j
+        </p>
+        <div class="s4j-donation-fields">
+          {
+            FIELDS.map((f) => (
+              <div class="s4j-df">
+                <span class="s4j-df-name">{f.name}</span>
+                <span class="s4j-df-val">{f.val}</span>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+      <div class="s4j-donation-right">
+        <div>
+          <div class="label">DONATION&nbsp;TYPE</div>
+          <div>
+            {TYPES.map((t) => <span class="s4j-dtype-tag">{t}</span>)}
+          </div>
+        </div>
+        <div>
+          <div class="label">DONATION&nbsp;STATUS</div>
+          <div>
+            {STATUSES.map((s) => <span class="s4j-dtype-tag">{s}</span>)}
+          </div>
+        </div>
+        <div>
+          <div class="label">RAW&nbsp;ID&nbsp;USAGE</div>
+          <CodeCard title="RawId.java" code={RAW_ID_CODE} />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

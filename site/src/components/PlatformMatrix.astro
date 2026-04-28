@@ -1,0 +1,101 @@
+---
+const PLATFORMS = [
+  {
+    name: '치지직',
+    en: 'Chzzk',
+    chat: true,
+    don: true,
+    end: true,
+    auth: '선택',
+    detect: '30초 폴링',
+  },
+  {
+    name: '씨미',
+    en: 'CiMe',
+    chat: true,
+    don: true,
+    end: true,
+    auth: '불필요',
+    detect: 'LIVE_ENDED 이벤트',
+  },
+  {
+    name: '숲',
+    en: 'SOOP · 구 아프리카TV',
+    chat: true,
+    don: true,
+    end: true,
+    auth: '선택',
+    detect: 'svc_SETBJSTAT=0',
+  },
+  {
+    name: '유튜브',
+    en: 'YouTube',
+    chat: true,
+    don: true,
+    end: true,
+    auth: '불필요',
+    detect: 'continuation 부재',
+  },
+  {
+    name: '투네이션',
+    en: 'Toonation',
+    chat: false,
+    don: true,
+    end: false,
+    auth: '불필요',
+    detect: 'idle 60s timeout',
+  },
+];
+---
+
+<section class="s4j-section" id="platforms">
+  <div class="s4j-shell">
+    <div class="s4j-section-head">
+      <div class="left">
+        <div class="s4j-eyebrow">PLATFORM&nbsp;MATRIX</div>
+        <h2>지원 범위.</h2>
+      </div>
+      <div class="right">
+        <p>
+          플랫폼별 기능 지원과 인증 요구사항. 투네이션은 alertbox 기반 후원 알림 전용으로,
+          채팅과 방송 종료 감지는 제공하지 않습니다.
+        </p>
+      </div>
+    </div>
+    <div class="s4j-matrix">
+      <div class="s4j-matrix-row">
+        <div class="s4j-matrix-cell">PLATFORM</div>
+        <div class="s4j-matrix-cell">CHAT</div>
+        <div class="s4j-matrix-cell">DONATION</div>
+        <div class="s4j-matrix-cell">END&nbsp;DETECT</div>
+        <div class="s4j-matrix-cell">AUTH</div>
+        <div class="s4j-matrix-cell">DETECT&nbsp;METHOD</div>
+      </div>
+      {
+        PLATFORMS.map((p) => (
+          <div class="s4j-matrix-row">
+            <div class="s4j-matrix-cell">
+              {p.name}
+              <span class="ko">{p.en}</span>
+            </div>
+            <div class="s4j-matrix-cell">
+              {p.chat ? <span class="s4j-check">●</span> : <span class="s4j-dash">—</span>}
+            </div>
+            <div class="s4j-matrix-cell">
+              {p.don ? <span class="s4j-check">●</span> : <span class="s4j-dash">—</span>}
+            </div>
+            <div class="s4j-matrix-cell">
+              {p.end ? <span class="s4j-check">●</span> : <span class="s4j-dash">—</span>}
+            </div>
+            <div class="s4j-matrix-cell">
+              <span class={p.auth === '선택' ? 's4j-opt' : 's4j-req'}>{p.auth}</span>
+            </div>
+            <div class="s4j-matrix-cell">
+              <span style="color: var(--s4j-fg-3); font-size: 11px;">{p.detect}</span>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>

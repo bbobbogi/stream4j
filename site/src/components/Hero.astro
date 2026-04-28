@@ -1,0 +1,87 @@
+---
+import Logo from './Logo.astro';
+
+const PLATFORMS = [
+  { name: '치지직', en: 'Chzzk', chat: true, don: true },
+  { name: '씨미', en: 'CiMe', chat: true, don: true },
+  { name: '숲', en: 'SOOP · 구 아프리카TV', chat: true, don: true },
+  { name: '유튜브', en: 'YouTube', chat: true, don: true },
+  { name: '투네이션', en: 'Toonation', chat: false, don: true },
+];
+
+const baseUrl = import.meta.env.BASE_URL;
+const docsHref = `${baseUrl}getting-started/`.replace(/\/+/g, '/');
+---
+
+<nav class="s4j-nav">
+  <div class="s4j-shell s4j-nav-inner">
+    <a href="#top" class="s4j-brand">
+      <span class="s4j-brand-mark"><Logo /></span>
+      <span>stream4j</span>
+      <span style="color: var(--s4j-fg-3); font-size: 12px;">/ v1.0.1</span>
+    </a>
+    <div class="s4j-nav-links">
+      <a href="#features">FEATURES</a>
+      <a href="#platforms">PLATFORMS</a>
+      <a href="#donation">DONATION</a>
+      <a href="#install">INSTALL</a>
+      <a href={docsHref}>DOCS</a>
+    </div>
+    <a
+      class="s4j-nav-cta"
+      href="https://github.com/bbobbogi/stream4j"
+      target="_blank"
+      rel="noreferrer">↗ GITHUB</a
+    >
+  </div>
+</nav>
+
+<section class="s4j-hero" id="top">
+  <div class="s4j-hero-grid"></div>
+  <div class="s4j-shell s4j-hero-inner">
+    <div class="s4j-hero-tag">
+      <span>Java&nbsp;Library</span>
+      <span style="color: var(--s4j-fg-3);">·</span>
+      <b>5 platforms · 1 API</b>
+      <span style="color: var(--s4j-fg-3);">·</span>
+      <span>Apache OkHttp + Gson</span>
+    </div>
+    <h1>
+      <span class="stroke">5개 플랫폼</span>의<br />
+      <span>채팅과 후원을</span><br />
+      <strong class="s4j-glow">하나의 API로</strong>
+    </h1>
+    <p class="s4j-hero-sub">
+      치지직 · 씨미 · 숲(SOOP, 구 아프리카TV/아프리카티비) · 유튜브 · 투네이션 —
+      플랫폼마다 다른 WebSocket 프로토콜, 후원 단위, 인증 방식을 stream4j가 단일
+      <span class="s4j-mono" style="color: var(--s4j-fg);">StreamChat</span> 인터페이스로 통합합니다. URL만 넣으면 끝, 자동 재연결도 내장.
+    </p>
+    <div class="s4j-hero-actions">
+      <a class="s4j-btn s4j-btn-primary" href="#install">
+        빠른 시작 <span class="arrow">→</span>
+      </a>
+      <a
+        class="s4j-btn"
+        href="https://github.com/bbobbogi/stream4j"
+        target="_blank"
+        rel="noreferrer">GitHub에서 보기 <span class="arrow">↗</span></a
+      >
+    </div>
+
+    <div class="s4j-hero-platforms">
+      {
+        PLATFORMS.map((p) => (
+          <div class="pf">
+            <div class="pf-name">
+              <span class="pf-status" />
+              {p.name}
+            </div>
+            <div class="pf-meta">
+              {p.en} · {p.chat ? 'chat' : '—'} · {p.don ? 'don' : '—'}
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
