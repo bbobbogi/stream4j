@@ -17,6 +17,11 @@ export default defineConfig({
   base: BASE,
   trailingSlash: 'ignore',
   output: 'static',
+  vite: {
+    optimizeDeps: {
+      include: ['react', 'react-dom', 'react-dom/client', 'react/jsx-runtime'],
+    },
+  },
   integrations: [
     react(),
     sitemap(),

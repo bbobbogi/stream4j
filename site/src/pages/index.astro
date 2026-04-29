@@ -7,35 +7,10 @@ import PlatformMatrix from '../components/PlatformMatrix.astro';
 import DonationModel from '../components/DonationModel.astro';
 import Install from '../components/Install.astro';
 import SiteFooter from '../components/SiteFooter.astro';
-import CodeCard from '../components/CodeCard.astro';
 import LiveDemo from '../components/LiveDemo.tsx';
 import UseCaseSlider from '../components/UseCaseSlider.tsx';
+import QuickStartFlow from '../components/QuickStartFlow.tsx';
 import { VERSION_UPDATER_SCRIPT } from '../lib/versionUpdaterScript.ts';
-
-const QUICK_START = `StreamChat chat = new StreamChatBuilder()
-        .add("https://chzzk.naver.com/live/924a636224c9203259af46ad7d8b70ca")
-        .add("https://ci.me/@lyn")
-        .add("https://play.sooplive.co.kr/tjrdbs999/292536969")
-        .add("https://www.youtube.com/watch?v=Qv6o6WACJ60")
-        .add("https://toon.at/widget/alertbox/abc123")
-        .withListener(new StreamChatEventListener() {
-            @Override
-            public void onDonation(Donation donation) {
-                System.out.println("[" + donation.platform() + "] "
-                        + donation.nickname() + ": "
-                        + donation.formattedAmount() + " - "
-                        + donation.message());
-            }
-
-            @Override
-            public void onChat(DonationPlatform platform, String channelId,
-                               String nickname, String message) {
-                System.out.println("[" + platform + "] " + nickname + ": " + message);
-            }
-        })
-        .build();
-
-chat.connectAll();`;
 
 const TITLE = 'stream4j — 5개 스트리밍 플랫폼, 하나의 API';
 const DESCRIPTION =
@@ -123,7 +98,7 @@ const ogImage = new URL(`${baseUrl}og-image.png`, Astro.site).toString();
               </p>
             </div>
           </div>
-          <CodeCard title="QuickStart.java" code={QUICK_START} />
+          <QuickStartFlow client:load />
         </div>
       </section>
 
