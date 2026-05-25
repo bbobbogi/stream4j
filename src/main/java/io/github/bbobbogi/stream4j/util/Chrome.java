@@ -6,7 +6,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 
 /**
  * Utility methods for creating and configuring a Chrome WebDriver.
@@ -42,7 +42,7 @@ public class Chrome {
             options.addArguments("--disable-gpu");
             options.addArguments("--window-size=1920,1080");
             WebDriver driver = new ChromeDriver(options);
-            driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+            driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
             return driver;
         } catch (Exception e) {
             throw new RuntimeException(e);
