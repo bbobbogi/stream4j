@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "io.github.bbobbogi"
-version = System.getenv("VERSION") ?: "1.0.2-SNAPSHOT"
+version = System.getenv("VERSION") ?: "1.0.3-SNAPSHOT"
 
 repositories {
     mavenCentral()
