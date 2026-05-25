@@ -45,8 +45,16 @@ jobs:
         working-directory: ./site
         run: npm ci
 
+      - name: Fetch latest version from Maven Central
+        id: maven_version
+        run: |
+          VERSION=$(curl -sf https://repo1.maven.org/maven2/io/github/bbobbogi/stream4j/maven-metadata.xml | grep -oP '(?<=<release>)[^<]+')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
       - name: Build site
         working-directory: ./site
+        env:
+          VERSION: ${{ steps.maven_version.outputs.version }}
         run: npm run build
 
       - name: Combine site + Javadoc
