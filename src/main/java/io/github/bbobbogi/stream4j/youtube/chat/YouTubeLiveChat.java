@@ -818,16 +818,18 @@ public class YouTubeLiveChat {
             if (type == IdType.VIDEO) {
                 this.videoId = id;
                 html = Util.getPageContent("https://www.youtube.com/watch?v=" + id, getHeader());
+                if (html == null) throw new IOException("Failed to fetch YouTube page for video id: " + id);
                 Matcher channelIdMatcher = Pattern.compile("\"channelId\":\"([^\"]*)\",\"isOwnerViewing\"")
-                        .matcher(Objects.requireNonNull(html));
+                        .matcher(html);
                 if (channelIdMatcher.find()) {
                     this.channelId = channelIdMatcher.group(1);
                 }
             } else if (type == IdType.CHANNEL) {
                 this.channelId = id;
                 html = Util.getPageContent("https://www.youtube.com/channel/" + id + "/live", getHeader());
+                if (html == null) throw new IOException("Failed to fetch YouTube page for channel id: " + id);
                 Matcher videoIdMatcher = Pattern.compile("\"updatedMetadataEndpoint\":\\{\"videoId\":\"([^\"]*)")
-                        .matcher(Objects.requireNonNull(html));
+                        .matcher(html);
                 if (videoIdMatcher.find()) {
                     this.videoId = videoIdMatcher.group(1);
                 } else {
@@ -836,8 +838,9 @@ public class YouTubeLiveChat {
             } else if (type == IdType.USER) {
                 this.userId = id;
                 html = Util.getPageContent("https://www.youtube.com/@" + this.userId + "/live", getHeader());
+                if (html == null) throw new IOException("Failed to fetch YouTube page for user id: " + this.userId);
                 Matcher videoIdMatcher = Pattern.compile("\"updatedMetadataEndpoint\":\\{\"videoId\":\"([^\"]*)")
-                        .matcher(Objects.requireNonNull(html));
+                        .matcher(html);
                 if (videoIdMatcher.find()) {
                     this.videoId = videoIdMatcher.group(1);
                 } else {
@@ -874,7 +877,8 @@ public class YouTubeLiveChat {
                 html = Util.getPageContent(
                         "https://www.youtube.com/live_chat_replay?continuation=" + this.continuation + "",
                         new HashMap<>());
-                String initJson = Objects.requireNonNull(html).substring(
+                if (html == null) throw new IOException("Failed to fetch YouTube live chat replay page");
+                String initJson = html.substring(
                         html.indexOf("ytcfg.set({\"DEVICE\"") + "ytcfg.set(".length());
                 initJson = initJson.substring(0, initJson.indexOf("); window.ytcfg"));
                 Map<String, Object> json = Util.toJSON(initJson);
@@ -896,7 +900,8 @@ public class YouTubeLiveChat {
             } else {
                 html = Util.getPageContent("https://www.youtube.com/live_chat?v=" + this.videoId + "",
                         getHeader());
-                String initJson = Objects.requireNonNull(html).substring(
+                if (html == null) throw new IOException("Failed to fetch YouTube live chat page for video id: " + this.videoId);
+                String initJson = html.substring(
                         html.indexOf("window[\"ytInitialData\"] = ") + "window[\"ytInitialData\"] = ".length());
                 initJson = initJson.substring(0, initJson.indexOf(";</script>"));
                 Map<String, Object> json = Util.toJSON(initJson);

@@ -30,11 +30,17 @@ public class YouTubeChatTest extends ChzzkTestBase {
             try (Response response = SharedHttpClient.get().newCall(request).execute()) {
                 if (!response.isSuccessful() || response.body() == null) return Collections.emptyList();
                 String html = response.body().string();
-                Matcher matcher = Pattern.compile("\"videoId\":\"([^\"]{11})\"").matcher(html);
                 Set<String> seen = new HashSet<>();
-                while (matcher.find() && ids.size() < limit) {
-                    String vid = matcher.group(1);
-                    if (seen.add(vid)) ids.add(vid);
+                int searchFrom = 0;
+                while (ids.size() < limit) {
+                    int badgeIdx = html.indexOf("\"BADGE_STYLE_TYPE_LIVE_NOW\"", searchFrom);
+                    if (badgeIdx < 0) break;
+                    String before = html.substring(Math.max(0, badgeIdx - 2000), badgeIdx);
+                    Matcher vidMatcher = Pattern.compile("\"videoId\":\"([^\"]{11})\"").matcher(before);
+                    String lastVid = null;
+                    while (vidMatcher.find()) lastVid = vidMatcher.group(1);
+                    if (lastVid != null && seen.add(lastVid)) ids.add(lastVid);
+                    searchFrom = badgeIdx + 1;
                 }
             }
         } catch (Exception e) {
