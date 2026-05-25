@@ -1,3 +1,4 @@
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import io.github.bbobbogi.stream4j.chzzk.Chzzk;
@@ -10,6 +11,18 @@ import java.io.IOException;
 import java.util.concurrent.CompletionException;
 
 public class NaverLoginTest extends NaverTestBase {
+
+    private String originalDriverPath;
+
+    @AfterEach
+    public void restoreDriverProperty() {
+        if (originalDriverPath != null) {
+            System.setProperty("webdriver.chrome.driver", originalDriverPath);
+            originalDriverPath = null;
+        } else {
+            System.clearProperty("webdriver.chrome.driver");
+        }
+    }
 
     @Test
     public void testNaverLogin() {
@@ -24,6 +37,7 @@ public class NaverLoginTest extends NaverTestBase {
 
     @Test
     public void testNaverLoginFailed() {
+        originalDriverPath = System.getProperty("webdriver.chrome.driver");
         Assertions.assertThrowsExactly(CompletionException.class, () -> {
             Chrome.setDriverProperty("");
             naver.login().join();
