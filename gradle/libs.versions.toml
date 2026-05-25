@@ -3,7 +3,7 @@ junit = "5.10.1"
 jetbrains-annotations = "26.0.2-1"
 okhttp = "5.3.2"
 gson = "2.13.2"
-selenium = "4.26.0"
+selenium = "4.44.0"
 
 [libraries]
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
