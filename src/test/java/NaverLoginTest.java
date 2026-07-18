@@ -1,5 +1,6 @@
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import io.github.bbobbogi.stream4j.chzzk.Chzzk;
 import io.github.bbobbogi.stream4j.chzzk.ChzzkBuilder;
@@ -10,6 +11,7 @@ import io.github.bbobbogi.stream4j.util.Chrome;
 import java.io.IOException;
 import java.util.concurrent.CompletionException;
 
+@Tag("manual")
 public class NaverLoginTest extends NaverTestBase {
 
     private String originalDriverPath;
