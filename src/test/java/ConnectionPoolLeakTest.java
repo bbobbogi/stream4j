@@ -1,3 +1,4 @@
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import io.github.bbobbogi.stream4j.chzzk.Chzzk;
 import io.github.bbobbogi.stream4j.chzzk.*;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Tag("manual")
 public class ConnectionPoolLeakTest extends ChzzkTestBase {
 
     private static final int POOL_SIZE = 5;
