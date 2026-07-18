@@ -1,4 +1,5 @@
 import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import io.github.bbobbogi.stream4j.chzzk.exception.ChannelNotExistsException;
 import io.github.bbobbogi.stream4j.chzzk.exception.NotExistsException;
@@ -17,6 +18,7 @@ import io.github.bbobbogi.stream4j.chzzk.types.ChzzkRecommendationChannels;
 // FOLLOWED_CHANNEL_1, FOLLOWED_CHANNEL_2 채널을 팔로우한 뒤 테스트 진행해주세요.
 // UNFOLLOWED_CHANNEL 채널은 팔로우 해제 후 테스트 진행해주세요.
 // 채널 ID는 env.properties에서 설정합니다.
+@Tag("manual")
 public class ChannelApiTest extends ChzzkTestBase {
     // 기본 테스트용 채널 ID (유명 스트리머 채널)
     private static final String DEFAULT_TEST_CHANNEL = "8a59b34b46271960c1bf172bb0fac758";

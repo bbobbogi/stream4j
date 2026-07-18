@@ -1,4 +1,5 @@
 import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import io.github.bbobbogi.stream4j.chzzk.*;
 import io.github.bbobbogi.stream4j.chzzk.chat.*;
@@ -8,6 +9,7 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Tag("manual")
 public class ChatReconnectTest extends ChzzkTestBase {
     // CI 환경에서는 30초, 로컬에서는 700초 대기
     private static final long TEST_DURATION_MS = 30_000;
