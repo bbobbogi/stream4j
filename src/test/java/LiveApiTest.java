@@ -1,5 +1,6 @@
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import io.github.bbobbogi.stream4j.chzzk.types.ChzzkLiveDetail;
 import io.github.bbobbogi.stream4j.chzzk.types.ChzzkLiveInfo;
@@ -7,6 +8,7 @@ import io.github.bbobbogi.stream4j.chzzk.types.ChzzkLiveInfo;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
 
+@Tag("manual")
 public class LiveApiTest extends ChzzkTestBase {
 
     private final @NotNull String CHANNEL_TO_TEST = "8a59b34b46271960c1bf172bb0fac758";
