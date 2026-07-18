@@ -14,6 +14,7 @@ repositories {
 dependencies {
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     implementation(libs.jetbrains.annotations)
     implementation(libs.okhttp)
