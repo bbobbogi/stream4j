@@ -230,7 +230,7 @@ public class SOOPChat implements PlatformChat {
                     }
                 }
                 handleError(t instanceof Exception ? (Exception) t : new RuntimeException(t));
-                handleClose(t.getMessage(), true);
+                handleClose(message, true);
             }
         });
 
