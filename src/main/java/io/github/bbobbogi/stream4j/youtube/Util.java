@@ -111,6 +111,9 @@ public class Util {
                     return null;
                 }
             } else {
+                if (list == null) {
+                    return null;
+                }
                 map = (Map<String, Object>) list.get((int) key);
                 list = null;
             }
