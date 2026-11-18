@@ -293,8 +293,7 @@ public class StreamChat {
 
                         @Override
                         public void onBroadcastEnd(ChzzkChat c) {
-                            emit(l -> l.onBroadcastEnd(DonationPlatform.CHZZK, channelId));
-                            chzzkChats.remove(channelId);
+                            handleChzzkBroadcastEnd(channelId);
                         }
                     })
                     .build();
@@ -303,6 +302,10 @@ public class StreamChat {
         } catch (Exception e) {
             emit(l -> l.onError(DonationPlatform.CHZZK, channelId, e));
         }
+    }
+
+    private void handleChzzkBroadcastEnd(String channelId) {
+        emit(l -> l.onBroadcastEnd(DonationPlatform.CHZZK, channelId));
     }
 
     private void connectCiMe(String slug) {

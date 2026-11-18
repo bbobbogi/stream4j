@@ -58,6 +58,7 @@ public class ChzzkChat implements PlatformChat {
     private long lastRecivedMessageTime;
     private long lastLiveCheckTime;
     private int liveCheckFailCount;
+    private volatile boolean broadcastEndNotified;
     private static final long LIVE_CHECK_INTERVAL_MS = 30_000;
     private static final int LIVE_CHECK_MAX_FAILURES = 3;
 
@@ -213,6 +214,7 @@ public class ChzzkChat implements PlatformChat {
                 }
 
                 reconnecting = false;
+                broadcastEndNotified = false;
 
                 this.autoReconnect = autoReconnect;
                 this.channelId = channelId;
@@ -703,23 +705,28 @@ public class ChzzkChat implements PlatformChat {
         try {
             var status = chzzk.getLiveStatus(channelId);
             if (status == null || !status.isOnline()) {
-                System.out.println("[Chzzk] Broadcast ended: " + channelId);
+                if (isDebug()) System.out.println("[Chzzk] Broadcast ended: " + channelId);
                 liveCheckFailCount = 0;
-                for (ChzzkChatEventListener listener : listeners) {
-                    listener.onBroadcastEnd(this);
-                }
+                notifyBroadcastEndOnce();
             } else {
                 liveCheckFailCount = 0;
+                broadcastEndNotified = false;
             }
         } catch (Exception e) {
             liveCheckFailCount++;
-            System.out.println("[Chzzk] Live check error (" + liveCheckFailCount + "/" + LIVE_CHECK_MAX_FAILURES + "): " + e.getMessage());
+            if (isDebug()) System.out.println("[Chzzk] Live check error (" + liveCheckFailCount + "/" + LIVE_CHECK_MAX_FAILURES + "): " + e.getMessage());
             if (liveCheckFailCount >= LIVE_CHECK_MAX_FAILURES) {
-                System.out.println("[Chzzk] Live check failed " + LIVE_CHECK_MAX_FAILURES + " times, assuming broadcast ended: " + channelId);
-                for (ChzzkChatEventListener listener : listeners) {
-                    listener.onBroadcastEnd(this);
-                }
+                if (isDebug()) System.out.println("[Chzzk] Live check failed " + LIVE_CHECK_MAX_FAILURES + " times, assuming broadcast ended: " + channelId);
+                notifyBroadcastEndOnce();
             }
+        }
+    }
+
+    private void notifyBroadcastEndOnce() {
+        if (broadcastEndNotified) return;
+        broadcastEndNotified = true;
+        for (ChzzkChatEventListener listener : listeners) {
+            listener.onBroadcastEnd(this);
         }
     }
 

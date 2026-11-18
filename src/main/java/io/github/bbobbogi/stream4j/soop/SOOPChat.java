@@ -461,6 +461,7 @@ public class SOOPChat implements PlatformChat {
     }
 
     private void fireBroadcastEnd() {
+        ManagedWebSocket endWs = managedWs;
         managedWs = null;
         connected = false;
         entered = false;
@@ -471,7 +472,9 @@ public class SOOPChat implements PlatformChat {
         for (SOOPChatEventListener listener : listeners) {
             listener.onConnectionClosed(1000, "Broadcast ended", false, false);
         }
-        // closeAsync()는 ManagedWebSocket이 onFailure 리턴 후 자동 호출하므로 생략
+        if (endWs != null) {
+            endWs.closeAsync();
+        }
     }
 
     void handleClose(String reason, boolean remote) {
