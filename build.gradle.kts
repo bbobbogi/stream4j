@@ -32,6 +32,8 @@ tasks.test {
 }
 
 tasks.register<Test>("manualTest") {
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
     useJUnitPlatform {
         includeTags("manual")
     }
