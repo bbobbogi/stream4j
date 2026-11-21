@@ -45,6 +45,7 @@ public class SOOPChat implements PlatformChat {
 
     private volatile ManagedWebSocket managedWs;
     private String chatNo;
+    private final boolean browserSession;
 
     volatile boolean reconnecting;
     private volatile boolean connected;
@@ -57,7 +58,8 @@ public class SOOPChat implements PlatformChat {
             boolean debug,
             int maxReconnectAttempts,
             long reconnectDelayMs,
-            OkHttpClient httpClient
+            OkHttpClient httpClient,
+            boolean browserSession
     ) {
         this.streamerId = streamerId;
         this.autoReconnect = autoReconnect;
@@ -65,6 +67,7 @@ public class SOOPChat implements PlatformChat {
         this.maxReconnectAttempts = maxReconnectAttempts;
         this.reconnectDelayMs = reconnectDelayMs;
         this.httpClient = httpClient != null ? httpClient : SharedHttpClient.get();
+        this.browserSession = browserSession;
     }
 
     /**
@@ -258,7 +261,8 @@ public class SOOPChat implements PlatformChat {
                 .build();
 
         Request request = new Request.Builder()
-                .url(LIVE_DETAIL_API + streamerId)
+                .url((browserSession ? "https://live.sooplive.com/afreeca/player_live_api.php?bjid="
+                        : LIVE_DETAIL_API) + streamerId)
                 .post(formBody)
                 .build();
 

@@ -31,6 +31,7 @@ public class SOOPChatBuilder {
     private int maxReconnectAttempts = 5;
     private long reconnectDelayMs = 5000;
     private OkHttpClient httpClient;
+    private boolean browserSession;
 
     /**
      * Creates a builder for the target streamer.
@@ -179,7 +180,37 @@ public class SOOPChatBuilder {
         }
 
         this.httpClient = loginClient;
+        this.browserSession = false;
         return this;
+    }
+
+    /**
+     * Uses cookies from an existing official SOOP browser session without performing a login.
+     * Only cookies matching the official live API are sent, and only to that HTTPS endpoint.
+     *
+     * @param cookies existing SOOP session cookies with their original domain and path
+     * @return this builder for chaining
+     */
+    public SOOPChatBuilder withSessionCookies(List<Cookie> cookies) {
+        List<Cookie> snapshot = List.copyOf(cookies);
+        this.httpClient = SharedHttpClient.newBuilder().cookieJar(new CookieJar() {
+            @Override
+            public void saveFromResponse(HttpUrl url, List<Cookie> responseCookies) { }
+
+            @Override
+            public List<Cookie> loadForRequest(HttpUrl url) {
+                return browserCookiesFor(url, snapshot);
+            }
+        }).build();
+        this.browserSession = true;
+        return this;
+    }
+
+    static List<Cookie> browserCookiesFor(HttpUrl url, List<Cookie> cookies) {
+        if (!url.isHttps() || url.port() != 443 || !url.host().equals("live.sooplive.com")
+                || !url.encodedPath().equals("/afreeca/player_live_api.php")) return List.of();
+        return cookies.stream().filter(cookie -> cookie.expiresAt() > System.currentTimeMillis())
+                .filter(cookie -> cookie.matches(url)).toList();
     }
 
     /**
@@ -188,7 +219,8 @@ public class SOOPChatBuilder {
      * @return configured SOOP chat client
      */
     public SOOPChat build() {
-        SOOPChat chat = new SOOPChat(streamerId, autoReconnect, debug, maxReconnectAttempts, reconnectDelayMs, httpClient);
+        SOOPChat chat = new SOOPChat(streamerId, autoReconnect, debug, maxReconnectAttempts, reconnectDelayMs, httpClient,
+                browserSession);
         for (SOOPChatEventListener listener : listeners) {
             chat.listeners.add(listener);
         }
